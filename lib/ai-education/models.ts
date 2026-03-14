@@ -10,12 +10,12 @@ export const COLLECTIONS = {
   usageStats: "usage_stats", // 模型使用统计
   mathProgress: "math_progress", // 数学工具学习进度
   toolChatHistories: "tool_chat_histories", // 非智趣学工具聊天记录
-};
+} as const;
 
 // GridFS Bucket 名称
 export const GRIDFS_BUCKETS = {
   media: "media", // 视频、大图片等媒体文件
-};
+} as const;
 
 export const USER_FIELDS = {
   name: "name", // 姓名（登录名，唯一标识）
@@ -34,7 +34,7 @@ export const USER_FIELDS = {
   updatedAt: "updatedAt",
   preferences: "preferences",
   guestPurgeAt: "guestPurgeAt",
-};
+} as const;
 
 export const USER_ROLES = {
   user: "student",
@@ -43,24 +43,24 @@ export const USER_ROLES = {
   admin: "admin",
   superadmin: "superadmin",
   guest: "guest",
-};
+} as const;
 
 export const USER_ACCOUNT_TYPES = {
   formal: "formal",
   guest: "guest",
-};
+} as const;
 
 export const USER_STATUSES = {
   active: "active",
   banned: "banned",
-};
+} as const;
 
 export const SESSION_FIELDS = {
   userId: "userId",
   token: "token",
   expiresAt: "expiresAt",
   createdAt: "createdAt",
-};
+} as const;
 
 export const CARD_FIELDS = {
   userId: "userId",
@@ -68,14 +68,14 @@ export const CARD_FIELDS = {
   payload: "payload",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-};
+} as const;
 
 export const AUTH_CODE_FIELDS = {
   code: "code", // 授权码
   type: "type", // 'admin' | 'superadmin'
   usedBy: "usedBy", // 使用者的 userId，superadmin授权码只能使用一次
   usedAt: "usedAt", // 使用时间
-};
+} as const;
 
 export const INVITATION_FIELDS = {
   code: "code",
@@ -86,7 +86,7 @@ export const INVITATION_FIELDS = {
   usedAt: "usedAt",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-};
+} as const;
 
 export const CONVERSATION_FIELDS = {
   userId: "userId",
@@ -97,7 +97,7 @@ export const CONVERSATION_FIELDS = {
   createdAt: "createdAt",
   updatedAt: "updatedAt",
   type: "type", // 'text' | 'voice' 对话类型
-};
+} as const;
 
 export const USAGE_STATS_FIELDS = {
   userId: "userId",
@@ -105,7 +105,7 @@ export const USAGE_STATS_FIELDS = {
   count: "count",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-};
+} as const;
 
 export const MATH_PROGRESS_FIELDS = {
   userId: "userId",
@@ -118,7 +118,7 @@ export const MATH_PROGRESS_FIELDS = {
   lastPlayed: "lastPlayed",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-};
+} as const;
 
 export const TOOL_CHAT_HISTORY_FIELDS = {
   userId: "userId",
@@ -126,4 +126,4 @@ export const TOOL_CHAT_HISTORY_FIELDS = {
   messages: "messages",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-};
+} as const;
