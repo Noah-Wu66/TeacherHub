@@ -19,7 +19,7 @@ const AI_EDUCATION_PROTECTED_PREFIXES = [
   '/ai-education/api/tts',
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 只处理 AI-Education 的 API 路由
