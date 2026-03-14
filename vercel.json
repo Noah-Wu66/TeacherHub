@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "app/teacher-tools/tools/[toolId]/legacy/[...file]/route.ts": {
+      "includeFiles": "legacy_tools/**"
+    },
+    "app/teacher-tools/tools/[toolId]/common/[...file]/route.ts": {
+      "includeFiles": "legacy_tools/**"
+    },
+    "app/teacher-tools/tools/[toolId]/images/[...path]/route.ts": {
+      "includeFiles": "legacy_tools/**"
+    }
+  }
+}

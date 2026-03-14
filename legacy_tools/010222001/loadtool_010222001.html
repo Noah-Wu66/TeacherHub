@@ -1,0 +1,947 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0062)https://mathtool.ruizhiyun.net/framework/loadtool_010222001.do -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>根据三视图摆放小正方体</title>
+		<style>
+			body {
+				background:#777;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+			}
+			
+			.pic_text_div,.pic1_text_div{
+				font-family: Microsoft YaHei; 
+				color: #5E2A2A;
+				font-size: 48px; 				
+			}
+
+			#info {
+				position: absolute;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+			}
+
+			a {
+				color: #ff0000;
+			}
+			
+
+			.label{
+				font-family: Microsoft YaHei; 
+				color: #5E2A2A;
+				font-weight: bold;
+				padding: 2px;
+			}				
+  		
+	     #qdiv{
+               width: 100%;
+               height: 70%;
+               background-color: #c2f6ff;
+               display: flex;
+               flex-direction: column;
+               justify-content: flex-start;
+               align-items: center;
+               align-content: flex-start;
+               border-bottom: 1.2vh solid #329ce8;
+           }
+            
+		#buttonDiv {
+                width: 100%;
+                height: 30%;
+                background-color: white;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                align-content: center;
+                padding-top: 1vh;
+           }
+            .fontText{
+				color: black;
+			}
+			#font_div{
+			cursor: pointer;
+			background-size:100% 100%;
+			-moz-background-size:100% 100%;
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-image: url(/images/img/010222001/fontbg.png)	
+		}	
+
+		#left_div{
+			cursor: pointer;
+			background-size:100% 100%;
+			-moz-background-size:100% 100%;
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-image: url(/images/img/010222001/leftbg.png)	
+		}
+
+		#up_div{
+			cursor: pointer;
+			background-size:100% 100%;
+			-moz-background-size:100% 100%;
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-image: url(/images/img/010222001/upbg.png)	
+		}
+		.rightAnswerTd{
+			background-color: #7888ff;
+		}			
+		</style>
+	<style data-id="immersive-translate-input-injected-css">.immersive-translate-input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 2147483647;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.immersive-translate-attach-loading::after {
+  content: " ";
+
+  --loading-color: #f78fb6;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+  margin: 12px auto;
+  position: relative;
+  color: white;
+  left: -100px;
+  box-sizing: border-box;
+  animation: immersiveTranslateShadowRolling 1.5s linear infinite;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-2000%, -50%);
+  z-index: 100;
+}
+
+.immersive-translate-loading-spinner {
+  vertical-align: middle !important;
+  width: 10px !important;
+  height: 10px !important;
+  display: inline-block !important;
+  margin: 0 4px !important;
+  border: 2px rgba(221, 244, 255, 0.6) solid !important;
+  border-top: 2px rgba(0, 0, 0, 0.375) solid !important;
+  border-left: 2px rgba(0, 0, 0, 0.375) solid !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  -webkit-animation: immersive-translate-loading-animation 0.6s infinite linear !important;
+  animation: immersive-translate-loading-animation 0.6s infinite linear !important;
+}
+
+@-webkit-keyframes immersive-translate-loading-animation {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+
+  to {
+    -webkit-transform: rotate(359deg);
+  }
+}
+
+@keyframes immersive-translate-loading-animation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.immersive-translate-input-loading {
+  --loading-color: #f78fb6;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+  margin: 12px auto;
+  position: relative;
+  color: white;
+  left: -100px;
+  box-sizing: border-box;
+  animation: immersiveTranslateShadowRolling 1.5s linear infinite;
+}
+
+@keyframes immersiveTranslateShadowRolling {
+  0% {
+    box-shadow: 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0),
+      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+
+  12% {
+    box-shadow: 100px 0 var(--loading-color), 0px 0 rgba(255, 255, 255, 0),
+      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+
+  25% {
+    box-shadow: 110px 0 var(--loading-color), 100px 0 var(--loading-color),
+      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+
+  36% {
+    box-shadow: 120px 0 var(--loading-color), 110px 0 var(--loading-color),
+      100px 0 var(--loading-color), 0px 0 rgba(255, 255, 255, 0);
+  }
+
+  50% {
+    box-shadow: 130px 0 var(--loading-color), 120px 0 var(--loading-color),
+      110px 0 var(--loading-color), 100px 0 var(--loading-color);
+  }
+
+  62% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 130px 0 var(--loading-color),
+      120px 0 var(--loading-color), 110px 0 var(--loading-color);
+  }
+
+  75% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
+      130px 0 var(--loading-color), 120px 0 var(--loading-color);
+  }
+
+  87% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
+      200px 0 rgba(255, 255, 255, 0), 130px 0 var(--loading-color);
+  }
+
+  100% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
+      200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.immersive-translate-modal {
+  position: fixed;
+  z-index: 2147483647;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+  font-size: 15px;
+}
+
+.immersive-translate-modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 40px 24px 24px;
+  border-radius: 12px;
+  width: 350px;
+  font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu",
+    "Cantarell", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  position: relative;
+}
+
+@media screen and (max-width: 768px) {
+  .immersive-translate-modal-content {
+    margin: 25% auto !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .immersive-translate-modal-content {
+    width: 80vw !important;
+    margin: 20vh auto !important;
+    padding: 20px 12px 12px !important;
+  }
+
+  .immersive-translate-modal-title {
+    font-size: 14px !important;
+  }
+
+  .immersive-translate-modal-body {
+    font-size: 13px !important;
+    max-height: 60vh !important;
+  }
+
+  .immersive-translate-btn {
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+    margin: 0 4px !important;
+  }
+
+  .immersive-translate-modal-footer {
+    gap: 6px !important;
+    margin-top: 16px !important;
+  }
+}
+
+.immersive-translate-modal .immersive-translate-modal-content-in-input {
+  max-width: 500px;
+}
+.immersive-translate-modal-content-in-input .immersive-translate-modal-body {
+  text-align: left;
+  max-height: unset;
+}
+
+.immersive-translate-modal-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333333;
+}
+
+.immersive-translate-modal-body {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333333;
+  margin-top: 24px;
+}
+
+@media screen and (max-width: 768px) {
+  .immersive-translate-modal-body {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+}
+
+.immersive-translate-close {
+  color: #666666;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.immersive-translate-close:hover,
+.immersive-translate-close:focus {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.immersive-translate-modal-footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.immersive-translate-btn {
+  width: fit-content;
+  color: #fff;
+  background-color: #ea4c89;
+  border: none;
+  font-size: 14px;
+  margin: 0 8px;
+  padding: 9px 30px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.immersive-translate-btn-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.immersive-translate-btn:hover {
+  background-color: #f082ac;
+}
+.immersive-translate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.immersive-translate-btn:disabled:hover {
+  background-color: #ea4c89;
+}
+
+.immersive-translate-link-btn {
+  background-color: transparent;
+  color: #ea4c89;
+  border: none;
+  cursor: pointer;
+  height: 30px;
+  line-height: 30px;
+}
+
+.immersive-translate-cancel-btn {
+  /* gray color */
+  background-color: rgb(89, 107, 120);
+}
+
+.immersive-translate-cancel-btn:hover {
+  background-color: hsl(205, 20%, 32%);
+}
+
+.immersive-translate-action-btn {
+  background-color: transparent;
+  color: #ea4c89;
+  border: 1px solid #ea4c89;
+}
+
+.immersive-translate-btn svg {
+  margin-right: 5px;
+}
+
+.immersive-translate-link {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  text-decoration: none;
+  color: #ea4c89;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.immersive-translate-primary-link {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  text-decoration: none;
+  color: #ea4c89;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.immersive-translate-modal input[type="radio"] {
+  margin: 0 6px;
+  cursor: pointer;
+}
+
+.immersive-translate-modal label {
+  cursor: pointer;
+}
+
+.immersive-translate-close-action {
+  position: absolute;
+  top: 2px;
+  right: 0px;
+  cursor: pointer;
+}
+
+.imt-image-status {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 16px !important;
+}
+.imt-image-status img,
+.imt-image-status svg,
+.imt-img-loading {
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 0 8px 0 !important;
+  min-height: 28px !important;
+  min-width: 28px !important;
+  position: relative !important;
+}
+.imt-img-loading {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAMAAACfWMssAAAAtFBMVEUAAAD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////oK74hAAAAPHRSTlMABBMIDyQXHwyBfFdDMSw+OjXCb+5RG51IvV/k0rOqlGRM6KKMhdvNyZBz9MaupmxpWyj437iYd/yJVNZeuUC7AAACt0lEQVRIx53T2XKiUBCA4QYOiyCbiAsuuGBcYtxiYtT3f6/pbqoYHVFO5r+iivpo6DpAWYpqeoFfr9f90DsYAuRSWkFnPO50OgR9PwiCUFcl2GEcx+N/YBh6pvKaefHlUgZd1zVe0NbYcQjGBfzrPE8Xz8aF+71D8gG6DHFPpc4a7xFiCDuhaWgKgGIJQ3d5IMGDrpS4S5KgpIm+en9f6PlAhKby4JwEIxlYJV9h5k5nee9GoxHJ2IDSNB0dwdad1NAxDJ/uXDHYmebdk4PdbkS58CIVHdYSUHTYYRWOJblWSyu2lmy3KNFVJNBhxcuGW4YBVCbYGRZwIooipHsNqjM4FbgOQqQqSKQQU9V8xmi1QlgHqQQ6DDBvRUVCDirs+EzGDGOQTCATgtYTnbCVLgsVgRE0T1QE0qHCFAht2z6dLvJQs3Lo2FQoDxWNUiBhaP4eRgwNkI+dAjVOA/kUrIDwf3CG8NfNOE0eiFotSuo+rBiq8tD9oY4Qzc6YJw99hl1wzpQvD7ef2M8QgnOGJfJw+EltQc+oX2yn907QB22WZcvlUpd143dqQu+8pCJZuGE4xCuPXJqqcs5sNpsI93Rmzym1k4Npk+oD1SH3/a3LOK/JpUBpWfqNySxWzCfNCUITuDG5dtuphrUJ1myeIE9bIsPiKrfqTai5WZxbhtNphYx6GEIHihyGFTI69lje/rxajdh0s0msZ0zYxyPLhYCb1CyHm9Qsd2H37Y3lugVwL9kNh8Ot8cha6fUNQ8nuXi5z9/ExsAO4zQrb/ev1yrCB7lGyQzgYDGuxq1toDN/JGvN+HyWNHKB7zEoK+PX11e12G431erGYzwmytAWU56fkMHY5JJnDRR2eZji3AwtIcrEV8Cojat/BdQ7XOwGV1e1hDjGGjXbdArm8uJZtCH5MbcctVX8A1WpqumJHwckAAAAASUVORK5CYII=");
+  background-size: 28px 28px;
+  animation: image-loading-rotate 1s linear infinite !important;
+}
+
+.imt-image-status span {
+  color: var(--bg-2, #fff) !important;
+  font-size: 14px !important;
+  line-height: 14px !important;
+  font-weight: 500 !important;
+  font-family: "PingFang SC", Arial, sans-serif !important;
+}
+
+.imt-primary-button {
+  display: flex;
+  padding: 12px 80px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #ea4c89;
+  color: #fff;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px;
+  border: none;
+  cursor: pointer;
+}
+
+.imt-retry-text {
+  color: #999;
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.imt-action-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imt-modal-content-text {
+  text-align: left;
+  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+@keyframes image-loading-rotate {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.imt-linear-gradient-text {
+  background: linear-gradient(90deg, #00a6ff 0%, #c369ff 52.4%, #ff4590 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.imt-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imt-linear-black-btn {
+  border-radius: 50px;
+  background: linear-gradient(66deg, #222 19%, #696969 94.25%);
+  height: 48px;
+  width: 100%;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  justify-content: center;
+}
+</style><style id="supercopy_user_select">*{user-select: text !important;-webkit-user-select: text !important;-webkit-touch-callout: text !important;}</style></head>
+	<body>
+
+
+
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	
+	<script src="./jquery.min.js"></script>
+    <script src="./ruicloud.js"></script><script language="javascript" src="./jquery.min.js"></script>
+	<script src="./tool.js"></script>
+	<link rel="stylesheet" href="./ruicloud.css">
+	<script src="./multiTouch.js"></script>
+	<script src="./chartKeyboard.js"></script><img id="chartKeyboardNum0" src="./num0.png" style="display:none"><img id="chartKeyboardNum1" src="./num1.png" style="display:none"><img id="chartKeyboardNum2" src="./num2.png" style="display:none"><img id="chartKeyboardNum3" src="./num3.png" style="display:none"><img id="chartKeyboardNum4" src="./num4.png" style="display:none"><img id="chartKeyboardNum5" src="./num5.png" style="display:none"><img id="chartKeyboardNum6" src="./num6.png" style="display:none"><img id="chartKeyboardNum7" src="./num7.png" style="display:none"><img id="chartKeyboardNum8" src="./num8.png" style="display:none"><img id="chartKeyboardNum9" src="./num9.png" style="display:none"><img id="chartKeyboardNumPoint" src="./numPoint.png" style="display:none"><img id="chartKeyboardNumDel" src="./numDel.png" style="display:none"><img id="chartKeyboardNumWan" src="./numWan.png" style="display:none"><img id="chartKeyboardNumBw" src="./numBw.png" style="display:none"><img id="chartKeyboardNumYi" src="./numYi.png" style="display:none"><img id="chartKeyboardNumDisplay" src="./numDisplay.png" style="display:none"><img id="chartKeyboardNumOk" src="./numOk.png" style="display:none"><img id="chartKeyboardNumSelect" src="./btnSelect.png" style="display:none">
+
+
+	 <script>
+		//按键触发
+ 		document.onkeydown = function(){
+			//禁止ctrl+u
+			if (event.ctrlKey && window.event.keyCode==85){
+				return false;
+			}
+			//禁止 F12
+			if (window.event && window.event.keyCode == 123) {
+				event.keyCode = 0;
+				event.returnValue = false;
+			}
+			//禁止ctrl+s
+			if (event.ctrlKey && window.event.keyCode==83){
+				return false;
+			}
+		}
+
+		//网站禁止右键
+		document.body.oncontextmenu = function() {
+			self.event.returnValue=false
+		};
+
+		//网站禁止选择文字
+		document.body.onselectstart = function() {
+			self.event.returnValue=false
+		}; 
+	 </script>
+
+
+    <script src="./three.js"></script>
+    <script src="./OrbitControls.js"></script>
+	<script src="./WebGL.js"></script>
+	<script src="./tween.min.js"></script>
+	<script src="./DragControls.js"></script>
+	<script src="./CSS2DRenderer.js"></script>
+	<script src="./multiTouch.js"></script>
+
+		<script>
+			var controls;
+			var createFlag = false;
+			if ( WEBGL.isWebGLAvailable() === false ) {
+				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+			}
+			var camera, scene, renderer;
+			var plane, cube;
+			var mouse, raycaster;
+			var objects = [];
+			var dragControls;
+			var dragCubs = [];
+			var selectedObject;
+			var selectedIndex;
+			var num=1;
+			var labelRenderer;
+			
+			var canvasFrameWidth;
+			var canvasFrameHeight;
+			var leftWidth;
+			var showCub = true;
+
+			var oneRandomSeed = [{x:-150,y:50,z:50},{x:-50,y:50,z:50},{x:50,y:50,z:50},{x:150,y:50,z:50},{x:250,y:50,z:50},
+								 {x:-150,y:50,z:-50},{x:-50,y:50,z:-50},{x:50,y:50,z:-50},{x:150,y:50,z:-50},{x:250,y:50,z:-50},
+								 {x:50,y:50,z:150},{x:50,y:50,z:-150},];
+			var twoRandomSeed = [{x:-150,y:150,z:50},{x:-50,y:150,z:50},{x:50,y:150,z:50},{x:150,y:150,z:50},{x:250,y:150,z:50},
+								 {x:-150,y:150,z:-50},{x:-50,y:150,z:-50},{x:50,y:150,z:-50},{x:150,y:150,z:-50},{x:250,y:150,z:-50},
+								 {x:50,y:150,z:150},{x:50,y:150,z:-150}];
+			var threeRandomSeed = [{x:-150,y:250,z:50},{x:-50,y:250,z:50},{x:50,y:250,z:50},{x:150,y:250,z:50},{x:250,y:250,z:50},
+								   {x:-150,y:250,z:-50},{x:-50,y:250,z:-50},{x:50,y:250,z:-50},{x:150,y:250,z:-50},{x:250,y:250,z:-50},
+								   {x:50,y:250,z:150},{x:50,y:250,z:-150}];
+
+			var fourNumArray = [];
+			var fiveNumArray = [];
+			var otherNumArray = [];
+			var presetQuestionArray = [];
+			var othercount = 0;
+			var fourcount = 0;
+			var fivecount = 0;
+			var dataArray = [];	
+			var randomArray = [4,5,4,5,6,4,5,4,5,6];	
+			var eachcubInfo = function(x1,y1,z1){
+				this.x = x1;
+				this.y = y1;
+				this.z = z1;
+			};	
+			var initCubX = 400;
+			var initCuby = 50;
+			var initCubz = -220;
+			var graphType = 1;
+			var questionList = [];
+			var textureblue = new THREE.CanvasTexture(canvastexture("#3388ff"));
+			var bluematerial = new THREE.MeshBasicMaterial({ //默认
+				map: textureblue,
+				side: THREE.DoubleSide,
+				transparent:true
+			});
+			var materialArray = [bluematerial,bluematerial,bluematerial,bluematerial,bluematerial,bluematerial];
+
+			var QustionInfo = function(fontTdPostion,leftTdPostion,upTdPostion,cubesPostion){
+					//表格信息，前面，左面，上面
+			    	this.fontTdPostion = fontTdPostion;
+					this.leftTdPostion = leftTdPostion;
+					this.upTdPostion = upTdPostion;
+			    	this.cubesPostion = cubesPostion;
+			}
+
+			window.parent.SETDAILOGWIDTH = window.innerHeight/ 1370 * 1600;
+			window.parent.SETDAILOGHEIGHT =  window.innerHeight/ 1370 * 1200;
+			/* 页面绘制完后加载 */
+
+window["\u006f\u006e\u006c\u006f\u0061\u0064"]=function(){window["\u0070\u0061\u0072\u0065\u006e\u0074"]["\u0064\u006f\u0063\u0075\u006d\u0065\u006e\u0074"]["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("eltit_loot".split("").reverse().join(""))["\u0069\u006e\u006e\u0065\u0072\u0048\u0054\u004d\u004c"]="\u4F53\u65B9\u6B63\u5C0F\u653E\u6446\u56FE\u89C6\u4E09\u636E\u6839".split("").reverse().join("");leftWidth=$("\u0023\u006c\u0065\u0066\u0074\u0064\u0069\u0076")["\u0077\u0069\u0064\u0074\u0068"]();canvasFrameWidth=window["\u0069\u006e\u006e\u0065\u0072\u0057\u0069\u0064\u0074\u0068"]-leftWidth;canvasFrameHeight=window["\u0069\u006e\u006e\u0065\u0072\u0048\u0065\u0069\u0067\u0068\u0074"];$("emarf-savnac#".split("").reverse().join(""))['css']({'width':canvasFrameWidth+"xp".split("").reverse().join(""),'height':canvasFrameHeight+"xp".split("").reverse().join(""),"\u006d\u0061\u0072\u0067\u0069\u006e\u002d\u006c\u0065\u0066\u0074":leftWidth+"xp".split("").reverse().join("")});var _0x144dea=window["\u0069\u006e\u006e\u0065\u0072\u0048\u0065\u0069\u0067\u0068\u0074"]/(0x691fc^0x697bc);$('#font_div')['css']({'width':_0x144dea*(0x4703c^0x471e8)+"xp".split("").reverse().join(""),'height':_0x144dea*(0x99d08^0x99c6e)+"\u0070\u0078","\u006d\u0061\u0072\u0067\u0069\u006e\u002d\u006c\u0065\u0066\u0074":_0x144dea*(0xddfce^0xddf94)+"xp".split("").reverse().join("")});$("vid_tfel#".split("").reverse().join(""))["\u0063\u0073\u0073"]({'width':_0x144dea*(0xd83c9^0xd821d)+'px',"\u0068\u0065\u0069\u0067\u0068\u0074":_0x144dea*(0x720a9^0x721cf)+"xp".split("").reverse().join(""),'margin-left':_0x144dea*(0x49b62^0x49b38)+"xp".split("").reverse().join("")});$('#up_div')["\u0063\u0073\u0073"]({"\u0077\u0069\u0064\u0074\u0068":_0x144dea*(0xeb6c3^0xeb717)+'px','height':_0x144dea*(0x4d5ac^0x4d4ca)+'px','margin-left':_0x144dea*(0x28600^0x2865a)+"xp".split("").reverse().join("")});$('#operateArea')['css']({'left':(window['innerWidth']-$('#operateArea')["\u0077\u0069\u0064\u0074\u0068"]())/0x2+"\u0070\u0078"});$("ssalCelbat.".split("").reverse().join(""))["\u0063\u0073\u0073"]({'margin-left':_0x144dea*0x6e+"\u0070\u0078",'margin-top':_0x144dea*(0x425f8^0x425ec)+'px'});$("ssalCdt.".split("").reverse().join(""))["\u0063\u0073\u0073"]({"\u0077\u0069\u0064\u0074\u0068":_0x144dea*0x32+"\u0070\u0078",'height':_0x144dea*0x32+'px'});$('.tdClass')['bind']('click',function(){if($(this)["\u0068\u0061\u0073\u0043\u006c\u0061\u0073\u0073"]("dTdetceles".split("").reverse().join(""))){$(this)['removeClass']("\u0073\u0065\u006c\u0065\u0063\u0074\u0065\u0064\u0054\u0064");}else{$(this)['addClass']("dTdetceles".split("").reverse().join(""));}});init();render();};function resetBtnStatus(){if($('#gconfirmbtn')['css']("\u0064\u0069\u0073\u0070\u006c\u0061\u0079")=='block'){$("\u0023\u0067\u0063\u006f\u006e\u0066\u0069\u0072\u006d\u0062\u0074\u006e")['css']("yalpsid".split("").reverse().join(""),"\u006e\u006f\u006e\u0065");$("\u0023\u0063\u006f\u006e\u0066\u0069\u0072\u006d\u0062\u0074\u006e")['css']('display','block');}if($("\u0023\u0068\u0069\u0064\u0064\u0065\u006e\u0061\u006e\u0073\u0077\u0065\u0072\u0062\u0074\u006e")["\u0063\u0073\u0073"]('display')=="\u0062\u006c\u006f\u0063\u006b"){$("\u0023\u0068\u0069\u0064\u0064\u0065\u006e\u0061\u006e\u0073\u0077\u0065\u0072\u0062\u0074\u006e")['css']("\u0064\u0069\u0073\u0070\u006c\u0061\u0079",'none');$("ntbrewsnawohs#".split("").reverse().join(""))["\u0063\u0073\u0073"]("yalpsid".split("").reverse().join(""),"\u0062\u006c\u006f\u0063\u006b");}}function init(){var _0x245c63=canvasFrameWidth/canvasFrameHeight;var _0x51ed01=0x190;camera=new THREE['OrthographicCamera'](-_0x51ed01*_0x245c63,_0x51ed01*_0x245c63,_0x51ed01,-_0x51ed01,0x1,0x2710);camera['position']["\u0073\u0065\u0074"](0xc8,0x1f4,0x2bc);camera['lookAt'](0x0,0x0,0xabf41^0xabf41);scene=new THREE["\u0053\u0063\u0065\u006e\u0065"]();scene['background']=new THREE["\u0043\u006f\u006c\u006f\u0072"](0xd9ebff);var _0x1949da=new THREE['AmbientLight'](0x606f6f);scene["\u0061\u0064\u0064"](_0x1949da);var _0x2b9f14=new THREE["\u0050\u006f\u0069\u006e\u0074\u004c\u0069\u0067\u0068\u0074"](0xffffff);_0x2b9f14['position']['set'](0x12c,0x320,0x974cd^0x97539);scene["\u0061\u0064\u0064"](_0x2b9f14);var _0x56be57=new THREE["\u0050\u006f\u0069\u006e\u0074\u004c\u0069\u0067\u0068\u0074"](0xffffff);_0x56be57["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['set'](-(0x8d33b^0x8d217),0x29322^0x29002,-(0x72082^0x722da));scene["\u0061\u0064\u0064"](_0x56be57);var _0x49ccec=new THREE['GridHelper'](0x258,0x557e6^0x557e0);scene['add'](_0x49ccec);raycaster=new THREE['Raycaster']();mouse=new THREE["\u0056\u0065\u0063\u0074\u006f\u0072\u0032"]();var _0x4458cc=new THREE['PlaneBufferGeometry'](0x320,0x320);_0x4458cc['rotateX'](-Math["\u0050\u0049"]/0x2);plane=new THREE["\u004d\u0065\u0073\u0068"](_0x4458cc,new THREE['MeshBasicMaterial']({'visible':![]}));plane["\u006e\u0061\u006d\u0065"]="enalp".split("").reverse().join("");scene['add'](plane);objects['push'](plane);initObject();$('.label')["\u0063\u0073\u0073"]({'font-size':window['innerHeight']/(0xa3daf^0xa38f5)*0x1e+'px'});var _0x37f888=document['createElement']("\u0064\u0069\u0076");_0x37f888['className']="\u006c\u0061\u0062\u0065\u006c";_0x37f888["\u0074\u0065\u0078\u0074\u0043\u006f\u006e\u0074\u0065\u006e\u0074"]="\u9762\u524D".split("").reverse().join("");_0x37f888['style']["\u006d\u0061\u0072\u0067\u0069\u006e\u0054\u006f\u0070"]='-1em';_0x37f888["\u0073\u0074\u0079\u006c\u0065"]["\u0066\u006f\u006e\u0074\u0053\u0069\u007a\u0065"]=window["\u0069\u006e\u006e\u0065\u0072\u0048\u0065\u0069\u0067\u0068\u0074"]/0x55a*(0x81e99^0x81edf)+'px';var _0x159a89=new THREE["\u0043\u0053\u0053\u0032\u0044\u004f\u0062\u006a\u0065\u0063\u0074"](_0x37f888);_0x159a89['position']['set'](0x0,-0x50,0x343f5^0x342bf);_0x49ccec['add'](_0x159a89);var _0x3be6cc=document["\u0063\u0072\u0065\u0061\u0074\u0065\u0045\u006c\u0065\u006d\u0065\u006e\u0074"]('div');_0x3be6cc['className']='label';_0x3be6cc['textContent']="\u9762\u5DE6".split("").reverse().join("");_0x3be6cc['style']['marginTop']='-1em';_0x3be6cc['style']['fontSize']=window['innerHeight']/(0xe9770^0xe922a)*(0x7ee0e^0x7ee48)+'px';var _0x179840=new THREE['CSS2DObject'](_0x3be6cc);_0x179840['position']['set'](-(0x94004^0x94182),-0x50,0x0);_0x49ccec['add'](_0x179840);var _0x2a226f=document['createElement']("\u0064\u0069\u0076");_0x2a226f['className']="lebal".split("").reverse().join("");_0x2a226f["\u0074\u0065\u0078\u0074\u0043\u006f\u006e\u0074\u0065\u006e\u0074"]="\u62d6\u6211";_0x2a226f['style']['marginTop']="me1-".split("").reverse().join("");_0x2a226f['style']['fontSize']=window['innerHeight']/0x55a*(0x9defd^0x9debb)+"xp".split("").reverse().join("");var _0x13f2bf=new THREE['CSS2DObject'](_0x2a226f);_0x13f2bf['position']['set'](0x190,0x78,-0xdc);_0x49ccec['add'](_0x13f2bf);labelRenderer=new THREE["\u0043\u0053\u0053\u0032\u0044\u0052\u0065\u006e\u0064\u0065\u0072\u0065\u0072"]();labelRenderer['setSize']($('#canvas-frame')['width'](),$('#canvas-frame')['height']());labelRenderer["\u0064\u006f\u006d\u0045\u006c\u0065\u006d\u0065\u006e\u0074"]['style']['position']='absolute';labelRenderer['domElement']['style']["\u0074\u006f\u0070"]=0x6a03e^0x6a03e;$("emarf-savnac#".split("").reverse().join(""))['append'](labelRenderer['domElement']);renderer=new THREE['WebGLRenderer']({"\u0061\u006e\u0074\u0069\u0061\u006c\u0069\u0061\u0073":!![],'preserveDrawingBuffer':!![]});renderer['setSize']($('#canvas-frame')['width'](),$('#canvas-frame')['height']());renderer['setClearColor'](0xcce6ff);$("emarf-savnac#".split("").reverse().join(""))['append'](renderer['domElement']);renderer['setPixelRatio'](window['devicePixelRatio']);initControls();initDragControls();configRefresh();$('#graphType1')['click']();document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]('canvas-frame')['addEventListener']('touchstart',touchdown);document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("emarf-savnac".split("").reverse().join(""))['addEventListener']('mousedown',touchdown);window['addEventListener']('resize',onWindowResize,![]);}function initControls(){controls=new THREE['OrbitControls'](camera,labelRenderer['domElement']);controls['minPolarAngle']=0xcd78b^0xcd78b;controls['maxPolarAngle']=Math['PI']/(0x6d06a^0x6d068);controls['enableZoom']=![];controls['enablePan']=![];}function initObject(){var _0x5dd00f=new THREE['BoxBufferGeometry'](0x64,0x28ceb^0x28c8f,0x64);var _0x3cdb25=new THREE['Mesh'](_0x5dd00f,materialArray);_0x3cdb25["\u006e\u0061\u006d\u0065"]=num;_0x3cdb25['position']['x']=initCubX;_0x3cdb25['position']['y']=initCuby;_0x3cdb25['position']['z']=initCubz;scene["\u0061\u0064\u0064"](_0x3cdb25);dragCubs['push'](_0x3cdb25);objects['push'](_0x3cdb25);num++;}function onWindowResize(){camera['aspect']=canvasFrameWidth/canvasFrameHeight;camera["\u0075\u0070\u0064\u0061\u0074\u0065\u0050\u0072\u006f\u006a\u0065\u0063\u0074\u0069\u006f\u006e\u004d\u0061\u0074\u0072\u0069\u0078"]();renderer['setSize'](canvasFrameWidth,canvasFrameHeight);}function touchdown(_0x518fc7){var _0x592493=processEvent(_0x518fc7);if(!_0x592493){return;}var _0x518fc7=_0x518fc7||window['event'];var _0x442cc7;var _0x2d4dd4;if(_0x518fc7['type']['indexOf']('ouch')>-0x1){_0x442cc7=_0x518fc7['touches'][0x7ae7c^0x7ae7c]['clientX']-leftWidth;_0x2d4dd4=_0x518fc7['touches'][0x6e61e^0x6e61e]["\u0063\u006c\u0069\u0065\u006e\u0074\u0059"];}else{_0x442cc7=_0x518fc7['clientX']-leftWidth;_0x2d4dd4=_0x518fc7['clientY'];}_0x518fc7['preventDefault']();document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("emarf-savnac".split("").reverse().join(""))['addEventListener']('touchmove',touchmove);document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("\u0063\u0061\u006e\u0076\u0061\u0073\u002d\u0066\u0072\u0061\u006d\u0065")['addEventListener']("dnehcuot".split("").reverse().join(""),touchup);document['getElementById']('canvas-frame')['addEventListener']('mousemove',touchmove);document['getElementById']("emarf-savnac".split("").reverse().join(""))['addEventListener']("puesuom".split("").reverse().join(""),touchup);}function getMaxYpos(_0x30eb4d,_0x5e827){var _0x17a999=0x0;for(var _0x459886=0x0;_0x459886<objects["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x459886++){if(objects[_0x459886]['name']==selectedIndex){continue;}var _0x15dd23=objects[_0x459886];var _0x376e73=_0x15dd23['position']['x'];var _0x360a73=_0x15dd23['position']['z'];var _0x11ea18=_0x15dd23['position']['y'];if(_0x376e73==_0x30eb4d&&_0x5e827==_0x360a73){if(_0x11ea18>_0x17a999){_0x17a999=_0x11ea18;}}}return _0x17a999;}function deleteCubsByName(_0x10192e){var _0x35f3be=-0x1;for(var _0x4758e4=0x70316^0x70316;_0x4758e4<objects['length'];_0x4758e4++){var _0x3fe6ec=objects[_0x4758e4]['name'];if(_0x10192e==_0x3fe6ec){_0x35f3be=_0x4758e4;break;}}if(_0x35f3be>=(0xcb3ce^0xcb3ce)){objects['splice'](_0x35f3be,0x1);}var _0x148c82=-0x1;for(var _0x4758e4=0x68c8e^0x68c8e;_0x4758e4<dragCubs["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x4758e4++){var _0x3fe6ec=dragCubs[_0x4758e4]['name'];if(_0x10192e==_0x3fe6ec){_0x148c82=_0x4758e4;break;}}if(_0x148c82>=0x0){dragCubs['splice'](_0x148c82,0x2ff1c^0x2ff1d);;dragControls=new THREE["\u0044\u0072\u0061\u0067\u0043\u006f\u006e\u0074\u0072\u006f\u006c\u0073"](dragCubs,camera,renderer['domElement']);}}function touchup(_0x12e031){var _0x30e61f=processEvent(_0x12e031);if(!_0x30e61f){return;}}function touchmove(_0x3424f7){var _0x132cd2=processEvent(_0x3424f7);if(!_0x132cd2){return;}if(selectedObject!=null){var _0x3424f7=_0x3424f7||window['event'];var _0x265c7d,_0x3671ae;if(_0x3424f7['type']['indexOf']('ouch')>-0x1){_0x265c7d=_0x3424f7['touches'][0x0]['clientX']-leftWidth;_0x3671ae=_0x3424f7['touches'][0x0]['clientY'];}else{_0x265c7d=_0x3424f7['clientX']-leftWidth;_0x3671ae=_0x3424f7["\u0063\u006c\u0069\u0065\u006e\u0074\u0059"];}event["\u0070\u0072\u0065\u0076\u0065\u006e\u0074\u0044\u0065\u0066\u0061\u0075\u006c\u0074"]();mouse['set'](_0x265c7d/canvasFrameWidth*0x2-0x1,-(_0x3671ae/canvasFrameHeight)*(0x67bc8^0x67bca)+0x1);raycaster['setFromCamera'](mouse,camera);var _0x541ac6=raycaster['intersectObjects'](objects);if(_0x541ac6['length']>(0x7cba5^0x7cba5)){var _0x4a2553=_0x541ac6[0x70f7e^0x70f7e];selectedObject['position']['copy'](_0x4a2553['point'])['add'](_0x4a2553['face']['normal']);selectedObject['position']['divideScalar'](0xd938c^0xd93e8)['floor']()['multiplyScalar'](0x64)["\u0061\u0064\u0064\u0053\u0063\u0061\u006c\u0061\u0072"](0xb1be7^0xb1bd5);var _0x173995=selectedObject['position']['x'];var _0x452dfb=selectedObject['position']['z'];var _0x14f24a=selectedObject['position']['y'];var _0x5d1bc5=getMaxYpos(_0x173995,_0x452dfb);if(_0x5d1bc5==(0xd567e^0xd567e)){selectedObject['position']['y']=_0x5d1bc5+0x32;}else{selectedObject['position']['y']=_0x5d1bc5+0x64;}}}};function render(){TWEEN['update']();requestAnimationFrame(render);if(camera['position']['x']==0x0&&camera["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]["\u007a"]==(0xa8e77^0xa8e77)||camera['position']['y']==0x0&&camera['position']['x']==0x0||camera["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['y']==0x0&&camera["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['z']==(0x9df9a^0x9df9a)){}else{}renderer['render'](scene,camera);labelRenderer["\u0072\u0065\u006e\u0064\u0065\u0072"](scene,camera);}function isForbidDrag(_0x55cf66,_0x35011c,_0x60fc82){var _0xc3c0d0=![];for(var _0x2c3bcd=0x1;_0x2c3bcd<objects['length'];_0x2c3bcd++){var _0x2a35aa=objects[_0x2c3bcd];var _0x44d949=_0x2a35aa['position']['x'];var _0x3dfc36=_0x2a35aa['position']["\u007a"];var _0x36ab14=_0x2a35aa['position']['y'];if(_0x44d949==_0x55cf66&&_0x3dfc36==_0x60fc82&&_0x36ab14>_0x35011c){_0xc3c0d0=!![];break;}}return _0xc3c0d0;}function deleteDrag(_0x1c29a6){var _0x281f53=-0x1;for(var _0x391ea9=0x0;_0x391ea9<dragCubs['length'];_0x391ea9++){if(dragCubs[_0x391ea9]['name']==_0x1c29a6){_0x281f53=_0x391ea9;break;}}dragCubs['splice'](_0x281f53,0x1);}function addCubDrag(_0xc7456f){var _0x1c0788=![];for(var _0x78740c=0x0;_0x78740c<dragCubs['length'];_0x78740c++){if(dragCubs[_0x78740c]['name']==_0xc7456f){_0x1c0788=!![];break;}}if(!_0x1c0788){var _0x3547f8;for(var _0x78740c=0x0;_0x78740c<objects['length'];_0x78740c++){if(objects[_0x78740c]['name']==_0xc7456f){_0x3547f8=objects[_0x78740c];break;}}dragCubs['push'](_0x3547f8);}}function updateDragCubs(){var _0x38be3b=[];var _0x5b4888=[];for(var _0xc06a65=0x1;_0xc06a65<objects['length'];_0xc06a65++){var _0x401287=objects[_0xc06a65];var _0x49996b=_0x401287['position']['x'];var _0x2fd9ad=_0x401287["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['z'];var _0x34c745=_0x401287['position']['y'];if(isForbidDrag(_0x49996b,_0x34c745,_0x2fd9ad)){_0x38be3b['push'](_0x401287['name']);}else{_0x5b4888['push'](_0x401287['name']);}}for(var _0xc06a65=0x98698^0x98698;_0xc06a65<_0x38be3b['length'];_0xc06a65++){deleteDrag(_0x38be3b[_0xc06a65]);}for(var _0xc06a65=0xafd56^0xafd56;_0xc06a65<_0x5b4888['length'];_0xc06a65++){addCubDrag(_0x5b4888[_0xc06a65]);}dragControls=new THREE['DragControls'](dragCubs,camera,labelRenderer['domElement']);}function initDragControls(){dragControls=new THREE['DragControls'](dragCubs,camera,labelRenderer['domElement']);dragControls['addEventListener']('dragstart',function(_0x5e7ee6){controls['enabled']=![];_0x5e7ee6['object']['material']['opacity']=0.7;selectedObject=_0x5e7ee6['object'];selectedIndex=_0x5e7ee6['object']['name'];if(_0x5e7ee6['object']['position']['x']==initCubX&&_0x5e7ee6['object']['position']["\u0079"]==initCuby&&_0x5e7ee6['object']['position']['z']==initCubz&&!createFlag){createFlag=!![];initObject();}});dragControls['addEventListener']('dragend',function(_0xfdb10d){createFlag=![];controls['enabled']=!![];_0xfdb10d['object']["\u006d\u0061\u0074\u0065\u0072\u0069\u0061\u006c"]["\u006f\u0070\u0061\u0063\u0069\u0074\u0079"]=0x1;if(selectedObject!=null){var _0x2ca302=_0xfdb10d['object']['position']['x'];var _0x409023=_0xfdb10d['object']['position']['z'];var _0x3457f1=_0xfdb10d['object']['position']['y'];if(_0x2ca302>0xfa||_0x2ca302<-0xfa||_0x409023<-0xfa||_0x409023>0xfa||_0x3457f1<(0x3d5e8^0x3d5e8)){scene['remove'](selectedObject);deleteCubsByName(selectedObject["\u006e\u0061\u006d\u0065"]);updateDragCubs();}else{if(_0x2ca302%0x32==(0x31b14^0x31b14)&&_0x3457f1%(0xa27b2^0xa2780)==(0x6c753^0x6c753)&&_0x409023%0x32==(0xc5af6^0xc5af6)){updateDragCubs();}else{scene['remove'](selectedObject);deleteCubsByName(selectedObject['name']);updateDragCubs();}}selectedObject=null;resetBtnStatus();}});}function hideshow(_0x4c7195){if(_0x4c7195['checked']){if(dragCubs["\u006c\u0065\u006e\u0067\u0074\u0068"]>(0x1bafe^0x1bafe)){var _0x22cea4=dragCubs[dragCubs['length']-0x1];if(_0x22cea4!=undefined){_0x22cea4['visible']=![];}}}else{if(dragCubs['length']>0x0){var _0x22cea4=dragCubs[dragCubs['length']-0x1];if(_0x22cea4!=undefined){_0x22cea4["\u0076\u0069\u0073\u0069\u0062\u006c\u0065"]=!![];}}}}function sequence(_0x16df21,_0x2cb3ab){if(_0x16df21>_0x2cb3ab){return 0x1;}else if(_0x16df21<_0x2cb3ab){return-0x1;}else{return 0x0;}}function unique(_0x11a234){var _0x1fac4d=[];for(var _0x165a20=0x7e565^0x7e565;_0x165a20<_0x11a234['length'];_0x165a20++){if(_0x1fac4d['indexOf'](_0x11a234[_0x165a20])==-0x1){_0x1fac4d['push'](_0x11a234[_0x165a20]);}}return _0x1fac4d;}function getPostion(_0x380642,_0x490aa8){for(var _0x4d86b1=0xf3d3f^0xf3d3f;_0x4d86b1<_0x380642["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x4d86b1++){var _0x490aa8=_0x380642[_0x4d86b1]['x'];}}function panduan(_0x5bb241,_0x83b672,_0x4d074d,_0x121c00){var _0x451760=![];for(var _0x474f39=0x2883d^0x2883d;_0x474f39<_0x5bb241['length'];_0x474f39++){if(_0x83b672==_0x5bb241[_0x474f39]['x']&&_0x4d074d==_0x5bb241[_0x474f39]['y']&&_0x121c00==_0x5bb241[_0x474f39]['z']){_0x451760=!![];break;}}return _0x451760;}function findFirstCub(){var _0x5dbed8;var _0x230b8b=[];for(var _0x30fb88=0x0;_0x30fb88<objects['length']-(0x75261^0x75260);_0x30fb88++){if(objects[_0x30fb88]['name']!='plane'&&objects[_0x30fb88]['position']['y']==0x32){_0x230b8b['push'](objects[_0x30fb88]['position']['x']);}}var _0x2a6f18=_0x230b8b['sort'](sequence);var _0x4dce56=_0x2a6f18[0xab54e^0xab54e];var _0xbb2f5c=[];var _0x4d92e4=[];for(var _0x30fb88=0x0;_0x30fb88<objects['length']-0x1;_0x30fb88++){if(objects[_0x30fb88]['name']!='plane'&&objects[_0x30fb88]['position']['y']==(0x55324^0x55316)){if(_0x4dce56==objects[_0x30fb88]['position']['x']){_0x4d92e4["\u0070\u0075\u0073\u0068"](objects[_0x30fb88]['position']["\u007a"]);}}}var _0x553ca9=_0x4d92e4['sort'](sequence);var _0x14f44b=_0x553ca9[_0x553ca9['length']-(0x6cb67^0x6cb66)];for(var _0x30fb88=0x0;_0x30fb88<objects['length']-0x1;_0x30fb88++){if(objects[_0x30fb88]['name']!="enalp".split("").reverse().join("")&&objects[_0x30fb88]['position']['y']==0x32){if(_0x4dce56==objects[_0x30fb88]['position']['x']&&_0x14f44b==objects[_0x30fb88]["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['z']){_0x5dbed8=new eachcubInfo(objects[_0x30fb88]['position']['x'],objects[_0x30fb88]['position']['y'],objects[_0x30fb88]["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['z']);break;}}}return _0x5dbed8;}function findRightAnwerFirstCub(){var _0x217cfa;var _0x53bd09=[];for(var _0x4e98f6=0x3f3be^0x3f3be;_0x4e98f6<dataArray['length'];_0x4e98f6++){if(dataArray[_0x4e98f6]['y']==0x32){_0x53bd09['push'](dataArray[_0x4e98f6]['x']);}}var _0x5d6c36=_0x53bd09["\u0073\u006f\u0072\u0074"](sequence);var _0x2283b1=_0x5d6c36[0x68ffd^0x68ffd];var _0x447b4f=[];var _0x2a01e8=[];for(var _0x4e98f6=0x4d99d^0x4d99d;_0x4e98f6<dataArray['length'];_0x4e98f6++){if(_0x2283b1==dataArray[_0x4e98f6]['x']&&dataArray[_0x4e98f6]['y']==(0xee83f^0xee80d)){_0x2a01e8["\u0070\u0075\u0073\u0068"](dataArray[_0x4e98f6]['z']);}}var _0x424fe1=_0x2a01e8['sort'](sequence);var _0x5d45e1=_0x424fe1[_0x424fe1["\u006c\u0065\u006e\u0067\u0074\u0068"]-0x1];for(var _0x4e98f6=0x0;_0x4e98f6<dataArray['length'];_0x4e98f6++){if(_0x2283b1==dataArray[_0x4e98f6]['x']&&_0x5d45e1==dataArray[_0x4e98f6]["\u007a"]&&dataArray[_0x4e98f6]['y']==(0xea617^0xea625)){_0x217cfa=new eachcubInfo(dataArray[_0x4e98f6]['x'],dataArray[_0x4e98f6]['y'],dataArray[_0x4e98f6]['z']);break;}}return _0x217cfa;}function isRightCub(_0x5dd16a,_0x517464,_0x1067c1){var _0x5caf3f=![];for(var _0x12d556=0x0;_0x12d556<dataArray['length'];_0x12d556++){if(dataArray[_0x12d556]["\u0078"]==_0x5dd16a&&dataArray[_0x12d556]['y']==_0x517464&&dataArray[_0x12d556]['z']==_0x1067c1){_0x5caf3f=!![];break;}}return _0x5caf3f;}function findResult(){document['getElementById']('confirmbtn')['className']="detceles_nottub_mottob_noitca".split("").reverse().join("");document['getElementById']("ntbrewsnawohs".split("").reverse().join(""))["\u0063\u006c\u0061\u0073\u0073\u004e\u0061\u006d\u0065"]='action_bottom_button_normal';document['getElementById']('hiddenanswerbtn')['className']="lamron_nottub_mottob_noitca".split("").reverse().join("");var _0x25e547=findFirstCub();var _0x42ca90=findRightAnwerFirstCub();if(_0x25e547!=null){var _0x7ab53=_0x42ca90['x']-_0x25e547['x'];var _0x44d716=_0x42ca90["\u007a"]-_0x25e547['z'];var _0x2e001f=[];for(var _0x32b902=0x0;_0x32b902<objects["\u006c\u0065\u006e\u0067\u0074\u0068"]-(0xb8684^0xb8685);_0x32b902++){if(objects[_0x32b902]['name']!='plane'){_0x2e001f['push'](new eachcubInfo(objects[_0x32b902]["\u0070\u006f\u0073\u0069\u0074\u0069\u006f\u006e"]['x']+_0x7ab53,objects[_0x32b902]['position']['y'],objects[_0x32b902]['position']['z']+_0x44d716));}}console['log']('dataArray='+JSON['stringify'](dataArray));console['log']('moveCubs='+JSON['stringify'](_0x2e001f));if(dataArray['length']==_0x2e001f["\u006c\u0065\u006e\u0067\u0074\u0068"]){var _0x3242be=!![];for(var _0x32b902=0x0;_0x32b902<_0x2e001f["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x32b902++){if(!isRightCub(_0x2e001f[_0x32b902]["\u0078"],_0x2e001f[_0x32b902]['y'],_0x2e001f[_0x32b902]['z'])){_0x3242be=![];break;}}if(_0x3242be){showFinishAlert(0xc0583^0xc0583,0x5dc,'');}else{showFinishAlert(0x7a9c0^0x7a9c1,0x5dc,'');}}else{showFinishAlert(0xc6664^0xc6665,0x34b66^0x34eba,'');}}else{showFinishAlert(0x7234e^0x7234f,0x264a0^0x2617c,"".split("").reverse().join(""));}}function createCubByPostion(_0x4c2eb5,_0x35be1a,_0x341ab5){var _0x5f2fac=new THREE['BoxBufferGeometry'](0x64,0x64,0x64);var _0x98172b=new THREE["\u004d\u0065\u0073\u0068"](_0x5f2fac,materialArray);_0x98172b["\u006e\u0061\u006d\u0065"]=num;_0x98172b['position']['x']=_0x4c2eb5;_0x98172b['position']['y']=_0x35be1a;_0x98172b['position']["\u007a"]=_0x341ab5;scene['add'](_0x98172b);dragCubs['push'](_0x98172b);objects['push'](_0x98172b);num++;}var userCubs;function hiddenAnswer(){document['getElementById']('confirmbtn')['className']='action_bottom_button_normal';document['getElementById']('showanswerbtn')['className']="lamron_nottub_mottob_noitca".split("").reverse().join("");document['getElementById']("ntbrewsnaneddih".split("").reverse().join(""))['className']="detceles_nottub_mottob_noitca".split("").reverse().join("");$('#hiddenanswerbtn')['css']('display','none');$("ntbrewsnawohs#".split("").reverse().join(""))['css']('display','block');$('#gconfirmbtn')['css']('display','none');$('#confirmbtn')['css']('display','block');for(var _0x20cbae=0x4c52c^0x4c52c;_0x20cbae<objects['length'];_0x20cbae++){scene['remove'](objects[_0x20cbae]);}objects=[];dragCubs['splice'](0x0,dragCubs['length']);var _0x5208a8=0x45254^0x45255;for(var _0x20cbae=0x0;_0x20cbae<userCubs["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x20cbae++){var _0x1c4bb0=userCubs[_0x20cbae];if(_0x1c4bb0['position']['x']==initCubX&&_0x1c4bb0['position']['y']==initCuby&&_0x1c4bb0['position']['z']==initCubz){}else{scene['add'](_0x1c4bb0);dragCubs['push'](_0x1c4bb0);objects['push'](_0x1c4bb0);_0x5208a8++;}}initObject();initDragControls();updateDragCubs();}function showAnswer(){document['getElementById']('confirmbtn')['className']="lamron_nottub_mottob_noitca".split("").reverse().join("");document['getElementById']('showanswerbtn')['className']='action_bottom_button_selected';document['getElementById']("ntbrewsnaneddih".split("").reverse().join(""))['className']="lamron_nottub_mottob_noitca".split("").reverse().join("");$("ntbmrifnocg#".split("").reverse().join(""))['css']("yalpsid".split("").reverse().join(""),'block');$("ntbmrifnoc#".split("").reverse().join(""))['css']('display',"enon".split("").reverse().join(""));$('#hiddenanswerbtn')['css']('display','block');$("ntbrewsnawohs#".split("").reverse().join(""))['css']('display','none');userCubs=[];for(var _0x126035=0x0;_0x126035<objects['length'];_0x126035++){if(objects[_0x126035]['name']!="enalp".split("").reverse().join("")){userCubs['push'](objects[_0x126035]);}scene['remove'](objects[_0x126035]);}objects=[];dragCubs['splice'](0x64465^0x64465,dragCubs['length']);scene['add'](plane);objects['push'](plane);var _0x1df5e7=0xf1440^0xf1441;var _0x7e136d=dataArray;for(var _0x126035=0x0;_0x126035<_0x7e136d['length'];_0x126035++){createCubByPostion(_0x7e136d[_0x126035]['x'],_0x7e136d[_0x126035]['y'],_0x7e136d[_0x126035]['z']);}initObject();initDragControls();updateDragCubs();}function cancelAllQuestionStatus(){resetBtnStatus();}
+function loadQuestion(_0x262f44,_0x2e9d88){initTdData(_0x262f44-(0xe24ce^0xe24cf));document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("ntbmrifnoc".split("").reverse().join(""))["\u0063\u006c\u0061\u0073\u0073\u004e\u0061\u006d\u0065"]="lamron_nottub_mottob_noitca".split("").reverse().join("");document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("ntbrewsnawohs".split("").reverse().join(""))["\u0063\u006c\u0061\u0073\u0073\u004e\u0061\u006d\u0065"]="\u0061\u0063\u0074\u0069\u006f\u006e\u005f\u0062\u006f\u0074\u0074\u006f\u006d\u005f\u0062\u0075\u0074\u0074\u006f\u006e\u005f\u006e\u006f\u0072\u006d\u0061\u006c";document["\u0067\u0065\u0074\u0045\u006c\u0065\u006d\u0065\u006e\u0074\u0042\u0079\u0049\u0064"]("epyThparg".split("").reverse().join("")+graphType)['className']="lamron_nottub_pot_noitca".split("").reverse().join("");graphType=_0x262f44;document['getElementById']("epyThparg".split("").reverse().join("")+graphType)['className']="detceles_nottub_pot_noitca".split("").reverse().join("");cancelAllQuestionStatus();for(var _0x45909e=0x9494e^0x9494e;_0x45909e<objects["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x45909e++){scene["\u0072\u0065\u006d\u006f\u0076\u0065"](objects[_0x45909e]);}objects=[];dragCubs['splice'](0x378fa^0x378fa,dragCubs["\u006c\u0065\u006e\u0067\u0074\u0068"]);scene["\u0061\u0064\u0064"](plane);objects["\u0070\u0075\u0073\u0068"](plane);dataArray=new Array();var _0xc2b9e1=0x52245^0x52244;if(_0x262f44==(0xe7c88^0xe7c89)){dataArray=presetQuestionArray[0x6edf9^0x6edf9];}else if(_0x262f44==(0xdb10e^0xdb10c)){dataArray=presetQuestionArray[0x4cb48^0x4cb49];}else if(_0x262f44==(0xc35a4^0xc35a7)){dataArray=presetQuestionArray[0x73bf9^0x73bfb];}else if(_0x262f44==0x4){dataArray=presetQuestionArray[0x3];}else if(_0x262f44==0x5){dataArray=presetQuestionArray[0x4];}else if(_0x262f44==0x6){dataArray=presetQuestionArray[0x5];}initObject();initDragControls();}function initFoureRandomData(){var _0x3c752a=new Array();_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x1]["\u0078"],oneRandomSeed[0x1]['y'],oneRandomSeed[0xaee53^0xaee52]['z']));_0x3c752a['push'](new eachcubInfo(oneRandomSeed[0x371f0^0x371f2]['x'],oneRandomSeed[0x2]["\u0079"],oneRandomSeed[0x99cf5^0x99cf7]['z']));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0xd2372^0xd2375]['x'],oneRandomSeed[0x7]['y'],oneRandomSeed[0x7]["\u007a"]));_0x3c752a['push'](new eachcubInfo(twoRandomSeed[0x2]["\u0078"],twoRandomSeed[0xeba2c^0xeba2e]["\u0079"],twoRandomSeed[0x2]["\u007a"]));fourNumArray['push'](_0x3c752a);var _0x3c752a=new Array();_0x3c752a['push'](new eachcubInfo(oneRandomSeed[0xa]["\u0078"],oneRandomSeed[0xa]["\u0079"],oneRandomSeed[0xab50e^0xab504]["\u007a"]));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x3483e^0x3483c]["\u0078"],oneRandomSeed[0x2]["\u0079"],oneRandomSeed[0x2]['z']));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x7]['x'],oneRandomSeed[0x87d32^0x87d35]['y'],oneRandomSeed[0x7]["\u007a"]));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(twoRandomSeed[0x2]['x'],twoRandomSeed[0x2]["\u0079"],twoRandomSeed[0x2]["\u007a"]));fourNumArray['push'](_0x3c752a);var _0x3c752a=new Array();_0x3c752a['push'](new eachcubInfo(oneRandomSeed[0x558a7^0x558a6]['x'],oneRandomSeed[0x80807^0x80806]["\u0079"],oneRandomSeed[0x1]["\u007a"]));_0x3c752a['push'](new eachcubInfo(oneRandomSeed[0x93900^0x93902]['x'],oneRandomSeed[0x2]['y'],oneRandomSeed[0x7b042^0x7b040]['z']));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x7]['x'],oneRandomSeed[0x7]['y'],oneRandomSeed[0x7]["\u007a"]));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x203c0^0x203ca]['x'],oneRandomSeed[0x6b37c^0x6b376]['y'],oneRandomSeed[0xa]["\u007a"]));fourNumArray["\u0070\u0075\u0073\u0068"](_0x3c752a);var _0x3c752a=new Array();_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x63ffb^0x63ffd]['x'],oneRandomSeed[0x7025f^0x70259]['y'],oneRandomSeed[0xbb753^0xbb755]['z']));_0x3c752a['push'](new eachcubInfo(oneRandomSeed[0x2]["\u0078"],oneRandomSeed[0x2]['y'],oneRandomSeed[0x2]["\u007a"]));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x80963^0x80964]['x'],oneRandomSeed[0x7]['y'],oneRandomSeed[0xf1d5f^0xf1d58]['z']));_0x3c752a["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x59ff3^0x59ff9]['x'],oneRandomSeed[0x4880d^0x48807]['y'],oneRandomSeed[0x4a600^0x4a60a]["\u007a"]));fourNumArray["\u0070\u0075\u0073\u0068"](_0x3c752a);}function initFiveRandomData(){var _0x2048ea=new Array();_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x6]['x'],oneRandomSeed[0x6]["\u0079"],oneRandomSeed[0x6]['z']));_0x2048ea["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x7]["\u0078"],oneRandomSeed[0x7]["\u0079"],oneRandomSeed[0xbca9c^0xbca9b]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x2]['x'],oneRandomSeed[0x54b87^0x54b85]["\u0079"],oneRandomSeed[0xd3478^0xd347a]["\u007a"]));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0xa]["\u0078"],oneRandomSeed[0xbd4f9^0xbd4f3]['y'],oneRandomSeed[0xc1492^0xc1498]["\u007a"]));_0x2048ea["\u0070\u0075\u0073\u0068"](new eachcubInfo(twoRandomSeed[0xae202^0xae205]['x'],twoRandomSeed[0x443e0^0x443e7]["\u0079"],twoRandomSeed[0x7]['z']));fiveNumArray['push'](_0x2048ea);var _0x2048ea=new Array();_0x2048ea["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0x6]["\u0078"],oneRandomSeed[0x5683d^0x5683b]['y'],oneRandomSeed[0x6]["\u007a"]));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x2]["\u0078"],oneRandomSeed[0x2]["\u0079"],oneRandomSeed[0xc774f^0xc774d]["\u007a"]));_0x2048ea["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0xe3f11^0xe3f16]["\u0078"],oneRandomSeed[0x7]['y'],oneRandomSeed[0x7]['z']));_0x2048ea["\u0070\u0075\u0073\u0068"](new eachcubInfo(twoRandomSeed[0xa5055^0xa5052]["\u0078"],twoRandomSeed[0x3e3f9^0x3e3fe]['y'],twoRandomSeed[0x872ce^0x872c9]["\u007a"]));_0x2048ea['push'](new eachcubInfo(threeRandomSeed[0x5381a^0x5381d]['x'],threeRandomSeed[0x7]['y'],threeRandomSeed[0x7]['z']));fiveNumArray['push'](_0x2048ea);var _0x2048ea=new Array();_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x57a9e^0x57a9f]['x'],oneRandomSeed[0x1fd2b^0x1fd2a]["\u0079"],oneRandomSeed[0x1]['z']));_0x2048ea['push'](new eachcubInfo(twoRandomSeed[0x1]['x'],twoRandomSeed[0x1]['y'],twoRandomSeed[0x1]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x8ce4c^0x8ce4e]['x'],oneRandomSeed[0x2]["\u0079"],oneRandomSeed[0x66674^0x66676]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0xdd4f1^0xdd4f6]['x'],oneRandomSeed[0x7]["\u0079"],oneRandomSeed[0x5e7fd^0x5e7fa]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x6]['x'],oneRandomSeed[0x6]['y'],oneRandomSeed[0x6]['z']));fiveNumArray["\u0070\u0075\u0073\u0068"](_0x2048ea);var _0x2048ea=new Array();_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0xa]['x'],oneRandomSeed[0xa]["\u0079"],oneRandomSeed[0xd9b5c^0xd9b56]["\u007a"]));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x2]['x'],oneRandomSeed[0x2]['y'],oneRandomSeed[0x2]['z']));_0x2048ea['push'](new eachcubInfo(twoRandomSeed[0x2]['x'],twoRandomSeed[0x2]['y'],twoRandomSeed[0x2]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x7]['x'],oneRandomSeed[0x7]['y'],oneRandomSeed[0x19705^0x19702]['z']));_0x2048ea['push'](new eachcubInfo(oneRandomSeed[0x51fcf^0x51fc9]['x'],oneRandomSeed[0x6]['y'],oneRandomSeed[0x18fdf^0x18fd9]["\u007a"]));fiveNumArray['push'](_0x2048ea);}function initOtherRandomData(){var _0x2d3c90=new Array();_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x1]['x'],oneRandomSeed[0x1]['y'],oneRandomSeed[0x1c8bb^0x1c8ba]['z']));_0x2d3c90['push'](new eachcubInfo(twoRandomSeed[0x1]['x'],twoRandomSeed[0x1]["\u0079"],twoRandomSeed[0xda7cd^0xda7cc]["\u007a"]));_0x2d3c90["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0xb57e0^0xb57e2]['x'],oneRandomSeed[0x8bbf2^0x8bbf0]['y'],oneRandomSeed[0x2]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0xa]["\u0078"],oneRandomSeed[0xb971a^0xb9710]['y'],oneRandomSeed[0xa]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x794d8^0x794de]["\u0078"],oneRandomSeed[0x6]['y'],oneRandomSeed[0x6]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x3bed5^0x3bed2]['x'],oneRandomSeed[0x22098^0x2209f]['y'],oneRandomSeed[0x1aa68^0x1aa6f]['z']));otherNumArray['push'](_0x2d3c90);var _0x2d3c90=new Array();_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x3e7df^0x3e7dd]['x'],oneRandomSeed[0x5e9e3^0x5e9e1]['y'],oneRandomSeed[0x2]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x3]["\u0078"],oneRandomSeed[0x3]['y'],oneRandomSeed[0x7f077^0x7f074]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0xaee2e^0xaee28]['x'],oneRandomSeed[0x6]['y'],oneRandomSeed[0x6]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x592ee^0x592e9]['x'],oneRandomSeed[0xd814b^0xd814c]['y'],oneRandomSeed[0x1c69b^0x1c69c]['z']));_0x2d3c90['push'](new eachcubInfo(twoRandomSeed[0x7]['x'],twoRandomSeed[0x7]['y'],twoRandomSeed[0x9cec0^0x9cec7]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x336b9^0x336b2]['x'],oneRandomSeed[0xb]['y'],oneRandomSeed[0xb]['z']));otherNumArray['push'](_0x2d3c90);var _0x2d3c90=new Array();_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0xc5316^0xc5317]["\u0078"],oneRandomSeed[0x1]['y'],oneRandomSeed[0x26376^0x26377]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x2]["\u0078"],oneRandomSeed[0x2]['y'],oneRandomSeed[0x238ee^0x238ec]['z']));_0x2d3c90['push'](new eachcubInfo(twoRandomSeed[0x88535^0x88537]["\u0078"],twoRandomSeed[0x2]['y'],twoRandomSeed[0x2]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x83570^0x83573]['x'],oneRandomSeed[0x9223d^0x9223e]['y'],oneRandomSeed[0x61e0e^0x61e0d]["\u007a"]));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x6]['x'],oneRandomSeed[0xd5541^0xd5547]['y'],oneRandomSeed[0x38565^0x38563]['z']));_0x2d3c90['push'](new eachcubInfo(oneRandomSeed[0x7]['x'],oneRandomSeed[0x7]["\u0079"],oneRandomSeed[0x7]['z']));_0x2d3c90['push'](new eachcubInfo(twoRandomSeed[0xbf3c9^0xbf3ce]['x'],twoRandomSeed[0x7]["\u0079"],twoRandomSeed[0xb8002^0xb8005]['z']));_0x2d3c90["\u0070\u0075\u0073\u0068"](new eachcubInfo(oneRandomSeed[0xb]["\u0078"],oneRandomSeed[0xb]['y'],oneRandomSeed[0x942d5^0x942de]['z']));otherNumArray['push'](_0x2d3c90);}function configRefresh(){console['log']("noitseuQteserptini".split("").reverse().join(""));if(parent['SETINFO']&&parent['SETINFO']['length']>0x0){questionList=JSON['parse'](parent['SETINFO']);}else{defaultQuestionsData();}for(var _0x152eb4=0x0;_0x152eb4<questionList['length'];_0x152eb4++){var _0x26628c=_0x152eb4+0x1;$("epyThparg#".split("").reverse().join("")+_0x26628c)['css']('display',"kcolb".split("").reverse().join(""));var _0x49ca57=questionList[_0x152eb4]['cubesPostion'];presetQuestionArray['push'](_0x49ca57);}}function clearData(){parent['openProgress']();$['ajax']({'type':'POST','url':window['BASEPATH']+"od.dIyBataDlooTraelc/krowemarf".split("").reverse().join(""),'timeout':0x3e8,'data':{'tid':window['parent']['document']['getElementById']('tid')["\u0076\u0061\u006c\u0075\u0065"],'type':window["\u0070\u0061\u0072\u0065\u006e\u0074"]['document']['getElementById']('type')["\u0076\u0061\u006c\u0075\u0065"],'pictureType':0x1},'success':function(_0x50e143){parent['closeProgress']();if(_0x50e143!=null&&_0x50e143!="".split("").reverse().join("")){var _0x81d9de=eval('('+_0x50e143+')');var _0x3ca4b1=_0x81d9de['result'];if(_0x3ca4b1){window['location']['reload']();}}},'error':function(){}});}function initTdData(_0x4d2324){$('.tdClass')['removeClass']("dTrewsnAthgir".split("").reverse().join(""));var _0x4db16b=questionList[_0x4d2324];var _0x2b38d4=_0x4db16b['fontTdPostion'];for(var _0x37d94a=0x0;_0x37d94a<_0x2b38d4["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x37d94a++){var _0x1fc5e1=_0x2b38d4[_0x37d94a]['rowcol'];$("-tnof#".split("").reverse().join("")+_0x1fc5e1)['addClass']('rightAnswerTd');}var _0x509648=_0x4db16b['leftTdPostion'];for(var _0x37d94a=0x3dc8f^0x3dc8f;_0x37d94a<_0x509648['length'];_0x37d94a++){var _0x1fc5e1=_0x509648[_0x37d94a]['rowcol'];$('#left-'+_0x1fc5e1)['addClass']('rightAnswerTd');}var _0x4fff5a=_0x4db16b['upTdPostion'];for(var _0x37d94a=0x0;_0x37d94a<_0x4fff5a["\u006c\u0065\u006e\u0067\u0074\u0068"];_0x37d94a++){var _0x1fc5e1=_0x4fff5a[_0x37d94a]['rowcol'];$('#up-'+_0x1fc5e1)["\u0061\u0064\u0064\u0043\u006c\u0061\u0073\u0073"]("dTrewsnAthgir".split("").reverse().join(""));}}function defaultQuestionsData(){var _0xe93710=[];_0xe93710['push']({'x':oneRandomSeed[0x1]['x'],'y':oneRandomSeed[0x83216^0x83217]['y'],'z':oneRandomSeed[0x1]["\u007a"]});_0xe93710['push']({'x':oneRandomSeed[0x2]['x'],'y':oneRandomSeed[0xa979c^0xa979d]["\u0079"],"\u007a":oneRandomSeed[0x2]['z']});_0xe93710['push']({'x':oneRandomSeed[0x6fdd4^0x6fdd2]['x'],'y':oneRandomSeed[0xb5ee2^0xb5ee4]['y'],'z':oneRandomSeed[0x6]['z']});var _0x272ff4=[];_0x272ff4['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x272ff4['push']({'row':0x4,"\u0063\u006f\u006c":0x4,'rowcol':"\u0034\u002d\u0034"});var _0x44fd93=[];_0x44fd93['push']({"\u0072\u006f\u0077":0x4,'col':0x3,"\u0072\u006f\u0077\u0063\u006f\u006c":'4-3'});_0x44fd93['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x16bee1=[];_0x16bee1['push']({'row':0x3,'col':0x3,"\u0072\u006f\u0077\u0063\u006f\u006c":'3-3'});_0x16bee1['push']({'row':0x4,"\u0063\u006f\u006c":0x3,'rowcol':'4-3'});_0x16bee1['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x2690ce=new QustionInfo(_0x272ff4,_0x44fd93,_0x16bee1,_0xe93710);questionList['push'](_0x2690ce);var _0xe93710=[];_0xe93710['push']({'x':oneRandomSeed[0x1]['x'],"\u0079":oneRandomSeed[0x1]["\u0079"],'z':oneRandomSeed[0x1]['z']});_0xe93710['push']({"\u0078":twoRandomSeed[0xae924^0xae925]['x'],'y':twoRandomSeed[0x1]['y'],'z':twoRandomSeed[0x1]['z']});_0xe93710["\u0070\u0075\u0073\u0068"]({'x':oneRandomSeed[0x2]['x'],"\u0079":oneRandomSeed[0x1]['y'],'z':oneRandomSeed[0x88565^0x88567]['z']});_0xe93710['push']({'x':oneRandomSeed[0x7]['x'],'y':oneRandomSeed[0x7]['y'],'z':oneRandomSeed[0x7]['z']});var _0x272ff4=[];_0x272ff4['push']({'row':0x3,'col':0x3,"\u0072\u006f\u0077\u0063\u006f\u006c":'3-3'});_0x272ff4['push']({'row':0x4,'col':0x3,'rowcol':"\u0034\u002d\u0033"});_0x272ff4['push']({"\u0072\u006f\u0077":0x4,'col':0x4,'rowcol':'4-4'});var _0x44fd93=[];_0x44fd93['push']({'row':0x3,'col':0x4,'rowcol':'3-4'});_0x44fd93['push']({"\u0072\u006f\u0077":0x4,'col':0x3,'rowcol':'4-3'});_0x44fd93['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x16bee1=[];_0x16bee1['push']({'row':0x3,'col':0x4,'rowcol':"\u0033\u002d\u0034"});_0x16bee1['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x16bee1['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x236c9c=new QustionInfo(_0x272ff4,_0x44fd93,_0x16bee1,_0xe93710);questionList['push'](_0x236c9c);var _0xe93710=[];_0xe93710['push']({'x':oneRandomSeed[0x96e1b^0x96e19]["\u0078"],'y':oneRandomSeed[0x2]['y'],'z':oneRandomSeed[0x2]['z']});_0xe93710["\u0070\u0075\u0073\u0068"]({'x':oneRandomSeed[0x6]["\u0078"],'y':oneRandomSeed[0x6]["\u0079"],"\u007a":oneRandomSeed[0x8b309^0x8b30f]['z']});_0xe93710['push']({"\u0078":oneRandomSeed[0x7]["\u0078"],"\u0079":oneRandomSeed[0x7]["\u0079"],'z':oneRandomSeed[0xe997f^0xe9978]['z']});_0xe93710['push']({"\u0078":oneRandomSeed[0x8]['x'],'y':oneRandomSeed[0x8]['y'],"\u007a":oneRandomSeed[0xc1813^0xc181b]["\u007a"]});_0xe93710['push']({'x':twoRandomSeed[0x20a4f^0x20a49]['x'],'y':twoRandomSeed[0x6]['y'],'z':twoRandomSeed[0x6]['z']});var _0x272ff4=[];_0x272ff4['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x272ff4['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x272ff4['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});_0x272ff4['push']({'row':0x4,'col':0x5,'rowcol':'4-5'});var _0x44fd93=[];_0x44fd93['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x44fd93['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x44fd93['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x16bee1=[];_0x16bee1['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x16bee1['push']({'row':0x3,'col':0x4,'rowcol':'3-4'});_0x16bee1['push']({'row':0x3,'col':0x5,'rowcol':'3-5'});_0x16bee1['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x2ff049=new QustionInfo(_0x272ff4,_0x44fd93,_0x16bee1,_0xe93710);questionList["\u0070\u0075\u0073\u0068"](_0x2ff049);var _0xe93710=[];_0xe93710['push']({'x':oneRandomSeed[0x1]['x'],'y':oneRandomSeed[0x1]['y'],'z':oneRandomSeed[0xb6e8e^0xb6e8f]['z']});_0xe93710['push']({'x':oneRandomSeed[0x2]['x'],'y':oneRandomSeed[0x66274^0x66276]['y'],'z':oneRandomSeed[0x2]['z']});_0xe93710['push']({'x':oneRandomSeed[0x6]['x'],'y':oneRandomSeed[0x6]['y'],'z':oneRandomSeed[0x6]['z']});_0xe93710['push']({'x':twoRandomSeed[0x1]['x'],'y':twoRandomSeed[0x1]['y'],'z':twoRandomSeed[0x1]['z']});var _0x272ff4=[];_0x272ff4['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x272ff4['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x272ff4['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x44fd93=[];_0x44fd93['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x44fd93['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});_0x44fd93["\u0070\u0075\u0073\u0068"]({'row':0x3,'col':0x4,'rowcol':'3-4'});var _0x16bee1=[];_0x16bee1['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x16bee1['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x16bee1['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x1675fb=new QustionInfo(_0x272ff4,_0x44fd93,_0x16bee1,_0xe93710);questionList['push'](_0x1675fb);var _0xe93710=[];_0xe93710['push']({'x':oneRandomSeed[0x0]['x'],'y':oneRandomSeed[0x0]['y'],'z':oneRandomSeed[0x0]['z']});_0xe93710['push']({'x':oneRandomSeed[0x1]['x'],'y':oneRandomSeed[0x1]['y'],"\u007a":oneRandomSeed[0x1]['z']});_0xe93710['push']({'x':oneRandomSeed[0x2]['x'],'y':oneRandomSeed[0x2]['y'],'z':oneRandomSeed[0x2]['z']});_0xe93710['push']({'x':oneRandomSeed[0x3]['x'],'y':oneRandomSeed[0x3]['y'],'z':oneRandomSeed[0x3]['z']});_0xe93710['push']({'x':oneRandomSeed[0x7]['x'],'y':oneRandomSeed[0x7]['y'],'z':oneRandomSeed[0x7]['z']});_0xe93710['push']({'x':oneRandomSeed[0x8]['x'],'y':oneRandomSeed[0x8]['y'],'z':oneRandomSeed[0x8]['z']});_0xe93710['push']({'x':twoRandomSeed[0x7]['x'],'y':twoRandomSeed[0x7]['y'],'z':twoRandomSeed[0x7]['z']});var _0x272ff4=[];_0x272ff4['push']({'row':0x3,'col':0x4,'rowcol':'3-4'});_0x272ff4['push']({'row':0x4,'col':0x2,'rowcol':'4-2'});_0x272ff4['push']({'row':0x4,"\u0063\u006f\u006c":0x3,'rowcol':'4-3'});_0x272ff4['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});_0x272ff4['push']({'row':0x4,'col':0x5,'rowcol':'4-5'});var _0x44fd93=[];_0x44fd93['push']({'row':0x3,'col':0x3,'rowcol':'3-3'});_0x44fd93['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x44fd93["\u0070\u0075\u0073\u0068"]({'row':0x4,'col':0x4,'rowcol':'4-4'});var _0x16bee1=[];_0x16bee1['push']({'row':0x3,'col':0x4,'rowcol':'3-4'});_0x16bee1['push']({'row':0x3,'col':0x5,'rowcol':'3-5'});_0x16bee1['push']({'row':0x4,'col':0x2,'rowcol':'4-2'});_0x16bee1['push']({'row':0x4,'col':0x3,'rowcol':'4-3'});_0x16bee1['push']({'row':0x4,'col':0x4,'rowcol':'4-4'});_0x16bee1['push']({'row':0x4,'col':0x5,'rowcol':'4-5'});var _0x536e8e=new QustionInfo(_0x272ff4,_0x44fd93,_0x16bee1,_0xe93710);questionList['push'](_0x536e8e);}function canvastexture(_0xa53658){var _0x3cf508=document['createElement']('canvas');var _0x440892=_0x3cf508['getContext']('2d');var _0x224f6c=getPixelRatio(_0x440892);var _0x434900=0x80;var _0x193293=0x80;_0x3cf508['style']['width']=_0x434900+'px';_0x3cf508['style']['height']=_0x193293+"xp".split("").reverse().join("");_0x3cf508['width']=Math['round'](_0x434900*_0x224f6c);_0x3cf508['height']=Math['round'](_0x193293*_0x224f6c);_0x440892['beginPath']();_0x440892['fillStyle']=_0xa53658;_0x440892['fillRect'](0x0,0x0,_0x434900*_0x224f6c,_0x434900*_0x224f6c);_0x440892['lineWidth']=0x6*_0x224f6c;_0x440892['strokeRect'](0x0,0x0,_0x434900*_0x224f6c,_0x434900*_0x224f6c);return _0x3cf508;}
+		</script>
+
+		<div style="display:flex;">
+			<div id="leftdiv" class="action_bar_default">
+				<div id="qdiv">
+					<button class="action_top_button_selected" onclick="loadQuestion(1,this)" id="graphType1" style="display: block;">
+						问题1
+					</button>
+					<button class="action_top_button_normal" onclick="loadQuestion(2,this)" id="graphType2" style="display: block;">
+						问题2
+					</button>					
+					<button class="action_top_button_normal" onclick="loadQuestion(3,this)" id="graphType3" style="display: block;">
+						问题3
+					</button>
+					<button class="action_top_button_normal" onclick="loadQuestion(4,this)" id="graphType4" style="display: block;">
+						问题4
+					</button>		
+					<button class="action_top_button_normal" onclick="loadQuestion(5,this)" id="graphType5" style="display: block;">
+						问题5
+					</button>								
+ 					<button class="action_top_button_normal" onclick="loadQuestion(6,this)" id="graphType6" style="display: none;">	
+						问题6
+					</button>				
+				</div>	
+				<div id="buttonDiv">
+					<button id="confirmbtn" class="action_bottom_button_normal" onclick="findResult()">
+						检验答案
+					</button>
+					<button id="gconfirmbtn" class="action_bottom_button_disable" style="display: none;">
+						检验答案
+					</button>					
+					<button id="showanswerbtn" class="action_bottom_button_normal" onclick="showAnswer()">
+						公布答案
+					</button>	
+					<button id="hiddenanswerbtn" class="action_bottom_button_normal" onclick="hiddenAnswer()" style="display: none;">
+						隐藏答案
+					</button>	
+				 </div>																		
+			</div>  	 		 					
+			<div id="canvas-frame"></div>			
+		</div>
+		<!--<div class="pic_class" id="font_div"  style="border-radius:5px;background-color: white;position: absolute;"> 
+				<table style="border-spacing:0px;" cellspacing="0" cellpadding="0" class="table1cub">
+					<tr class="onetr">
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question question5-2 "></div></td>
+						<td width="25%"><div class="question"></div></td>
+					</tr>
+					<tr class="twotr">
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question preset-1 question4-2 question4-3 question4-4 question5-3 question6-1 question6-2 question6-3 preset-2 preset-3 preset-4"></div></td>
+						<td width="25%"><div class="question preset-1 question4-1 question4-3 question4-4 question5-1 question5-2 question5-4 preset-5"></div></td>
+						<td width="25%"><div class="question"></div></td>
+					</tr>
+					<tr class="threetr">
+						<td width="25%"><div class="question question6-2 question6-3 preset-5"></div></td>
+						<td width="25%"><div class="question question4-1 question4-2 question5-1 question5-2 question5-3 question5-4 question6-1 question6-2 question6-3 preset-2 preset-3 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question question4-1 question5-1 question5-2 question5-3 question5-4 question6-1 question6-2 question6-3  preset-2 preset-3 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question preset-3 preset-5"></div></td>
+					</tr>																		
+				</table>
+				<div style="width: 100%;text-align: center;font-size: 30px;" class="fontText"> 从前面看</div>
+			</div>	
+			<div class="pic_class" id="left_div" style="border-radius:5px;background-color: white;position: absolute;z-index: 9999999;" >
+				<table style="border-spacing:0px;" cellspacing="0" cellpadding="0" class="table1cub">
+					<tr class="onetr">
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question question5-2"></div></td>
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question"></div></td>
+					</tr>
+					<tr class="twotr">
+						<td width="25%"><div class="question question4-3 question4-4"></div></td>
+						<td width="25%"><div class="question question4-3 question4-4 question5-1 question4-2 question5-2 question5-4 question6-1 question6-2  question6-3 preset-1 preset-3 preset-5"></div></td>
+						<td width="25%"><div class="question question4-3 question4-4 question4-1  question5-3 question6-3 preset-1 preset-2 preset-4"></div></td>
+						<td width="25%"><div class="question"></div></td>
+					</tr>
+					<tr class="threetr">
+						<td width="25%"><div class="question question4-2   question5-4 question6-1 question6-2  question6-3"></div></td>
+						<td width="25%"><div class="question question4-1 question4-2 question5-1 question5-2 question5-3 question5-4 question6-1 question6-2 question6-3 preset-2 preset-3 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question question4-1 question4-2  question5-1 question5-2 question5-3 question5-4 question6-1 question6-2 question6-3 preset-2 preset-3 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question question5-1"></div></td>
+					</tr>																		
+				</table>	
+				<div style="width: 100%;text-align: center;font-size: 30px;" class="fontText"> 从左面看</div>				
+			</div>				
+			<div class="pic_class" id="up_div" style="border-radius:5px;background-color: white;position: absolute;z-index: 9999999;" >
+				<table style="border-spacing:0px;" cellspacing="0" cellpadding="0" class="table1cub">
+					<tr class="onetr">
+						<td width="25%"><div class="question"></div></td>
+						<td width="25%"><div class="question question4-2  question4-4 question5-1 question5-4 question6-1 question6-2  question6-3"></div></td>
+						<td width="25%"><div class="question  question4-3 question4-4 question5-1 question5-4 question6-1"></div></td>
+						<td width="25%"><div class="question"></div></td>
+					</tr>
+					<tr class="twotr">
+						<td width="25%"><div class="question  question6-2 question6-3"></div></td>
+						<td width="25%"><div class="question question4-2 question4-3 question5-2 question5-3  question6-1 question6-2 question6-3 preset-1 preset-3 preset-4"></div></td>
+						<td width="25%"><div class="question question4-1  question4-3 question4-4 question5-1  question5-2 question5-3 question5-4 question6-1 preset-2 preset-3 preset-5"></div></td>
+						<td width="25%"><div class="question preset-3 preset-5"></div></td>
+					</tr>
+					<tr class="threetr">
+						<td width="25%"><div class="question question6-3 preset-5"></div></td>
+						<td width="25%"><div class="question question4-1  question4-2 question5-3  question6-2 question6-3 preset-1 preset-2 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question preset-3 question4-1  question4-3 question4-4 question5-1  question5-2 question5-3 question5-4 question6-1 question6-2 question6-3 preset-1 preset-2 preset-4 preset-5"></div></td>
+						<td width="25%"><div class="question preset-5"></div></td>
+					</tr>																		
+				</table>
+				<div style="width: 100%;text-align: center;font-size: 30px;" class="fontText"> 从上面看</div>
+			</div>		-->
+
+
+			<div id="operateArea" style="display: flex; position: absolute; z-index: 9999999; bottom: 10px; left: 542.5px;">
+				<!--前面-->
+				<div id="font_div" style="width: 233.415px; height: 178.553px; margin-left: 44.8875px;">  
+					<table style="border-spacing: 0px; margin-left: 54.8625px; margin-top: 9.975px;" border="1" cellspacing="0" cellpadding="0" class="tableClass">
+						<tbody><tr>
+							<td class="tdClass" id="font-1-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-1-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-1-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-1-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-1-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-1-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="font-2-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-2-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-2-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-2-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-2-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-2-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="font-3-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-3-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-3-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-3-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-3-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-3-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="font-4-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-4-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="font-4-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="font-4-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-4-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-4-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="font-5-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-5-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-5-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-5-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-5-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-5-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="font-6-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-6-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-6-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-6-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-6-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="font-6-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>																																								
+					</tbody></table>
+				</div>
+				
+				<div id="left_div" style="width: 233.415px; height: 178.553px; margin-left: 44.8875px;">  
+					<table style="border-spacing: 0px; margin-left: 54.8625px; margin-top: 9.975px;" border="1" cellspacing="0" cellpadding="0" class="tableClass">
+						<tbody><tr>
+							<td class="tdClass" id="left-1-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-1-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-1-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-1-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-1-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-1-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="left-2-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-2-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-2-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-2-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-2-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-2-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="left-3-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-3-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-3-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-3-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-3-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-3-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="left-4-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-4-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="left-4-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="left-4-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-4-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-4-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="left-5-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-5-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-5-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-5-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-5-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-5-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="left-6-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-6-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-6-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-6-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-6-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="left-6-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>																																		
+					</tbody></table>
+				</div>	
+				
+				<div id="up_div" style="width: 233.415px; height: 178.553px; margin-left: 44.8875px;">  
+					<table style="border-spacing: 0px; margin-left: 54.8625px; margin-top: 9.975px;" border="1" cellspacing="0" cellpadding="0" class="tableClass">
+						<tbody><tr>
+							<td class="tdClass" id="up-1-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-1-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-1-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-1-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-1-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-1-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="up-2-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-2-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-2-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-2-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-2-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-2-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>
+						<tr>
+							<td class="tdClass" id="up-3-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-3-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="up-3-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-3-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-3-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-3-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="up-4-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-4-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="up-4-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass rightAnswerTd" id="up-4-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-4-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-4-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="up-5-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-5-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-5-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-5-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-5-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-5-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>	
+						<tr>
+							<td class="tdClass" id="up-6-1" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-6-2" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-6-3" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-6-4" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-6-5" style="width: 24.9375px; height: 24.9375px;"></td>
+							<td class="tdClass" id="up-6-6" style="width: 24.9375px; height: 24.9375px;"></td>
+						</tr>																																			
+					</tbody></table>
+				</div>						
+			</div>			
+	
+
+</body></html>

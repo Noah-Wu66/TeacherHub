@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ancient-gold: #D4AF37;
+  --color-ancient-bronze: #CD7F32;
+  --color-ancient-jade: #00A86B;
+  --color-ancient-red: #8B2500;
+  --color-ancient-ink: #2c2c2c;
+  --color-parchment: #f5efe6;
+  --color-parchment-dark: #e8ddd0;
+  --font-serif: "Noto Serif SC", "STSong", "SimSun", serif;
+  --font-kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
+  --animate-fade-in: fadeIn 0.6s ease-in;
+  --animate-slide-in: slideIn 0.4s ease-out;
+  --animate-term-change: termChange 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes slideIn {
+  0% { transform: translateY(-10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes termChange {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+:root {
+  --season-bg-from: #f5efe6;
+  --season-bg-to: #e8ddd0;
+  --season-accent: #8b6914;
+  --season-accent-light: #f0e4c8;
+  --season-text: #4a3520;
+  --season-border: #c9a87c;
+}
+
+body {
+  color: var(--season-text);
+  background: linear-gradient(
+    180deg,
+    var(--season-bg-from) 0%,
+    var(--season-bg-to) 100%
+  );
+  min-height: 100vh;
+  transition: background 0.8s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 古典卷轴纸张纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(210, 180, 140, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(210, 180, 140, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(210, 180, 140, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 古典风格滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--season-bg-from);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--season-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--season-accent);
+}
+
+/* 古典输入框 */
+input[type="number"],
+input[type="range"] {
+  font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+}
+
+/* 去掉 number 输入框的上下箭头（移动端更干净） */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--season-accent-light);
+  outline: none;
+  touch-action: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--season-accent);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--season-accent);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+/* 古典卡片 */
+.ancient-card {
+  background: rgba(255, 253, 248, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--season-border);
+  border-radius: 4px;
+  box-shadow:
+    0 2px 8px rgba(139, 105, 20, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+
+/* 卡片四角装饰 */
+.ancient-card::before,
+.ancient-card::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--season-accent);
+  opacity: 0.4;
+}
+.ancient-card::before {
+  top: 3px;
+  left: 3px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.ancient-card::after {
+  top: 3px;
+  right: 3px;
+  border-top: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+/* 底部角装饰 */
+.ancient-card-inner {
+  position: relative;
+}
+.ancient-card-inner::before,
+.ancient-card-inner::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--season-accent);
+  opacity: 0.4;
+}
+.ancient-card-inner::before {
+  bottom: 3px;
+  left: 3px;
+  border-bottom: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.ancient-card-inner::after {
+  bottom: 3px;
+  right: 3px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+/* 桌面端角装饰稍大 */
+@media (min-width: 640px) {
+  .ancient-card::before,
+  .ancient-card::after {
+    width: 16px;
+    height: 16px;
+  }
+  .ancient-card::before {
+    top: 4px;
+    left: 4px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+  }
+  .ancient-card::after {
+    top: 4px;
+    right: 4px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+  }
+  .ancient-card-inner::before,
+  .ancient-card-inner::after {
+    width: 16px;
+    height: 16px;
+  }
+  .ancient-card-inner::before {
+    bottom: 4px;
+    left: 4px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+  }
+  .ancient-card-inner::after {
+    bottom: 4px;
+    right: 4px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+  }
+}
+
+/* 分隔线 */
+.ancient-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--season-border) 20%,
+    var(--season-accent) 50%,
+    var(--season-border) 80%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* AI 对话弹窗 */
+.ai-chat-backdrop {
+  animation: aiBackdropIn 0.2s ease-out;
+}
+.ai-chat-modal {
+  animation: aiModalIn 0.25s ease-out;
+}
+@keyframes aiBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes aiModalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 消息区域滚动条 */
+.ai-chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+.ai-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ai-chat-messages::-webkit-scrollbar-thumb {
+  background: var(--season-border);
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+/* 消息气泡 */
+.ai-chat-bubble {
+  word-break: break-word;
+}
+.ai-chat-bubble-user {
+  border-radius: 12px 12px 4px 12px;
+}
+.ai-chat-bubble-ai {
+  border-radius: 12px 12px 12px 4px;
+}
+
+/* 打字光标 */
+.ai-chat-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: aiCursorBlink 0.6s ease-in-out infinite;
+}
+@keyframes aiCursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 等待动画圆点 */
+.ai-chat-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: aiDotBounce 0.8s ease-in-out infinite;
+}
+@keyframes aiDotBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* 思考过程块 */
+.ai-thinking-block {
+  font-style: italic;
+}
+.ai-thinking-text {
+  font-style: italic;
+}
+.ai-thinking-content::-webkit-scrollbar {
+  width: 3px;
+}
+.ai-thinking-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ai-thinking-content::-webkit-scrollbar-thumb {
+  background: var(--season-border);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+/* 思考中指示器 - 呼吸灯 */
+.ai-thinking-indicator {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: aiThinkingPulse 1.2s ease-in-out infinite;
+}
+@keyframes aiThinkingPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}

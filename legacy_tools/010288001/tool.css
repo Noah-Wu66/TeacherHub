@@ -1,0 +1,11 @@
+.toolcover{
+	width:201px;
+	height:161px;
+	text-align: center;
+	cursor: pointer;
+	border-width:1px; 
+	border-color:#dddddd;
+	background-color: #53585E;
+	border-top-left-radius: 7px; 
+	border-top-right-radius: 7px;
+}

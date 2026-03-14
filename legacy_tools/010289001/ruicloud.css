@@ -1,0 +1,632 @@
+/* @import "./css/bootstrap.min.css";
+@import "./font-awesome-4.7.0/css/font-awesome.css"; */
+
+
+@font-face {
+    font-family: rucloud_base;
+	src: local('Microsoft Yahei');
+}
+        
+@font-face {
+    font-family: ruicloud_number;
+    src: local('Comic Sans MS');
+    unicode-range: U+0030-0039, U+201c, U+201d;
+}
+
+@font-face {
+    font-family: ruicloud_add_sub;
+    src: local('黑体');
+    unicode-range: U+002B,U+002D,U+FF0D,U+FF0B;
+}
+
+@font-face {
+    font-family: ruicloud_symbol;
+    src: local('宋体');
+    unicode-range: U+00D7,U+00F7,U+003D,U+003C,U+003E,U+2265,U+2264,U+0028,U+0029,U+003A,U+2026;
+}
+        
+@font-face {
+    font-family: ruicloud_letter;
+    font-style: italic;
+    src: local('Times New Roman');
+    unicode-range: U+0061-007a, U+0041-005a;
+}       
+		
+.ruicloud_font {
+    font-family: ruicloud_number,ruicloud_add_sub,ruicloud_letter,ruicloud_symbol,rucloud_base;
+}
+
+:root{
+	--ruicloud-font:ruicloud_number,ruicloud_add_sub,ruicloud_letter,ruicloud_symbol,rucloud_base
+}
+
+body{
+	background-color:white;
+	-webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+	overflow:hidden;
+}
+
+/*通用背景*/
+
+.action_bar_default {
+    box-sizing: border-box;
+    border: 1.2vh solid transparent;
+    background-origin: border-box;
+    -moz-border-image: url("../images/img/global/ironBorder.png") 27 27 round;
+    -webkit-border-image: url("../images/img/global/ironBorder.png") 27 27 round;
+    -o-border-image: url("../images/img/global/ironBorder.png") 27 27 round;
+    border-image: url("../images/img/global/ironBorder.png") 27 27 round;
+    background-color: #cff4ff;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30vh;
+    height: 100%;
+    padding-top: 1vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+}
+
+.action_item {
+    padding: 1vh 0;
+    background-color: white;
+    width: 100%;
+    border-top: 1.2vh solid #329ce8;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+}
+
+
+/*通用上边框*/
+
+.action_border_top {
+    border-top: 1.2vh solid #329ce8;
+}
+
+
+/*上边按钮正常效果*/
+
+.action_button_normal,
+.action_top_button_normal {
+    height: 8.47vh;
+    width: 24vh;
+    /* background-color: white; */
+    color: #333333;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    outline: none;
+    border: none;
+    margin: 1vh;
+	padding:0;
+    background: url(../images/img/global/topBtn.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 8.47vh;
+}
+
+
+/*上边按钮选中效果*/
+
+.action_button_selected,
+.action_top_button_selected {
+    height: 8.47vh;
+    width: 24vh;
+    /* background: linear-gradient(to right bottom, #5697fe, #0a72fe); */
+    color: #ffffff;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    /* border-radius: 2vh; */
+    outline: none;
+    border: none;
+    margin: 1vh;
+	padding:0;
+    background: url(../images/img/global/topBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 8.47vh;
+}
+
+
+/*下边按钮正常效果*/
+
+.action_bottom_button_normal {
+    height: 7vh;
+    width: 24vh;
+    /* background-color: white; */
+    color: #006cfe;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    outline: none;
+    border: none;
+    margin: 1vh;
+	padding:0;
+    background: url(../images/img/global/bottomBtn.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 7vh;
+}
+
+
+/*下边按钮选中效果*/
+
+.action_bottom_button_selected {
+    height: 7vh;
+    width: 24vh;
+    /* background: linear-gradient(to right bottom, #5697fe, #0a72fe); */
+    color: #ffffff;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    /* border-radius: 2vh; */
+    outline: none;
+    border: none;
+    margin: 1vh;
+    padding:0;
+    background: url(../images/img/global/bottomBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 7vh;
+}
+
+
+/*下边按钮禁用效果*/
+
+.action_bottom_button_disable {
+    height: 7vh;
+    width: 24vh;
+    /* background: linear-gradient(to right bottom, #5697fe, #0a72fe); */
+    color: gray;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    /* border-radius: 2vh; */
+    outline: none;
+    border: none;
+    margin: 1vh;
+    padding:0;
+    background: url(../images/img/global/bottomDisableBtn.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 7vh;
+}
+
+
+/*方形按钮正常效果*/
+
+.action_square_button_normal {
+    height: 7.3vh;
+    width: 7.3vh;
+    /* background-color: white; */
+    color: #333333;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    outline: none;
+    border: none;
+    margin: 1.1vh 0;
+    padding:0;
+    background: url(../images/img/global/squareBtn.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 7.3vh;
+    text-align: center;
+    line-height: 7.3vh;
+}
+
+
+/*方形按钮选中效果*/
+
+.action_square_button_selected {
+    height: 7.3vh;
+    width: 7.3vh;
+    /* background: linear-gradient(to right bottom, #5697fe, #0a72fe); */
+    color: #ffffff;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    /* border-radius: 2vh; */
+    outline: none;
+    border: none;
+    margin: 1.1vh 0;
+    padding:0;
+    background: url(../images/img/global/squareBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+    line-height: 7.3vh;
+}
+
+.action_top_button_normal:active {
+    color: #ffffff;
+    outline: none;
+    border: none;
+    background: url(../images/img/global/topBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+}
+.action_bottom_button_normal:active {
+    color: #ffffff;
+    outline: none;
+    border: none;
+    background: url(../images/img/global/bottomBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+}
+
+.action_square_button_normal:active {
+    color: #ffffff;
+    outline: none;
+    border: none;
+    background: url(../images/img/global/squareBtns.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    text-align: center;
+}
+
+
+.checkbox,
+.checkbox-selected {
+	width: 24vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    outline: none;
+    border: none;
+    color: #006cfe;
+    background: transparent;
+}
+
+.checkbox::before {
+    display: inline-block;
+    width: 4vh;
+    height: 4vh;
+    content: "";
+    background-image: url(../images/img/global/checkboxbtn.png);
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 1vh;
+}
+
+.checkbox-selected::before {
+    display: inline-block;
+    width: 4vh;
+    height: 4vh;
+    content: "";
+    background-image: url(../images/img/global/checkboxbtns.png);
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 1vh;
+}
+
+.radiobtn,
+.radiobtn-selected {
+    width: 24vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+    font-family: var(--ruicloud-font);
+    font-size: 3.6vh;
+    outline: none;
+    border: none;
+    color: #006cfe;
+    background: transparent;
+}
+
+.radiobtn::before {
+    display: inline-block;
+    width: 4vh;
+    height: 4vh;
+    content: "";
+    background-image: url(../images/img/global/radiobtn.png);
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 1vh;
+}
+
+.radiobtn-selected::before {
+    display: inline-block;
+    width: 4vh;
+    height: 4vh;
+    content: "";
+    background-image: url(../images/img/global/radiobtns.png);
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 1vh;
+}
+
+/*按钮提示*/
+
+.button_tip_text {
+    color: #a9b8cd;
+    font-size: 2.2vh;
+    font-family: var(--ruicloud-font);
+    font-weight: normal;
+    text-align: justify;
+}
+
+
+/*文字题干*/
+
+.action_stemInfo {
+    font-size: 3vh;
+    font-family: var(--ruicloud-font);
+    box-sizing: border-box;
+    padding: 1vh;
+    color: #333333;
+    font-weight: normal;
+    text-align: justify;
+}
+
+
+/*标题*/
+
+.action_title {
+    font-family: var(--ruicloud-font);
+    font-weight: bold;
+    font-size: 3vh;
+    margin: 1vh;
+    padding:0;
+    color: #333333;
+    text-align: center;
+}
+/*CheckBox按钮*/
+
+.action_checkbox {
+    height: 3.5vh;
+    width: 18.375vh;
+    outline: none;
+    border: none;
+	padding:0;
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.action_horizontal_bar_default {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    box-sizing: border-box;
+    background-color: #cff4ff;
+    border: none;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 26vh;
+    z-index: 100;
+    padding: 1.3vh;
+}
+
+.action_horizontal_item {
+    background-color: white;
+    height: 100%;
+    box-shadow: 0vh 0vh 0.5vh 0.5vh rgb(181 216 241 / 30%);
+    border-radius: 1vh;
+}
+
+
+#keyboardDiv {
+    position: absolute;
+    background-color: #95dcff;
+    border-radius: 2vh;
+    width: 22vh;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+	padding: 1vh 0;
+}
+
+#keyboardDiv>div {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+#keyboardDiv button{
+    background-color: white;
+    color: #1168dd;
+    border-radius: 2vh;
+    width: 6vh;
+    height: 6vh;
+    margin: 0.35vh;
+    font-size: 3vh;
+    font-family: var(--ruicloud-font);
+    border: none;
+    outline: none;
+	padding:0;
+}
+#keyboardDiv button:active,
+#keyboardDiv button[class=selected] {
+    background-color: #006cfe;
+    color: #ffffff;
+}
+
+#keyboard3LinesDiv,
+#keyboard4LinesDiv {
+    position: absolute;
+    left: 2vh;
+    top: 2vh;
+    background-color: #95dcff;
+    border-radius: 2vh;
+    width: 22vh;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#keyboard3LinesDiv {
+    height: 22vh;
+}
+
+#keyboard4LinesDiv {
+    height: 29vh;
+}
+
+#keyboard3LinesDiv>div,
+#keyboard4LinesDiv>div {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+#keyboard3LinesDiv button,
+#keyboard4LinesDiv button {
+    background-color: white;
+    color: #1168dd;
+    border-radius: 2vh;
+    width: 6vh;
+    height: 6vh;
+    margin: 0.35vh;
+    font-size: 3vh;
+    font-family: var(--ruicloud-font);
+    border: none;
+    outline: none;
+	padding:0;
+}
+#keyboard3LinesDiv button:active,
+#keyboard4LinesDiv button:active,
+#keyboard3LinesDiv button[class=selected],
+#keyboard4LinesDiv button[class=selected] {
+    background-color: #006cfe;
+    color: #ffffff;
+}
+
+.dialoginfo {
+    /* width: 30%; */
+    min-width: 150px;
+    height: 60px;
+    border-radius: 5px;
+    position: fixed;
+    top: 5%;
+    /* left: 35%; */
+    z-index: 999999;
+    background: white;
+    font-family: var(--ruicloud-font);
+    font-size: 30px;
+    /* border: 1px solid rgba(0,0,0,.2); */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+.dialogerror {
+    color: #ff4d4f;
+    box-shadow: 2px 2px 5px #dd9495, -2px -2px 5px #dd9495;
+}
+
+.dialogwarning {
+    color: #faad14;
+    box-shadow: 2px 2px 5px #e0bc72, -2px -2px 5px #e0bc72;
+}
+
+.dialogsuccess {
+    color: #52c41a;
+    box-shadow: 2px 2px 5px #b1eb94, -2px -2px 5px #b1eb94;
+}
+
+.dialoginfo img {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+button[class*=keyboardactive] {
+    background-color: #ffad49;
+    box-shadow: #f29c33 3px 3px 5px inset, #f29c33 -3px -3px 5px inset;
+    border-radius: 10px;
+    color: white;
+    outline: none;
+    border: none;
+}
+
+.keyboardshow {
+    background-color: #43c7cb;
+    box-shadow: #08abb1 3px 3px 5px inset, #08abb1 -3px -3px 5px inset;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    width: 22vh;
+    height: 11.5vh;
+    font-size: 9vh;
+    margin-left: 2%;
+    margin-bottom: 1.5vh;
+    margin-top: 1.5vh;
+    font-family: var(--ruicloud-font);
+    outline: none;
+    border: none;
+}
+
+.keyboardnumber {
+    background-color: #fff8ef;
+    display: none;
+    width: calc(30vh + 10px);
+    border-collapse: collapse;
+    border: 1px solid #f04310;
+    padding: 5px;
+    font-family: var(--ruicloud-font);
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -moz-box-shadow: 0 0 5px #999;
+    -webkit-box-shadow: 0 0 5px #999;
+    box-shadow: 0 0 5px #999
+}
+
+.keyboardnumber table {
+    color: white;
+}
+
+.keyboardnumber tr {
+    height: 10vh;
+}
+
+.keyboardnumber td {
+    font-family: var(--ruicloud-font);
+    width: 10vh;
+    text-align: center;
+    border: #fff8ef 2px solid;
+    border-radius: 10px;
+    background: linear-gradient(#ffb151, #ff9f3e);
+    font-size: 4vh;
+}
+
+.keyboardnumber td:hover {
+    background: linear-gradient(#fcce6d, #ef9223);
+    cursor: pointer;
+}
+
+#keyboardnumberDiv {
+    position: absolute;
+}

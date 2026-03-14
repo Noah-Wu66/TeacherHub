@@ -1,0 +1,17 @@
+{
+  "name": "智趣学 - AI学习平台",
+  "short_name": "智趣学",
+  "start_url": "/ai-education",
+  "scope": "/ai-education/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/ai-education/study.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
