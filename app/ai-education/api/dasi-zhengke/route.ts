@@ -7,7 +7,7 @@ import { DASI_ZHENGKE_PRACTICE_BASES, getDasiZhengkeTopic } from '@/lib/ai-educa
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MODEL_NAME = 'gemini-3-flash-preview';
+const MODEL_NAME = 'deepseek-reasoner';
 
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
@@ -119,10 +119,6 @@ ${scenarioBlock}
   return isTeacherOrAdmin ? teacherPrompt : studentPrompt;
 }
 
-function toGeminiRole(role: string) {
-  return role === 'assistant' ? 'model' : 'user';
-}
-
 export async function POST(req: Request) {
   const user = await requireUser();
   if (!user) return jsonError('请先登录', 401);
@@ -140,7 +136,7 @@ export async function POST(req: Request) {
   const input = body?.input;
   const topicId = body?.topicId;
   const stream = body?.stream !== false;
-  const modelToCount = typeof body?.model === 'string' && body.model ? body.model : 'gemini-3-flash-preview';
+  const modelToCount = typeof body?.model === 'string' && body.model ? body.model : MODEL_NAME;
   const regenerate = !!body?.regenerate;
   const targetMessageId = body?.targetMessageId ? String(body.targetMessageId) : '';
 
@@ -217,30 +213,33 @@ export async function POST(req: Request) {
   }
   const historyBase = historyForContext.slice(-MAX_CONTEXT_MESSAGES);
 
-  const contents: any[] = [];
+  const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+    { role: 'system', content: buildSystemPrompt(userRole, topicId) },
+  ];
+
   for (const msg of historyBase) {
     if (msg?.role !== 'user' && msg?.role !== 'assistant') continue;
     const text = String(msg?.content ?? '').trim();
     if (!text) continue;
-    contents.push({
-      role: toGeminiRole(String(msg.role)),
-      parts: [{ text }],
+    messages.push({
+      role: msg.role,
+      content: text,
     });
   }
 
   // 确保当前输入加入上下文
   // 重生成场景：前端传来的 inputText 是编辑后的最新内容，必须用它替换历史中的旧内容
-  const last = contents[contents.length - 1];
+  const last = messages[messages.length - 1];
   const lastIsUser = last?.role === 'user';
   if (regenerate && lastIsUser) {
     // 替换最后一条用户消息为编辑后的新内容
-    last.parts = [{ text: inputText }];
+    last.content = inputText;
   } else {
-    contents.push({ role: 'user', parts: [{ text: inputText }] });
+    messages.push({ role: 'user', content: inputText });
   }
 
-  const apiKey = process.env.AIHUBMIX_API_KEY;
-  if (!apiKey) return jsonError('Missing AIHUBMIX_API_KEY', 500);
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) return jsonError('Missing DEEPSEEK_API_KEY', 500);
 
   const encoder = new TextEncoder();
   const requestId = Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -257,28 +256,25 @@ export async function POST(req: Request) {
       try {
         sendEvent({ type: 'start', requestId, route: 'dasi-zhengke', model: MODEL_NAME, topicId: resolvedTopic.id });
 
-        const requestBody: any = {
-          systemInstruction: { parts: [{ text: buildSystemPrompt(userRole, topicId) }] },
-          contents: contents.length > 0 ? contents : [{ role: 'user', parts: [{ text: inputText }] }],
-          generationConfig: {
-            responseMimeType: 'text/plain',
-            thinkingConfig: { thinkingLevel: 'high' },
-          },
+        const requestBody = {
+          model: MODEL_NAME,
+          messages,
+          stream: true,
+          max_tokens: 65536,
         };
 
-        const url = `https://aihubmix.com/gemini/v1beta/models/${encodeURIComponent(MODEL_NAME)}:streamGenerateContent?alt=sse`;
-        const resp = await fetch(url, {
+        const resp = await fetch('https://api.deepseek.com/chat/completions', {
           method: 'POST',
           headers: {
-            'content-type': 'application/json',
-            'x-goog-api-key': apiKey,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify(requestBody),
         });
 
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`Gemini API error: ${resp.status} - ${text}`);
+          throw new Error(`DeepSeek API error: ${resp.status} - ${text}`);
         }
 
         const reader = resp.body?.getReader();
@@ -301,18 +297,17 @@ export async function POST(req: Request) {
 
             try {
               const data = JSON.parse(jsonStr);
-              const candidate = data?.candidates?.[0];
-              const parts = candidate?.content?.parts;
-              if (!Array.isArray(parts)) continue;
+              const delta = data?.choices?.[0]?.delta;
+              if (!delta) continue;
 
-              for (const part of parts) {
-                if (part?.thought && part?.text) {
-                  fullReasoning += part.text;
-                  sendEvent({ type: 'reasoning', content: part.text });
-                } else if (part?.text) {
-                  fullContent += part.text;
-                  sendEvent({ type: 'content', content: part.text });
-                }
+              if (delta.reasoning_content) {
+                fullReasoning += delta.reasoning_content;
+                sendEvent({ type: 'reasoning', content: delta.reasoning_content });
+              }
+
+              if (delta.content) {
+                fullContent += delta.content;
+                sendEvent({ type: 'content', content: delta.content });
               }
             } catch {
               // ignore parse errors
@@ -329,17 +324,15 @@ export async function POST(req: Request) {
             if (!jsonStr || jsonStr === '[DONE]') continue;
             try {
               const data = JSON.parse(jsonStr);
-              const candidate = data?.candidates?.[0];
-              const parts = candidate?.content?.parts;
-              if (!Array.isArray(parts)) continue;
-              for (const part of parts) {
-                if (part?.thought && part?.text) {
-                  fullReasoning += part.text;
-                  sendEvent({ type: 'reasoning', content: part.text });
-                } else if (part?.text) {
-                  fullContent += part.text;
-                  sendEvent({ type: 'content', content: part.text });
-                }
+              const delta = data?.choices?.[0]?.delta;
+              if (!delta) continue;
+              if (delta.reasoning_content) {
+                fullReasoning += delta.reasoning_content;
+                sendEvent({ type: 'reasoning', content: delta.reasoning_content });
+              }
+              if (delta.content) {
+                fullContent += delta.content;
+                sendEvent({ type: 'content', content: delta.content });
               }
             } catch {
               // ignore
@@ -437,5 +430,4 @@ export async function POST(req: Request) {
     },
   });
 }
-
 

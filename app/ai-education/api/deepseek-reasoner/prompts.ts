@@ -127,4 +127,3 @@ export function buildSystemPrompt(userRole: string, voiceMode?: boolean) {
   return base + (voiceMode ? VOICE_MODE_PROMPT : '');
 }
 
-

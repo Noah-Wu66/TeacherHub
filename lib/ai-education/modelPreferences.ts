@@ -9,7 +9,7 @@ export interface UserModelPreferences {
   updatedAt?: Date | string;
 }
 
-export const DEFAULT_MODEL_ID: ModelId = 'gemini-3-flash-preview';
+export const DEFAULT_MODEL_ID: ModelId = 'deepseek-reasoner';
 
 export function getDefaultUserModelPreferences(): UserModelPreferences {
   return {
@@ -52,4 +52,3 @@ export function mergeUserModelPreferences(
     updatedAt: new Date(),
   };
 }
-

@@ -70,11 +70,11 @@ export interface ConversationSettings {
 
 // 支持的模型列表
 export const MODELS: Record<string, ModelConfig> = {
-  'gemini-3-flash-preview': {
-    name: 'Gemini 3 Flash (Preview)',
-    description: 'Gemini 3 Flash Preview 多模态文本生成',
+  'deepseek-reasoner': {
+    name: 'DeepSeek Reasoner',
+    description: 'DeepSeek 推理文本生成',
     type: 'chat',
-    supportsVision: true,
+    supportsVision: false,
     supportsTools: false,
     supportsReasoning: true,
     supportsVerbosity: false,
@@ -102,6 +102,6 @@ export interface ModelConfig {
 export function getModelConfig(model: ModelId | string): ModelConfig {
   const config = MODELS[model as ModelId];
   if (config) return config;
-  const fallbackModel = 'gemini-3-flash-preview' as ModelId;
+  const fallbackModel = 'deepseek-reasoner' as ModelId;
   return MODELS[fallbackModel];
 }

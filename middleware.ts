@@ -10,7 +10,7 @@ const AI_EDUCATION_PUBLIC_PATHS = [
 ];
 
 const AI_EDUCATION_PROTECTED_PREFIXES = [
-  '/ai-education/api/gemini-3-flash-preview',
+  '/ai-education/api/deepseek-reasoner',
   '/ai-education/api/conversations',
   '/ai-education/api/admin',
   '/ai-education/api/dasi-zhengke',
