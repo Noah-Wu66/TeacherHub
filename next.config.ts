@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['mongoose'],
+  outputFileTracingIncludes: {
+    '/teacher-tools/tools/*/legacy/**': ['./legacy_tools/**/*'],
+    '/teacher-tools/tools/*/common/**': ['./legacy_tools/**/*'],
+    '/teacher-tools/tools/*/images/**': ['./legacy_tools/**/*'],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
