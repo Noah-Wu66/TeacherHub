@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     const className = normalizeClassName(String(body?.className || "").trim());
     const role: "student" | "teacher" =
       String(body?.role || USER_ROLES.student).trim() === USER_ROLES.teacher
-        ? USER_ROLES.teacher
-        : USER_ROLES.student;
+        ? "teacher"
+        : "student";
     const inviteCode = String(body?.inviteCode || "").trim().toUpperCase();
     const managedClasses = normalizeClassList(body?.managedClasses);
     const subjects = Array.isArray(body?.subjects) ? body.subjects.filter(Boolean) : [];
