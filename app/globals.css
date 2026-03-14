@@ -5,6 +5,11 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* 安全区域适配 */
 html {
   --sat: env(safe-area-inset-top, 0px);
