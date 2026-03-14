@@ -408,13 +408,20 @@ type CreateFormalUserParams = {
   mustChangePassword?: boolean;
 };
 
-function getInvitationRoleMismatchMessage(expectedRole: "student" | "teacher") {
+type InvitationRegistrationRole = "student" | "teacher";
+
+type RegisterFormalUserWithInvitationParams = Omit<CreateFormalUserParams, "role"> & {
+  role: InvitationRegistrationRole;
+  inviteCode: string;
+};
+
+function getInvitationRoleMismatchMessage(expectedRole: InvitationRegistrationRole) {
   return expectedRole === USER_ROLES.teacher ? "教师注册需要教师邀请码" : "学生注册需要学生邀请码";
 }
 
 async function claimInvitationForRegistration(
   code: string,
-  expectedRole: "student" | "teacher",
+  expectedRole: InvitationRegistrationRole,
   session?: ClientSession
 ) {
   const db = await getDb();
@@ -583,7 +590,7 @@ export function assertPassword(password: string) {
   }
 }
 
-export async function assertUsableInvitation(code: string, expectedRole: "student" | "teacher") {
+export async function assertUsableInvitation(code: string, expectedRole: InvitationRegistrationRole) {
   const invitations = await getCollection(COLLECTIONS.invitations);
   const invitation = await invitations.findOne({ [INVITATION_FIELDS.code]: code });
   if (!invitation) {
@@ -614,7 +621,7 @@ export async function markInvitationUsed(invitationId: ObjectId, userId: ObjectI
 }
 
 export async function registerFormalUserWithInvitation(
-  params: CreateFormalUserParams & { inviteCode: string }
+  params: RegisterFormalUserWithInvitationParams
 ) {
   const createUserParams: CreateFormalUserParams = {
     name: params.name,
