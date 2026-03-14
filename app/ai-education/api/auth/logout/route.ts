@@ -1,1 +1,6 @@
-export { POST, dynamic, runtime } from "@/app/api/auth/logout/route";
+import { POST as sharedPOST } from "@/app/api/auth/logout/route";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export const POST = sharedPOST;

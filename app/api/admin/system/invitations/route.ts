@@ -27,7 +27,7 @@ export async function GET() {
         usedBy: item[INVITATION_FIELDS.usedBy] ? String(item[INVITATION_FIELDS.usedBy]) : "",
         usedAt: item[INVITATION_FIELDS.usedAt] || null,
         createdAt: item[INVITATION_FIELDS.createdAt] || null,
-      }),
+      })),
     });
   } catch (error) {
     console.error("[admin/system/invitations][GET] failed:", error);
