@@ -4,6 +4,8 @@ import { Room } from '@/lib/24-point/models/Room'
 import { checkAnswer, generateNumbers } from '@/lib/24-point/gameLogic'
 import { hasSolution } from '@/lib/24-point/solver'
 import { getPusherServer } from '@/lib/24-point/pusher'
+import { getAuthenticatedRoomPlayerId } from '@/lib/24-point/playerSession'
+import { getRoomChannelName } from '@/lib/24-point/realtime'
 
 function generateSolvableNumbers(): number[] {
   let nums: number[]
@@ -35,12 +37,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '房间不在游戏中' }, { status: 400 })
     }
 
+    const authenticatedPlayerId = await getAuthenticatedRoomPlayerId(roomId)
+    if (!authenticatedPlayerId) {
+      return NextResponse.json({ error: '未授权' }, { status: 401 })
+    }
+    if (playerId && playerId !== authenticatedPlayerId) {
+      return NextResponse.json({ error: '玩家身份不匹配' }, { status: 403 })
+    }
+
     const pusher = getPusherServer()
-    const player = room.players.find((p) => p.id === playerId)
+    const channelName = getRoomChannelName(roomId)
+    const player = room.players.find((p) => p.accountId === authenticatedPlayerId)
+    if (!player || player.role !== 'player') {
+      return NextResponse.json({ error: '无权提交答案' }, { status: 403 })
+    }
 
     // 通知双方答案提交结果
-    await pusher.trigger(`room-${roomId}`, 'answer-submitted', {
-      playerId,
+    await pusher.trigger(channelName, 'answer-submitted', {
+      playerId: authenticatedPlayerId,
       nickname: player?.nickname || '???',
       isCorrect: result.isCorrect,
       expression,
@@ -59,14 +73,14 @@ export async function POST(request: NextRequest) {
       room.roundResults.push({
         round: room.currentRound,
         numbers: room.currentNumbers,
-        winner: playerId || null,
+        winner: authenticatedPlayerId,
         winnerExpression: expression,
         timeUsed,
       })
 
       const scores: Record<string, number> = {}
       room.players.forEach((p) => {
-        scores[p.id] = p.score
+        scores[p.accountId] = p.score
       })
 
       if (room.currentRound >= room.totalRounds) {
@@ -76,12 +90,12 @@ export async function POST(request: NextRequest) {
 
         // 判断胜者
         const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score)
-        const winner = sortedPlayers[0].score > sortedPlayers[1].score ? sortedPlayers[0] : null
+        const winner = sortedPlayers[0]?.score > sortedPlayers[1]?.score ? sortedPlayers[0] : null
 
-        await pusher.trigger(`room-${roomId}`, 'game-end', {
+        await pusher.trigger(channelName, 'game-end', {
           scores,
-          winner: winner?.id || null,
-          winnerNickname: winner?.nickname || null,
+          winner: winner?.accountId || null,
+          winnerNickname: winner?.displayName || winner?.nickname || null,
           roundResults: room.roundResults,
         })
       } else {
@@ -92,10 +106,10 @@ export async function POST(request: NextRequest) {
         room.roundStartedAt = new Date()
         await room.save()
 
-        await pusher.trigger(`room-${roomId}`, 'round-end', {
+        await pusher.trigger(channelName, 'round-end', {
           round: room.currentRound - 1,
-          winner: playerId,
-          winnerNickname: player?.nickname || null,
+          winner: authenticatedPlayerId,
+          winnerNickname: player?.displayName || player?.nickname || null,
           winnerExpression: expression,
           scores,
           nextNumbers,

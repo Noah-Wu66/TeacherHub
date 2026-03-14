@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { AuthProvider } from '@/components/platform/auth/AuthProvider'
+import PlatformFloatingEntry from '@/components/platform/auth/PlatformFloatingEntry'
 
 export const metadata: Metadata = {
   title: '李雪教学工具集',
@@ -22,7 +24,10 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+          <PlatformFloatingEntry />
+        </AuthProvider>
       </body>
     </html>
   )

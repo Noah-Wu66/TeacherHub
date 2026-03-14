@@ -1,22 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { connectDB } from '@/lib/24-point/db'
+import { Room } from '@/lib/24-point/models/Room'
 import { getPusherServer } from '@/lib/24-point/pusher'
+import { getAuthenticatedRoomPlayerId } from '@/lib/24-point/playerSession'
+import { parseRoomIdFromChannelName } from '@/lib/24-point/realtime'
 
-// POST — Pusher 鉴权 + 事件中转
+async function parseAuthPayload(request: NextRequest) {
+  const contentType = request.headers.get('content-type') || ''
+
+  if (contentType.includes('application/json')) {
+    return await request.json()
+  }
+
+  if (
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  ) {
+    const formData = await request.formData()
+    return {
+      socket_id: String(formData.get('socket_id') || ''),
+      channel_name: String(formData.get('channel_name') || ''),
+    }
+  }
+
+  const rawText = await request.text()
+  const params = new URLSearchParams(rawText)
+  return {
+    socket_id: params.get('socket_id') || '',
+    channel_name: params.get('channel_name') || '',
+  }
+}
+
+// POST — Pusher 私有频道鉴权
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-
-    // 事件中转模式
-    if (body.event && body.channel && body.data) {
-      const pusher = getPusherServer()
-      await pusher.trigger(body.channel, body.event, body.data)
-      return NextResponse.json({ success: true })
-    }
-
-    // Pusher 鉴权模式（表单格式）
+    const body = await parseAuthPayload(request)
     const { socket_id, channel_name } = body
     if (!socket_id || !channel_name) {
       return NextResponse.json({ error: '缺少参数' }, { status: 400 })
+    }
+
+    const roomId = parseRoomIdFromChannelName(channel_name)
+    if (!roomId) {
+      return NextResponse.json({ error: '非法频道' }, { status: 400 })
+    }
+
+    const authenticatedPlayerId = await getAuthenticatedRoomPlayerId(roomId)
+    if (!authenticatedPlayerId) {
+      return NextResponse.json({ error: '未授权' }, { status: 403 })
+    }
+
+    await connectDB()
+    const room = await Room.findOne({ roomId }).lean()
+    if (!room) {
+      return NextResponse.json({ error: '房间不存在' }, { status: 404 })
+    }
+
+    const player = room.players.find((item) => item.accountId === authenticatedPlayerId)
+    if (!player) {
+      return NextResponse.json({ error: '房间成员不存在' }, { status: 403 })
     }
 
     const pusher = getPusherServer()

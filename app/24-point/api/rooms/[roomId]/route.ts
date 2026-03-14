@@ -4,6 +4,13 @@ import { Room } from '@/lib/24-point/models/Room'
 import { generateNumbers } from '@/lib/24-point/gameLogic'
 import { hasSolution } from '@/lib/24-point/solver'
 import { getPusherServer } from '@/lib/24-point/pusher'
+import {
+  clearRoomPlayerCookie,
+  getAuthenticatedRoomPlayerId,
+  setRoomPlayerCookie,
+} from '@/lib/24-point/playerSession'
+import { getRoomChannelName } from '@/lib/24-point/realtime'
+import { requireAnyUser, toPublicUser } from '@/lib/platform/auth'
 
 function generateSolvableNumbers(): number[] {
   let nums: number[]
@@ -42,6 +49,11 @@ export async function PATCH(
   { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
+    const currentUser = await requireAnyUser()
+    if (!currentUser) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     await connectDB()
     const { roomId } = await params
     const body = await request.json()
@@ -52,42 +64,67 @@ export async function PATCH(
       return NextResponse.json({ error: '房间不存在' }, { status: 404 })
     }
 
+    const authenticatedPlayerId = await getAuthenticatedRoomPlayerId(roomId)
+    const caller = authenticatedPlayerId
+      ? room.players.find((p) => p.accountId === authenticatedPlayerId)
+      : null
+
     const pusher = getPusherServer()
+    const channelName = getRoomChannelName(roomId)
 
     switch (action) {
       case 'join': {
-        const { nickname } = body
-        if (!nickname) {
-          return NextResponse.json({ error: '缺少昵称' }, { status: 400 })
-        }
         if (room.status !== 'waiting') {
           return NextResponse.json({ error: '游戏已开始' }, { status: 400 })
         }
 
-        const playerId = `player_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+        const existing = room.players.find((p) => p.accountId === String(currentUser._id))
+        if (existing) {
+          return NextResponse.json({
+            room: room.toObject(),
+            playerId: existing.id,
+          })
+        }
+
+        const activePlayers = room.players.filter((p) => p.role === 'player')
+        const nextRole = activePlayers.length >= 2 ? 'observer' : 'player'
+        const publicUser = toPublicUser(currentUser)
+        const playerId = publicUser.id
         room.players.push({
           id: playerId,
-          nickname,
+          accountId: playerId,
+          accountType: publicUser.accountType,
+          displayName: publicUser.displayName,
+          nickname: publicUser.displayName,
           score: 0,
           isHost: false,
           connected: true,
-          role: 'player',
+          role: nextRole,
         })
         await room.save()
 
         // 通知房间内的人
-        await pusher.trigger(`room-${roomId}`, 'player-joined', {
+        await pusher.trigger(channelName, 'player-joined', {
           player: room.players[room.players.length - 1],
           players: room.players,
         })
 
-        return NextResponse.json({
+        const response = NextResponse.json({
           room: room.toObject(),
           playerId,
         })
+        setRoomPlayerCookie(response, roomId, playerId)
+        return response
       }
 
       case 'start': {
+        if (!caller) {
+          return NextResponse.json({ error: '未授权' }, { status: 401 })
+        }
+        if (!caller.isHost) {
+          return NextResponse.json({ error: '只有房主可以开始游戏' }, { status: 403 })
+        }
+
         const activePlayers = room.players.filter((p) => p.role === 'player')
         if (activePlayers.length < 2) {
           return NextResponse.json({ error: '需要至少2名参赛玩家' }, { status: 400 })
@@ -103,7 +140,7 @@ export async function PATCH(
         room.roundStartedAt = new Date()
         await room.save()
 
-        await pusher.trigger(`room-${roomId}`, 'game-start', {
+        await pusher.trigger(channelName, 'game-start', {
           numbers,
           round: 1,
           totalRounds: room.totalRounds,
@@ -114,8 +151,11 @@ export async function PATCH(
       }
 
       case 'leave': {
-        const { playerId } = body
-        room.players = room.players.filter((p) => p.id !== playerId) as typeof room.players
+        if (!caller || !authenticatedPlayerId) {
+          return NextResponse.json({ error: '未授权' }, { status: 401 })
+        }
+
+        room.players = room.players.filter((p) => p.accountId !== authenticatedPlayerId) as typeof room.players
 
         if (room.players.length === 0) {
           await Room.deleteOne({ roomId })
@@ -130,20 +170,24 @@ export async function PATCH(
           await room.save()
         }
 
-        await pusher.trigger(`room-${roomId}`, 'player-left', {
-          playerId,
+        await pusher.trigger(channelName, 'player-left', {
+          playerId: authenticatedPlayerId,
           players: room.players,
         })
 
-        return NextResponse.json({ success: true })
+        const response = NextResponse.json({ success: true })
+        clearRoomPlayerCookie(response, roomId)
+        return response
       }
 
       case 'surrender': {
         // 游戏中离开 = 认输
-        const { playerId: surrenderId } = body
-        const surrenderPlayer = room.players.find((p) => p.id === surrenderId)
+        if (!caller || !authenticatedPlayerId) {
+          return NextResponse.json({ error: '未授权' }, { status: 401 })
+        }
+        const surrenderPlayer = room.players.find((p) => p.accountId === authenticatedPlayerId)
 
-        room.players = room.players.filter((p) => p.id !== surrenderId) as typeof room.players
+        room.players = room.players.filter((p) => p.accountId !== authenticatedPlayerId) as typeof room.players
 
         if (room.players.length === 0) {
           await Room.deleteOne({ roomId })
@@ -155,19 +199,20 @@ export async function PATCH(
           await room.save()
         }
 
-        await pusher.trigger(`room-${roomId}`, 'player-surrendered', {
-          playerId: surrenderId,
-          nickname: surrenderPlayer?.nickname || '未知',
+        await pusher.trigger(channelName, 'player-surrendered', {
+          playerId: authenticatedPlayerId,
+          nickname: surrenderPlayer?.displayName || surrenderPlayer?.nickname || '未知',
           players: room.players,
         })
 
-        return NextResponse.json({ success: true })
+        const response = NextResponse.json({ success: true })
+        clearRoomPlayerCookie(response, roomId)
+        return response
       }
 
       case 'set-role': {
         // 房主设置某人为观察者/参赛者
         const { targetPlayerId, role: newRole } = body
-        const caller = room.players.find((p) => p.id === body.playerId)
         if (!caller?.isHost) {
           return NextResponse.json({ error: '只有房主可以设置角色' }, { status: 403 })
         }
@@ -182,11 +227,20 @@ export async function PATCH(
         if (target.isHost) {
           return NextResponse.json({ error: '不能修改房主角色' }, { status: 400 })
         }
+        if (newRole !== 'player' && newRole !== 'observer') {
+          return NextResponse.json({ error: '非法角色' }, { status: 400 })
+        }
+        if (newRole === 'player' && target.role !== 'player') {
+          const activePlayers = room.players.filter((p) => p.role === 'player')
+          if (activePlayers.length >= 2) {
+            return NextResponse.json({ error: '参赛玩家最多只能有2人' }, { status: 400 })
+          }
+        }
 
         target.role = newRole
         await room.save()
 
-        await pusher.trigger(`room-${roomId}`, 'role-changed', {
+        await pusher.trigger(channelName, 'role-changed', {
           playerId: targetPlayerId,
           role: newRole,
           players: room.players,
@@ -197,8 +251,7 @@ export async function PATCH(
 
       case 'update-settings': {
         // 房主更新房间设置
-        const caller2 = room.players.find((p) => p.id === body.playerId)
-        if (!caller2?.isHost) {
+        if (!caller?.isHost) {
           return NextResponse.json({ error: '只有房主可以修改设置' }, { status: 403 })
         }
         if (room.status !== 'waiting') {
@@ -213,7 +266,7 @@ export async function PATCH(
         }
         await room.save()
 
-        await pusher.trigger(`room-${roomId}`, 'settings-updated', {
+        await pusher.trigger(channelName, 'settings-updated', {
           totalRounds: room.totalRounds,
           timePerRound: room.timePerRound,
         })
@@ -238,9 +291,28 @@ export async function DELETE(
   try {
     await connectDB()
     const { roomId } = await params
+    const authenticatedPlayerId = await getAuthenticatedRoomPlayerId(roomId)
+    if (!authenticatedPlayerId) {
+      return NextResponse.json({ error: '未授权' }, { status: 401 })
+    }
+
+    const room = await Room.findOne({ roomId })
+    if (!room) {
+      return NextResponse.json({ error: '房间不存在' }, { status: 404 })
+    }
+
+    const caller = room.players.find((p) => p.accountId === authenticatedPlayerId)
+    if (!caller) {
+      return NextResponse.json({ error: '房间成员不存在' }, { status: 403 })
+    }
+    if (!caller.isHost) {
+      return NextResponse.json({ error: '只有房主可以删除房间' }, { status: 403 })
+    }
 
     await Room.deleteOne({ roomId })
-    return NextResponse.json({ success: true })
+    const response = NextResponse.json({ success: true })
+    clearRoomPlayerCookie(response, roomId)
+    return response
   } catch (error) {
     console.error('删除房间失败:', error)
     return NextResponse.json({ error: '删除房间失败' }, { status: 500 })

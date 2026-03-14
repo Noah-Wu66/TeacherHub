@@ -7,6 +7,9 @@ export type PlayerRole = 'player' | 'observer'
 
 export interface Player {
   id: string
+  accountId: string
+  accountType: 'formal' | 'guest'
+  displayName: string
   nickname: string
   score: number
   isHost: boolean

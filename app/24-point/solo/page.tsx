@@ -9,6 +9,7 @@ import GameResult from '@/components/24-point/game/GameResult'
 import Button from '@/components/24-point/ui/Button'
 import NicknameInput from '@/components/24-point/ui/NicknameInput'
 import Link from 'next/link'
+import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 
 const ROUND_OPTIONS = [1, 3, 5, 7, 10]
 const TIME_OPTIONS = [30, 45, 60, 90, 120]
@@ -16,6 +17,10 @@ const TIME_OPTIONS = [30, 45, 60, 90, 120]
 export default function SoloPage() {
   const router = useRouter()
   const { nickname, setNickname, hasNickname, isReady } = useNickname()
+  const access = useAccessControl({
+    allowGuest: true,
+    reason: '请先登录正式账号或游客账号后再使用 24 点挑战。',
+  })
   const [totalRounds, setTotalRounds] = useState(5)
   const [timePerRound, setTimePerRound] = useState(60)
 
@@ -24,7 +29,8 @@ export default function SoloPage() {
     timePerRound,
   })
 
-  if (!isReady) return null
+  if (!isReady || access.loading) return null
+  if (!access.allowed) return <div className="min-h-dvh" />
 
   return (
     <div className="min-h-dvh flex flex-col items-center px-3 sm:px-4 py-2 sm:py-6">
@@ -130,7 +136,7 @@ export default function SoloPage() {
         playerScore={game.score}
         totalRounds={game.totalRounds}
         onPlayAgain={game.startGame}
-        onExit={() => router.push('/')}
+        onExit={() => router.push('/24-point')}
       />
     </div>
   )

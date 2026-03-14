@@ -3,7 +3,8 @@ import { connectDB } from '@/lib/24-point/db'
 import { Room } from '@/lib/24-point/models/Room'
 import { generateNumbers } from '@/lib/24-point/gameLogic'
 import { hasSolution } from '@/lib/24-point/solver'
-import { getPusherServer } from '@/lib/24-point/pusher'
+import { setRoomPlayerCookie } from '@/lib/24-point/playerSession'
+import { requireAnyUser, toPublicUser } from '@/lib/platform/auth'
 
 // 生成 6 位房间码
 function generateRoomId(): string {
@@ -29,12 +30,17 @@ function generateSolvableNumbers(): number[] {
 // POST — 创建房间
 export async function POST(request: NextRequest) {
   try {
+    const currentUser = await requireAnyUser()
+    if (!currentUser) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     await connectDB()
 
-    const { roomName, nickname, totalRounds = 5, timePerRound = 60 } = await request.json()
+    const { roomName, totalRounds = 5, timePerRound = 60 } = await request.json()
 
-    if (!roomName || !nickname) {
-      return NextResponse.json({ error: '缺少房间名或昵称' }, { status: 400 })
+    if (!roomName) {
+      return NextResponse.json({ error: '缺少房间名' }, { status: 400 })
     }
 
     // 生成唯一房间码
@@ -47,7 +53,8 @@ export async function POST(request: NextRequest) {
       retries++
     }
 
-    const playerId = `player_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const publicUser = toPublicUser(currentUser)
+    const playerId = publicUser.id
 
     const room = await Room.create({
       roomId,
@@ -55,7 +62,10 @@ export async function POST(request: NextRequest) {
       status: 'waiting',
       players: [{
         id: playerId,
-        nickname,
+        accountId: playerId,
+        accountType: publicUser.accountType,
+        displayName: publicUser.displayName,
+        nickname: publicUser.displayName,
         score: 0,
         isHost: true,
         connected: true,
@@ -68,10 +78,12 @@ export async function POST(request: NextRequest) {
       roundResults: [],
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       room: room.toObject(),
       playerId,
     })
+    setRoomPlayerCookie(response, roomId, playerId)
+    return response
   } catch (error) {
     console.error('创建房间失败:', error)
     return NextResponse.json({ error: '创建房间失败' }, { status: 500 })
@@ -81,17 +93,25 @@ export async function POST(request: NextRequest) {
 // GET — 获取可加入的房间列表
 export async function GET() {
   try {
+    const currentUser = await requireAnyUser()
+    if (!currentUser) {
+      return NextResponse.json({ rooms: [] }, { status: 401 })
+    }
+
     await connectDB()
 
     const rooms = await Room.find({
       status: 'waiting',
-      'players.1': { $exists: false }, // 只有1个玩家的房间
     })
       .sort({ createdAt: -1 })
-      .limit(20)
+      .limit(100)
       .lean()
 
-    return NextResponse.json({ rooms })
+    const joinableRooms = rooms
+      .filter((room) => room.players.filter((player) => player.role === 'player').length < 2)
+      .slice(0, 20)
+
+    return NextResponse.json({ rooms: joinableRooms })
   } catch (error) {
     console.error('获取房间列表失败:', error)
     return NextResponse.json({ error: '获取房间列表失败' }, { status: 500 })

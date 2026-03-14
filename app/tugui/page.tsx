@@ -9,6 +9,7 @@ import CustomDateSimulator from './components/CustomDateSimulator';
 import SeasonalEffects from './components/SeasonalEffects';
 import SeasonalAudio from './components/SeasonalAudio';
 import CurrentDateCard from './components/CurrentDateCard';
+import ToolAccessGuard from '@/components/platform/auth/ToolAccessGuard';
 
 export default function Home() {
   const [customData, setCustomData] = useState<SolarTermData | null>(null);
@@ -50,67 +51,69 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative min-h-screen py-3 sm:py-6 md:py-8 px-2 sm:px-3 md:px-4">
-      <SeasonalEffects season={season} />
-      <SeasonalAudio season={season} />
-      <div className="max-w-5xl mx-auto relative z-10">
-        {/* 标题 */}
-        <header className="text-center mb-3 sm:mb-6 md:mb-8 animate-slide-in">
-          <div className="inline-block relative">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest"
-              style={{ color: theme.accent }}>
-              土圭之法
-            </h1>
-            <p className="text-xs sm:text-sm md:text-base mt-1 sm:mt-2 font-kai tracking-wider opacity-70">
-              以土圭之法测土深 正日景 以求地中
-            </p>
-            <div className="ancient-divider mt-2 sm:mt-3" />
-          </div>
-        </header>
+    <ToolAccessGuard allowGuest reason="请先登录正式账号或游客账号后再使用土圭之法。">
+      <main className="relative min-h-screen py-3 sm:py-6 md:py-8 px-2 sm:px-3 md:px-4">
+        <SeasonalEffects season={season} />
+        <SeasonalAudio season={season} />
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* 标题 */}
+          <header className="text-center mb-3 sm:mb-6 md:mb-8 animate-slide-in">
+            <div className="inline-block relative">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest"
+                style={{ color: theme.accent }}>
+                土圭之法
+              </h1>
+              <p className="text-xs sm:text-sm md:text-base mt-1 sm:mt-2 font-kai tracking-wider opacity-70">
+                以土圭之法测土深 正日景 以求地中
+              </p>
+              <div className="ancient-divider mt-2 sm:mt-3" />
+            </div>
+          </header>
 
-        <section className="mb-3 sm:mb-6 md:mb-8 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_300px] gap-3 sm:gap-5 md:gap-6 md:items-stretch">
-          {/* 右侧：日期模拟 + 当前日期（移动端仍在上方） */}
-          <div className="order-1 md:order-2 min-w-0 grid grid-cols-1 gap-3 sm:gap-5 md:gap-6 content-start">
-            <CustomDateSimulator
-              onSimulate={handleSimulateByDate}
-              season={season}
-            />
-            <CurrentDateCard data={currentData} season={season} />
-          </div>
+          <section className="mb-3 sm:mb-6 md:mb-8 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_300px] gap-3 sm:gap-5 md:gap-6 md:items-stretch">
+            {/* 右侧：日期模拟 + 当前日期（移动端仍在上方） */}
+            <div className="order-1 md:order-2 min-w-0 grid grid-cols-1 gap-3 sm:gap-5 md:gap-6 content-start">
+              <CustomDateSimulator
+                onSimulate={handleSimulateByDate}
+                season={season}
+              />
+              <CurrentDateCard data={currentData} season={season} />
+            </div>
 
-          {/* 左侧：展示区 */}
-          <div className="order-2 md:order-1 min-w-0 md:h-full flex flex-col">
-            {currentData && (
-              <div className="mb-3 sm:mb-5 md:mb-6">
-                <DataDisplay data={currentData} season={season} />
-              </div>
-            )}
+            {/* 左侧：展示区 */}
+            <div className="order-2 md:order-1 min-w-0 md:h-full flex flex-col">
+              {currentData && (
+                <div className="mb-3 sm:mb-5 md:mb-6">
+                  <DataDisplay data={currentData} season={season} />
+                </div>
+              )}
 
-            {currentData && (
-              <div className="md:flex-1">
-                <div className="ancient-card overflow-hidden h-[280px] sm:h-[420px] md:h-full">
-                  <div className="ancient-card-inner w-full h-full">
-                    <TuguiCanvas solarTermData={currentData} season={season} />
+              {currentData && (
+                <div className="md:flex-1">
+                  <div className="ancient-card overflow-hidden h-[280px] sm:h-[420px] md:h-full">
+                    <div className="ancient-card-inner w-full h-full">
+                      <TuguiCanvas solarTermData={currentData} season={season} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </section>
+
+          {/* 历史信息 */}
+          <div className="mb-3 sm:mb-6 md:mb-8">
+            <HistoricalInfo season={season} solarData={currentData} />
           </div>
-        </section>
 
-        {/* 历史信息 */}
-        <div className="mb-3 sm:mb-6 md:mb-8">
-          <HistoricalInfo season={season} solarData={currentData} />
+          {/* 页脚 */}
+          <footer className="text-center mt-4 sm:mt-8 pb-4 sm:pb-6">
+            <div className="ancient-divider mb-3 sm:mb-4" />
+            <p className="text-xs opacity-60 font-kai tracking-wider">
+              切换节气或输入月日 观察太阳高度角和日影长度的变化
+            </p>
+          </footer>
         </div>
-
-        {/* 页脚 */}
-        <footer className="text-center mt-4 sm:mt-8 pb-4 sm:pb-6">
-          <div className="ancient-divider mb-3 sm:mb-4" />
-          <p className="text-xs opacity-60 font-kai tracking-wider">
-            切换节气或输入月日 观察太阳高度角和日影长度的变化
-          </p>
-        </footer>
-      </div>
-    </main>
+      </main>
+    </ToolAccessGuard>
   );
 }

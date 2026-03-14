@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/ai-education/api';
 import { useChatStore } from '@/store/ai-education/chatStore';
+import { useAccessControl } from '@/components/platform/auth/useAccessControl';
 
 type Message = {
     role: 'user' | 'assistant';
@@ -16,6 +17,10 @@ type Message = {
 };
 
 function VoicePageInner() {
+    const access = useAccessControl({
+        allowGuest: false,
+        reason: '智趣学语音功能仅正式用户可访问，请先登录正式账号。',
+    });
     const searchParams = useSearchParams();
     const router = useRouter();
     const { addConversation } = useChatStore();
@@ -37,6 +42,14 @@ function VoicePageInner() {
     const skipNextAutoLoadRef = useRef(false);
 
     const MAX_RECORDING_DURATION = 30000; // 30秒
+
+    if (access.loading) {
+        return null;
+    }
+
+    if (!access.allowed) {
+        return <div className="h-screen bg-background" />;
+    }
 
     // 从 URL 获取对话 ID 并加载历史
     useEffect(() => {
@@ -93,7 +106,7 @@ function VoicePageInner() {
                 setConversationTitle(data.title);
                 // 更新 URL
                 skipNextAutoLoadRef.current = true;
-                router.replace(`/voice?id=${data.id}`, { scroll: false });
+                router.replace(`/ai-education/voice?id=${data.id}`, { scroll: false });
                 // 添加到侧边栏列表
                 addConversation({ ...data, type: 'voice' });
                 return data.id;
@@ -110,7 +123,7 @@ function VoicePageInner() {
         setMessages([]);
         setConversationTitle('语音通话');
         setError(null);
-        router.replace('/voice', { scroll: false });
+        router.replace('/ai-education/voice', { scroll: false });
     };
 
     // 自动滚动到底部

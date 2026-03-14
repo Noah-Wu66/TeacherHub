@@ -5,8 +5,11 @@ export const COLLECTIONS = {
   imageCards: "image_cards",
   imageAssets: "image_assets",
   authCodes: "auth_codes", // 授权码记录
+  invitations: "invitations", // 正式注册邀请码
   conversations: "conversations", // 对话集合
   usageStats: "usage_stats", // 模型使用统计
+  mathProgress: "math_progress", // 数学工具学习进度
+  toolChatHistories: "tool_chat_histories", // 非智趣学工具聊天记录
 };
 
 // GridFS Bucket 名称
@@ -17,6 +20,8 @@ export const GRIDFS_BUCKETS = {
 export const USER_FIELDS = {
   name: "name", // 姓名（登录名，唯一标识）
   passwordHash: "passwordHash",
+  accountType: "accountType", // 'formal' | 'guest'
+  status: "status", // 'active' | 'banned'
   gender: "gender", // 性别
   grade: "grade", // 年级
   className: "className", // 班级
@@ -28,13 +33,26 @@ export const USER_FIELDS = {
   createdAt: "createdAt",
   updatedAt: "updatedAt",
   preferences: "preferences",
+  guestPurgeAt: "guestPurgeAt",
 };
 
 export const USER_ROLES = {
-  user: "user",
+  user: "student",
+  student: "student",
   teacher: "teacher",
   admin: "admin",
   superadmin: "superadmin",
+  guest: "guest",
+};
+
+export const USER_ACCOUNT_TYPES = {
+  formal: "formal",
+  guest: "guest",
+};
+
+export const USER_STATUSES = {
+  active: "active",
+  banned: "banned",
 };
 
 export const SESSION_FIELDS = {
@@ -59,6 +77,17 @@ export const AUTH_CODE_FIELDS = {
   usedAt: "usedAt", // 使用时间
 };
 
+export const INVITATION_FIELDS = {
+  code: "code",
+  targetRole: "targetRole", // 'student' | 'teacher'
+  status: "status", // 'active' | 'used' | 'revoked'
+  createdBy: "createdBy",
+  usedBy: "usedBy",
+  usedAt: "usedAt",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+};
+
 export const CONVERSATION_FIELDS = {
   userId: "userId",
   title: "title",
@@ -74,6 +103,27 @@ export const USAGE_STATS_FIELDS = {
   userId: "userId",
   model: "model",
   count: "count",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+};
+
+export const MATH_PROGRESS_FIELDS = {
+  userId: "userId",
+  grade: "grade",
+  chapter: "chapter",
+  totalQuestions: "totalQuestions",
+  correctAnswers: "correctAnswers",
+  streak: "streak",
+  maxStreak: "maxStreak",
+  lastPlayed: "lastPlayed",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+};
+
+export const TOOL_CHAT_HISTORY_FIELDS = {
+  userId: "userId",
+  tool: "tool",
+  messages: "messages",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
 };

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Card from '@/components/24-point/ui/Card'
 import NicknameInput from '@/components/24-point/ui/NicknameInput'
 import { useNickname } from '@/hooks/24-point/useNickname'
+import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 
 const modes = [
   {
@@ -46,8 +47,13 @@ const modes = [
 
 export default function Home() {
   const { nickname, setNickname, hasNickname, isReady } = useNickname()
+  const access = useAccessControl({
+    allowGuest: true,
+    reason: '请先登录正式账号或游客账号后再使用 24 点挑战。',
+  })
 
-  if (!isReady) return null
+  if (!isReady || access.loading) return null
+  if (!access.allowed) return <div className="min-h-dvh" />
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-8 sm:py-12">
@@ -67,7 +73,7 @@ export default function Home() {
         </p>
         {hasNickname && (
           <p className="text-gray-400 text-sm mt-2">
-            欢迎回来，<button onClick={() => { const name = prompt('修改昵称:', nickname); if (name?.trim()) setNickname(name.trim()) }} className="inline-flex items-center min-h-[44px] px-2 text-indigo-400 hover:text-indigo-500 active:text-indigo-600 underline decoration-dotted underline-offset-2 cursor-pointer">{nickname}</button>
+            欢迎回来，<span className="inline-flex items-center min-h-[44px] px-2 text-indigo-400">{nickname}</span>
           </p>
         )}
       </div>

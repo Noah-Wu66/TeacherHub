@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { SeasonTheme, SolarTermData } from '../types';
+import { useAuth } from '@/components/platform/auth/AuthProvider';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,24 +18,58 @@ interface AiChatModalProps {
   solarData: SolarTermData | null;
 }
 
-const STORAGE_KEY = 'tugui-chat-history';
+function getStorageKey(userId?: string) {
+  return userId ? `tugui-chat-history:${userId}` : 'tugui-chat-history';
+}
 
-function loadHistory(): Message[] {
+function loadHistory(storageKey: string): Message[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
   return [];
 }
 
-function saveHistory(messages: Message[]) {
+function saveHistory(storageKey: string, messages: Message[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(storageKey, JSON.stringify(messages));
   } catch { /* ignore */ }
 }
 
+async function loadServerHistory(): Promise<Message[]> {
+  try {
+    const response = await fetch('/tugui/api/history', { cache: 'no-store' });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data?.messages) ? data.messages : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveServerHistory(messages: Message[]) {
+  try {
+    await fetch('/tugui/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+  } catch {
+    // ignore
+  }
+}
+
+async function clearServerHistory() {
+  try {
+    await fetch('/tugui/api/history', { method: 'DELETE' });
+  } catch {
+    // ignore
+  }
+}
+
 export default function AiChatModal({ open, onClose, theme, solarData }: AiChatModalProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,22 +79,34 @@ export default function AiChatModal({ open, onClose, theme, solarData }: AiChatM
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const initialized = useRef(false);
+  const [historyReady, setHistoryReady] = useState(false);
+  const storageKey = getStorageKey(user?.id);
 
-  // 加载历史记录
   useEffect(() => {
-    if (!initialized.current) {
-      setMessages(loadHistory());
-      initialized.current = true;
-    }
-  }, []);
+    let cancelled = false;
+    const localMessages = loadHistory(storageKey);
 
-  // 保存历史记录
+    setHistoryReady(false);
+    setMessages(localMessages);
+
+    void loadServerHistory().then((serverMessages) => {
+      if (cancelled) return;
+      const nextMessages = serverMessages.length > 0 ? serverMessages : localMessages;
+      setMessages(nextMessages);
+      saveHistory(storageKey, nextMessages);
+      setHistoryReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [storageKey]);
+
   useEffect(() => {
-    if (initialized.current) {
-      saveHistory(messages);
-    }
-  }, [messages]);
+    if (!historyReady) return;
+    saveHistory(storageKey, messages);
+    void saveServerHistory(messages);
+  }, [historyReady, messages, storageKey]);
 
   // 弹窗打开时聚焦输入框
   useEffect(() => {
@@ -210,7 +257,8 @@ export default function AiChatModal({ open, onClose, theme, solarData }: AiChatM
     setStreamingReasoning('');
     setIsLoading(false);
     setIsThinking(false);
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(storageKey);
+    void clearServerHistory();
   };
 
   // 按键处理

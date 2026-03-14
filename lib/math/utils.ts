@@ -79,9 +79,36 @@ export class MathUtils {
 }
 
 export class ProgressTracker {
+  static getKey(grade: number, chapter: string) {
+    return `progress_${grade}_${chapter}`
+  }
+
+  static async syncFromServer(grade: number, chapter: string): Promise<Progress> {
+    const key = this.getKey(grade, chapter)
+    const defaultProgress: Progress = this.getProgress(grade, chapter)
+
+    if (typeof window === 'undefined') {
+      return defaultProgress
+    }
+
+    try {
+      const response = await fetch(`/math/api/progress?grade=${grade}&chapter=${encodeURIComponent(chapter)}`, {
+        cache: 'no-store',
+      })
+      if (!response.ok) {
+        return defaultProgress
+      }
+      const progress = await response.json()
+      localStorage.setItem(key, JSON.stringify(progress))
+      return progress
+    } catch {
+      return defaultProgress
+    }
+  }
+
   // 获取进度数据
   static getProgress(grade: number, chapter: string): Progress {
-    const key = `progress_${grade}_${chapter}`
+    const key = this.getKey(grade, chapter)
     const defaultProgress: Progress = {
       totalQuestions: 0,
       correctAnswers: 0,
@@ -114,7 +141,7 @@ export class ProgressTracker {
 
   // 更新进度数据
   static updateProgress(grade: number, chapter: string, isCorrect: boolean): Progress {
-    const key = `progress_${grade}_${chapter}`
+    const key = this.getKey(grade, chapter)
     const progress = this.getProgress(grade, chapter)
 
     progress.totalQuestions++
@@ -132,6 +159,15 @@ export class ProgressTracker {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(key, JSON.stringify(progress))
+        void fetch('/math/api/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grade, chapter, isCorrect }),
+        }).then(async (response) => {
+          if (!response.ok) return
+          const serverProgress = await response.json()
+          localStorage.setItem(key, JSON.stringify(serverProgress))
+        }).catch(() => undefined)
       } catch (error) {
         console.warn('Failed to save progress data:', error)
       }
@@ -151,10 +187,15 @@ export class ProgressTracker {
 
   // 重置进度
   static resetProgress(grade: number, chapter: string): boolean {
-    const key = `progress_${grade}_${chapter}`
+    const key = this.getKey(grade, chapter)
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(key)
+        void fetch('/math/api/progress', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grade, chapter }),
+        }).catch(() => undefined)
         return true
       } catch (error) {
         console.warn('Failed to reset progress:', error)
@@ -164,4 +205,3 @@ export class ProgressTracker {
     return false
   }
 }
-

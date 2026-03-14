@@ -33,8 +33,7 @@ export default function StudentsManagementPage() {
         throw new Error(data?.message || '加载失败');
       }
       const data = await res.json();
-      // 只显示学生 (role === 'user')
-      const students = (data.users || []).filter((u: User) => u.role === 'user');
+      const students = (data.users || []).filter((u: User) => u.role === 'student' || u.role === 'user');
       setUsers(students);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '加载失败');
@@ -237,7 +236,7 @@ export default function StudentsManagementPage() {
   };
 
   const getStudentStats = (userId: string) => {
-    return usageStats.find(s => s.userId === userId);
+    return usageStats.find((s) => s.userId === userId);
   };
 
   const formatDate = (dateStr: string) => {
@@ -279,7 +278,6 @@ export default function StudentsManagementPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       <div className="mx-auto max-w-6xl p-4 sm:p-6 md:p-8 space-y-6">
-        {/* 头部 */}
         <div className="flex items-center gap-4">
           <Link
             href="/ai-education"
@@ -297,7 +295,6 @@ export default function StudentsManagementPage() {
           </div>
         </div>
 
-        {/* 历史记录清理卡片 - 仅超级管理员可见 */}
         {currentUser?.role === 'superadmin' && conversationStats && (
           <div className="rounded-lg border bg-card p-4 sm:p-6">
             <div className="flex items-start gap-4">
@@ -331,7 +328,6 @@ export default function StudentsManagementPage() {
           </div>
         )}
 
-        {/* 学生列表 */}
         <div className="rounded-lg border overflow-hidden">
           <div className="bg-muted/50 border-b p-4">
             <div className="grid grid-cols-12 gap-4 text-sm font-medium">
@@ -372,7 +368,6 @@ export default function StudentsManagementPage() {
         </div>
       </div>
 
-      {/* 密码重置成功弹窗 */}
       {resetPasswordModal && (
         <ResetPasswordModal
           name={resetPasswordModal.name}

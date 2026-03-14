@@ -1,47 +1,24 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useChatStore } from '@/store/ai-education/chatStore';
 import Sidebar from '@/components/ai-education/Sidebar';
 import ChatInterface from '@/components/ai-education/ChatInterface';
 import ErrorBoundary from '@/components/ai-education/ErrorBoundary';
-import LoginModal from '@/components/ai-education/auth/LoginModal';
-import AccountModal from '@/components/ai-education/auth/AccountModal';
 import { ThemeProvider } from '@/components/ai-education/ThemeProvider';
 import { AlertCircle, WifiOff } from 'lucide-react';
 import { apiFetch } from '@/lib/ai-education/api';
+import { useAuth } from '@/components/platform/auth/AuthProvider';
+import { useAccessControl } from '@/components/platform/auth/useAccessControl';
 
 export default function HomePage() {
   const { error, setError, setPreferencesHydrated, setConversations } = useChatStore();
   const [isOnline, setIsOnline] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showAccountModal, setShowAccountModal] = useState(false);
-
-  // 检查用户认证状态
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await apiFetch('/ai-education/api/auth/status');
-        const data = await res.json();
-        if (data.authenticated && data.user) {
-          setUser(data.user);
-          // 如果需要强制修改密码，自动打开账户弹窗
-          if (data.user.mustChangePassword) {
-            setShowAccountModal(true);
-          }
-        } else {
-          setShowLoginModal(true);
-        }
-      } catch {
-        setShowLoginModal(true);
-      } finally {
-        setAuthChecked(true);
-      }
-    };
-    checkAuth();
-  }, []);
+  const { user, openAccountDialog } = useAuth();
+  const { loading, allowed } = useAccessControl({
+    allowGuest: false,
+    reason: '智趣学平台仅正式用户可访问，请先登录正式账号。',
+  });
 
   // 登录后刷新对话列表，避免首次加载因未登录返回空列表
   const refreshConversations = useCallback(async () => {
@@ -72,30 +49,15 @@ export default function HomePage() {
     };
   }, []);
 
-  // 登录成功回调
-  const handleLoginSuccess = (userData: any) => {
-    setUser(userData);
-    setShowLoginModal(false);
-    setPreferencesHydrated(false);
-    refreshConversations();
-    // 如果需要强制修改密码，自动打开账户弹窗
-    if (userData?.mustChangePassword) {
-      setShowAccountModal(true);
+  useEffect(() => {
+    if (allowed && user) {
+      setPreferencesHydrated(false);
+      refreshConversations();
+      if (user.mustChangePassword) {
+        openAccountDialog();
+      }
     }
-  };
-
-  // 密码修改成功回调
-  const handlePasswordChanged = () => {
-    // 更新用户状态，清除 mustChangePassword 标记
-    setUser((prev: any) => prev ? { ...prev, mustChangePassword: false } : prev);
-  };
-
-  // 登出回调
-  const handleLogout = () => {
-    setUser(null);
-    setShowLoginModal(true);
-    setPreferencesHydrated(false);
-  };
+  }, [allowed, openAccountDialog, refreshConversations, setPreferencesHydrated, user]);
 
   // 错误提示组件
   const ErrorAlert = () => {
@@ -133,7 +95,7 @@ export default function HomePage() {
   };
 
   // 认证检查中,显示加载状态
-  if (!authChecked) {
+  if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
@@ -142,6 +104,10 @@ export default function HomePage() {
         </div>
       </div>
     );
+  }
+
+  if (!allowed || !user) {
+    return <div className="h-full bg-background" />;
   }
 
   return (
@@ -155,28 +121,13 @@ export default function HomePage() {
           <div className="flex-1 flex flex-col min-w-0">
             <ChatInterface
               user={user}
-              onOpenAccount={() => setShowAccountModal(true)}
+              onOpenAccount={openAccountDialog}
             />
           </div>
 
           {/* 全局提示 */}
           <ErrorAlert />
           <NetworkStatus />
-
-          {/* 登录弹窗 */}
-          <LoginModal
-            visible={showLoginModal}
-            onSuccess={handleLoginSuccess}
-          />
-
-          {/* 账户管理弹窗 */}
-          <AccountModal
-            visible={showAccountModal}
-            onClose={() => setShowAccountModal(false)}
-            user={user}
-            onLogout={handleLogout}
-            onPasswordChanged={handlePasswordChanged}
-          />
         </div>
       </ErrorBoundary>
     </ThemeProvider>

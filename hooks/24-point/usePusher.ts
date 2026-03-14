@@ -52,14 +52,5 @@ export function usePusher(channelName: string | null) {
     }
   }, [])
 
-  const trigger = useCallback(async (event: string, data: unknown) => {
-    // 通过 API 中转触发服务端事件
-    await fetch('/24-point/api/pusher/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, channel: channelRef.current?.name, data }),
-    })
-  }, [])
-
-  return { isConnected, on, trigger }
+  return { isConnected, on }
 }

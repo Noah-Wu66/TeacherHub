@@ -200,7 +200,7 @@ export default function Sidebar() {
       if (window.innerWidth < 1024) {
         setSidebarOpen(false);
       }
-      router.push(`/voice?id=${conversation.id}`);
+      router.push(`/ai-education/voice?id=${conversation.id}`);
       return;
     }
 
@@ -224,7 +224,7 @@ export default function Sidebar() {
       const params = new URLSearchParams();
       params.set('id', conversation.id);
       if (inferredTopicId) params.set('topic', inferredTopicId);
-      router.push(`/dasi-zhengke?${params.toString()}`);
+      router.push(`/ai-education/dasi-zhengke?${params.toString()}`);
       return;
     }
 

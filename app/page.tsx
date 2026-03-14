@@ -1,4 +1,8 @@
+'use client'
+
 import Link from 'next/link'
+import { useAuth } from '@/components/platform/auth/AuthProvider'
+import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 
 function IconAI() {
   return (
@@ -213,6 +217,27 @@ const colorMap: Record<string, { card: string; icon: string; title: string; tag:
 }
 
 export default function HomePage() {
+  const { openAccountDialog } = useAuth()
+  const { loading, allowed, user } = useAccessControl({
+    allowGuest: false,
+    reason: '首页仅正式用户可访问，请先登录正式账号。',
+  })
+
+  if (loading) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-[#fafbfc]">
+        <div className="text-center text-gray-500">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900" />
+          <p className="mt-4 text-sm">正在读取账户信息...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!allowed || !user) {
+    return <div className="min-h-dvh bg-[#fafbfc]" />
+  }
+
   return (
     <div className="min-h-dvh bg-[#fafbfc] relative overflow-hidden">
       {/* 装饰背景 */}
@@ -225,6 +250,21 @@ export default function HomePage() {
       <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 py-12 sm:py-20">
         {/* Hero */}
         <header className="mb-14 sm:mb-20 animate-[fadeIn_0.6s_ease-out_both]">
+          <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Current Account</p>
+              <p className="mt-1 text-sm font-semibold text-gray-800">
+                {user.displayName} · {user.role === 'superadmin' ? '超级管理员' : user.role === 'admin' ? '管理员' : user.role === 'teacher' ? '教师' : '学生'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={openAccountDialog}
+              className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              账户中心
+            </button>
+          </div>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200/50">
               <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-white">

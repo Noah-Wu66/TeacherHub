@@ -19,6 +19,9 @@ export default function QuizSection({ chapter, grade, generator }: QuizSectionPr
   useEffect(() => {
     generateNewQuestion()
     updateProgressDisplay()
+    void ProgressTracker.syncFromServer(grade, chapter.id).then(() => {
+      updateProgressDisplay()
+    })
   }, [chapter.id, grade])
 
   const generateNewQuestion = () => {
@@ -107,4 +110,3 @@ export default function QuizSection({ chapter, grade, generator }: QuizSectionPr
     </section>
   )
 }
-

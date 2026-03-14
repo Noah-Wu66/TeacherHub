@@ -2,6 +2,9 @@ import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface IRoomPlayer {
   id: string
+  accountId: string
+  accountType: 'formal' | 'guest'
+  displayName: string
   nickname: string
   score: number
   isHost: boolean
@@ -34,6 +37,9 @@ export interface IRoom extends Document {
 
 const RoomPlayerSchema = new Schema<IRoomPlayer>({
   id: { type: String, required: true },
+  accountId: { type: String, required: true, index: true },
+  accountType: { type: String, enum: ['formal', 'guest'], required: true },
+  displayName: { type: String, required: true },
   nickname: { type: String, required: true },
   score: { type: Number, default: 0 },
   isHost: { type: Boolean, default: false },

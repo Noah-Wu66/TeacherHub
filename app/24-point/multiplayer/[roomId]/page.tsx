@@ -14,6 +14,9 @@ import RoomLobby from '@/components/24-point/multiplayer/RoomLobby'
 import OpponentPanel from '@/components/24-point/multiplayer/OpponentPanel'
 import GameBoard from '@/components/24-point/game/GameBoard'
 import GameResult from '@/components/24-point/game/GameResult'
+import { getRoomChannelName } from '@/lib/24-point/realtime'
+import { useAccessControl } from '@/components/platform/auth/useAccessControl'
+import { useAuth } from '@/components/platform/auth/AuthProvider'
 import type {
   Player,
   PlayerRole,
@@ -35,6 +38,11 @@ export default function RoomPage() {
 
   const { nickname, setNickname, hasNickname, isReady } = useNickname()
   const { room, setRoom, fetchRoom, loading, error } = useRoom()
+  const access = useAccessControl({
+    allowGuest: true,
+    reason: '请先登录正式账号或游客账号后再使用 24 点挑战。',
+  })
+  const { user } = useAuth()
 
   const [playerId, setPlayerId] = useState<string>('')
   const [players, setPlayers] = useState<Player[]>([])
@@ -56,7 +64,7 @@ export default function RoomPage() {
   const opponentFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Pusher 连接
-  const { isConnected, on } = usePusher(roomId ? `room-${roomId}` : null)
+  const { isConnected, on } = usePusher(roomId ? getRoomChannelName(roomId) : null)
 
   // 同步 room 设置到本地 state
   useEffect(() => {
@@ -70,8 +78,7 @@ export default function RoomPage() {
   useEffect(() => {
     if (!roomId || !isReady || !hasNickname) return
 
-    const pid = sessionStorage.getItem(`room-${roomId}-playerId`) || ''
-    setPlayerId(pid)
+    setPlayerId(user?.id || '')
 
     fetchRoom(roomId).then((r) => {
       if (r) {
@@ -83,7 +90,7 @@ export default function RoomPage() {
         }
       }
     })
-  }, [roomId, isReady, hasNickname]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [roomId, isReady, hasNickname, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 监听 Pusher 事件
   useEffect(() => {
@@ -164,7 +171,7 @@ export default function RoomPage() {
       setPlayers((prev) =>
         prev.map((p) => ({
           ...p,
-          score: d.scores[p.id] ?? p.score,
+          score: d.scores[p.accountId] ?? p.score,
         }))
       )
 
@@ -197,13 +204,11 @@ export default function RoomPage() {
     if (!gameStarted || !roomId || !playerId) return
 
     const sendExpression = async () => {
-      await fetch('/24-point/api/pusher/auth', {
+      await fetch(`/24-point/api/rooms/${roomId}/expression`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          event: 'expression-update',
-          channel: `room-${roomId}`,
-          data: { playerId, expression: game.expression },
+          expression: game.expression,
         }),
       })
     }
@@ -247,10 +252,9 @@ export default function RoomPage() {
     await fetch(`/24-point/api/rooms/${roomId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'leave', playerId }),
+      body: JSON.stringify({ action: 'leave' }),
     })
-    sessionStorage.removeItem(`room-${roomId}-playerId`)
-    router.push('/multiplayer')
+    router.push('/24-point/multiplayer')
   }
 
   // 认输离开（游戏进行中）
@@ -259,10 +263,9 @@ export default function RoomPage() {
     await fetch(`/24-point/api/rooms/${roomId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'surrender', playerId }),
+      body: JSON.stringify({ action: 'surrender' }),
     })
-    sessionStorage.removeItem(`room-${roomId}-playerId`)
-    router.push('/multiplayer')
+    router.push('/24-point/multiplayer')
   }
 
   // 设置角色
@@ -270,7 +273,7 @@ export default function RoomPage() {
     await fetch(`/24-point/api/rooms/${roomId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'set-role', playerId, targetPlayerId, role }),
+      body: JSON.stringify({ action: 'set-role', targetPlayerId, role }),
     })
   }
 
@@ -279,22 +282,23 @@ export default function RoomPage() {
     await fetch(`/24-point/api/rooms/${roomId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update-settings', playerId, ...settings }),
+      body: JSON.stringify({ action: 'update-settings', ...settings }),
     })
   }
 
-  if (!isReady) return null
+  if (!isReady || access.loading) return null
+  if (!access.allowed) return <div className="min-h-dvh" />
 
-  const me = players.find((p) => p.id === playerId)
+  const me = players.find((p) => p.accountId === playerId)
   const isHost = me?.isHost || false
   const isObserver = me?.role === 'observer'
 
   // 对战双方（只看 role=player 的人）
   const gamePlayers = players.filter((p) => p.role === 'player')
-  const opponent = gamePlayers.find((p) => p.id !== playerId)
+  const opponent = gamePlayers.find((p) => p.accountId !== playerId)
 
   const myScore = finalScores[playerId] ?? me?.score ?? game.score
-  const opponentScore = opponent ? (finalScores[opponent.id] ?? opponent.score) : 0
+  const opponentScore = opponent ? (finalScores[opponent.accountId] ?? opponent.score) : 0
 
   return (
     <div className="min-h-dvh flex flex-col items-center px-3 sm:px-4 py-2 sm:py-6">
@@ -415,9 +419,9 @@ export default function RoomPage() {
               <OpponentPanel
                 key={p.id}
                 nickname={p.nickname}
-                score={finalScores[p.id] ?? p.score}
+                score={finalScores[p.accountId] ?? p.score}
                 numbers={game.numbers}
-                expression={p.id === playerId ? game.expression : opponentExpression}
+                expression={p.accountId === playerId ? game.expression : opponentExpression}
                 feedback={null}
               />
             ))}
@@ -433,8 +437,8 @@ export default function RoomPage() {
         opponentName={opponent?.nickname || '对手'}
         opponentScore={opponentScore}
         totalRounds={totalRounds}
-        onPlayAgain={() => router.push('/multiplayer')}
-        onExit={() => router.push('/')}
+        onPlayAgain={() => router.push('/24-point/multiplayer')}
+        onExit={() => router.push('/24-point')}
       />
 
       {/* 认输提示（对方认输时显示在结果弹窗里） */}
@@ -443,10 +447,10 @@ export default function RoomPage() {
           <div className="space-y-4">
             <p className="text-center text-gray-500">{surrenderMessage}</p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => router.push('/')}>
-                返回首页
+              <Button variant="secondary" className="flex-1" onClick={() => router.push('/24-point')}>
+                返回24点
               </Button>
-              <Button className="flex-1" onClick={() => router.push('/multiplayer')}>
+              <Button className="flex-1" onClick={() => router.push('/24-point/multiplayer')}>
                 返回大厅
               </Button>
             </div>

@@ -10,11 +10,16 @@ import NicknameInput from '@/components/24-point/ui/NicknameInput'
 import { useNickname } from '@/hooks/24-point/useNickname'
 import { useRoom } from '@/hooks/24-point/useRoom'
 import type { Room } from '@/types/24-point'
+import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 
 export default function MultiplayerPage() {
   const router = useRouter()
   const { nickname, setNickname, hasNickname, isReady } = useNickname()
   const { createRoom, joinRoom, fetchRooms, loading, error } = useRoom()
+  const access = useAccessControl({
+    allowGuest: true,
+    reason: '请先登录正式账号或游客账号后再使用 24 点挑战。',
+  })
 
   const [rooms, setRooms] = useState<Room[]>([])
   const [showCreate, setShowCreate] = useState(false)
@@ -44,16 +49,14 @@ export default function MultiplayerPage() {
 
     const result = await createRoom(roomName.trim(), nickname, createTotalRounds, createTimePerRound)
     if (result) {
-      sessionStorage.setItem(`room-${result.room.roomId}-playerId`, result.playerId)
-      router.push(`/multiplayer/${result.room.roomId}`)
+      router.push(`/24-point/multiplayer/${result.room.roomId}`)
     }
   }
 
   const handleJoinRoom = async (roomId: string) => {
     const result = await joinRoom(roomId, nickname)
     if (result) {
-      sessionStorage.setItem(`room-${roomId}-playerId`, result.playerId)
-      router.push(`/multiplayer/${roomId}`)
+      router.push(`/24-point/multiplayer/${roomId}`)
     }
   }
 
@@ -64,7 +67,8 @@ export default function MultiplayerPage() {
     await handleJoinRoom(id)
   }
 
-  if (!isReady) return null
+  if (!isReady || access.loading) return null
+  if (!access.allowed) return <div className="min-h-dvh" />
 
   return (
     <div className="min-h-dvh flex flex-col items-center px-3 sm:px-4 py-2 sm:py-6">
