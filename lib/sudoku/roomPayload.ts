@@ -16,9 +16,10 @@ export function toClientSudokuPuzzle(puzzle: SudokuPuzzle | null): SudokuPuzzle 
 }
 
 export function toClientSudokuRoom<T extends { puzzle?: SudokuPuzzle | null }>(room: T): T {
+  const roomWithToObject = room as T & { toObject?: () => T }
   const plainRoom =
-    room && typeof (room as { toObject?: () => T }).toObject === 'function'
-      ? (room as { toObject: () => T }).toObject()
+    typeof roomWithToObject.toObject === 'function'
+      ? roomWithToObject.toObject()
       : room
 
   return {
