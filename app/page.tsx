@@ -44,6 +44,25 @@ function Icon24Point() {
   )
 }
 
+function IconSudoku() {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
+      <rect x="8" y="8" width="32" height="32" rx="6" fill="url(#sudoku-grad)" opacity="0.15"/>
+      <rect x="10" y="10" width="28" height="28" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M19.33 10v28M28.67 10v28M10 19.33h28M10 28.67h28" stroke="currentColor" strokeWidth="1.5" opacity="0.45"/>
+      <text x="15" y="18" textAnchor="middle" fontSize="7" fontWeight="700" fill="currentColor" fontFamily="system-ui">5</text>
+      <text x="24" y="26" textAnchor="middle" fontSize="7" fontWeight="700" fill="currentColor" fontFamily="system-ui">3</text>
+      <text x="33" y="35" textAnchor="middle" fontSize="7" fontWeight="700" fill="currentColor" fontFamily="system-ui">9</text>
+      <defs>
+        <linearGradient id="sudoku-grad" x1="8" y1="8" x2="40" y2="40">
+          <stop stopColor="#0EA5E9"/>
+          <stop offset="1" stopColor="#06B6D4"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
 function IconMath() {
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
@@ -144,6 +163,14 @@ const projects = [
     Icon: Icon24Point,
   },
   {
+    href: '/sudoku',
+    title: '数独挑战',
+    description: '数独闯关工具，支持单人闯关、教学陪练、双人竞速',
+    color: 'cyan',
+    tag: '闯关',
+    Icon: IconSudoku,
+  },
+  {
     href: '/math',
     title: '数你最棒',
     description: '1-6 年级小学数学练习，覆盖各章节知识点',
@@ -195,6 +222,12 @@ const colorMap: Record<string, { card: string; icon: string; title: string; tag:
     icon: 'bg-emerald-50 text-emerald-600',
     title: 'group-hover:text-emerald-700',
     tag: 'bg-emerald-50 text-emerald-600',
+  },
+  cyan: {
+    card: 'hover:border-cyan-200 hover:shadow-cyan-100/50',
+    icon: 'bg-cyan-50 text-cyan-600',
+    title: 'group-hover:text-cyan-700',
+    tag: 'bg-cyan-50 text-cyan-600',
   },
   amber: {
     card: 'hover:border-amber-200 hover:shadow-amber-100/50',

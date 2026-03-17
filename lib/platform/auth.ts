@@ -202,7 +202,7 @@ export function getAccessFlags(user: PublicPlatformUser | null) {
       user.accountType === USER_ACCOUNT_TYPES.formal &&
       (user.role === USER_ROLES.admin || user.role === USER_ROLES.superadmin)
     ),
-    guestAllowedTools: ["/24-point", "/math", "/tugui", "/planting", "/teacher-tools"],
+    guestAllowedTools: ["/24-point", "/sudoku", "/math", "/tugui", "/planting", "/teacher-tools"],
   };
 }
 
