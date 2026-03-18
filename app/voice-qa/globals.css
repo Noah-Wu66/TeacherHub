@@ -113,6 +113,12 @@
   align-content: start;
 }
 
+.voice-qa-hero-guide-open {
+  min-height: clamp(360px, 56vh, 520px);
+  align-content: center;
+  padding: 0 20px;
+}
+
 .voice-qa-hero-top {
   display: flex;
   align-items: center;
@@ -350,12 +356,11 @@
 }
 
 .voice-qa-guide-inline {
-  max-width: 1180px;
+  max-width: 760px;
   width: 100%;
-  margin: 0 auto;
   display: flex;
   justify-content: center;
-  padding: 0 0 6px;
+  align-items: center;
 }
 
 .voice-qa-guide-card {
@@ -388,7 +393,7 @@
 .voice-qa-guide-actions {
   margin-top: 22px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
@@ -418,6 +423,11 @@
 
   .voice-qa-hero {
     padding: 2px 6px 0;
+  }
+
+  .voice-qa-hero-guide-open {
+    min-height: clamp(320px, 44vh, 420px);
+    padding: 0 6px;
   }
 
   .voice-qa-hero-avatar-shell {

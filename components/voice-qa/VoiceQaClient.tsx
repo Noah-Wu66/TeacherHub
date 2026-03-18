@@ -858,101 +858,107 @@ export default function VoiceQaClient() {
         </div>
       </header>
 
-      {guideOpen ? (
-        <section className="voice-qa-guide-inline" aria-label="使用提示">
-          <div className="voice-qa-guide-card">
-            <p className="voice-qa-guide-title">使用前先看一下</p>
-            <ul className="voice-qa-guide-list">
-              <li>点“开启麦克风”后，需要先同意麦克风权限。</li>
-              <li>你只要正常说话，停顿一小会儿后老师就会自动回答。</li>
-              <li>想暂时停一下，就点“关闭麦克风”。</li>
-              <li>游客和正式账号都能用，但这里不会保存聊天记录。</li>
-            </ul>
-            <div className="voice-qa-guide-actions">
-              <button
-                type="button"
-                className="voice-qa-guide-btn voice-qa-guide-btn-primary"
-                onClick={() => {
-                  setGuideOpen(false);
-                  openMicrophone().catch(() => undefined);
-                }}
-              >
-                我知道了，开始
-              </button>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       <section className="voice-qa-stage">
-        <div className="voice-qa-hero">
-          <div className="voice-qa-hero-top">
-            <span className="voice-qa-hero-pill">{accountLabel}</span>
-            <span className="voice-qa-hero-pill">{statusLabel}</span>
-          </div>
+        <div className={`voice-qa-hero ${guideOpen ? "voice-qa-hero-guide-open" : ""}`}>
+          {guideOpen ? (
+            <section className="voice-qa-guide-inline" aria-label="使用提示">
+              <div className="voice-qa-guide-card">
+                <p className="voice-qa-guide-title">使用前先看一下</p>
+                <ul className="voice-qa-guide-list">
+                  <li>点“开启麦克风”后，需要先同意麦克风权限。</li>
+                  <li>你只要正常说话，停顿一小会儿后老师就会自动回答。</li>
+                  <li>想暂时停一下，就点“关闭麦克风”。</li>
+                  <li>游客和正式账号都能用，但这里不会保存聊天记录。</li>
+                </ul>
+                <div className="voice-qa-guide-actions">
+                  <button
+                    type="button"
+                    className="voice-qa-guide-btn voice-qa-guide-btn-primary"
+                    onClick={() => {
+                      setGuideOpen(false);
+                      openMicrophone().catch(() => undefined);
+                    }}
+                  >
+                    我知道了，开始
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <>
+              <div className="voice-qa-hero-top">
+                <span className="voice-qa-hero-pill">{accountLabel}</span>
+                <span className="voice-qa-hero-pill">{statusLabel}</span>
+              </div>
 
-          <div className={`voice-qa-hero-avatar-shell ${phaseClassName}`}>
-            <img
-              src="/voice-qa/avatar.gif"
-              alt="李雪老师头像"
-              className="voice-qa-hero-avatar"
-            />
-          </div>
+              <div className={`voice-qa-hero-avatar-shell ${phaseClassName}`}>
+                <img
+                  src="/voice-qa/avatar.gif"
+                  alt="李雪老师头像"
+                  className="voice-qa-hero-avatar"
+                />
+              </div>
 
-          <div className="voice-qa-hero-dots" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
+              <div className="voice-qa-hero-dots" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="voice-qa-panel voice-qa-transcript">
-          <div className="voice-qa-transcript-head">
-            <div>
-              <p className="voice-qa-panel-label">对话内容</p>
-              <p className="voice-qa-panel-value">当前账号：{user?.displayName || accountLabel}</p>
+        {!guideOpen ? (
+          <div className="voice-qa-panel voice-qa-transcript">
+            <div className="voice-qa-transcript-head">
+              <div>
+                <p className="voice-qa-panel-label">对话内容</p>
+                <p className="voice-qa-panel-value">当前账号：{user?.displayName || accountLabel}</p>
+              </div>
             </div>
-          </div>
 
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`voice-qa-message-row ${
-                message.role === "user" ? "voice-qa-message-row-user" : "voice-qa-message-row-assistant"
-              }`}
-            >
-              <article
-                className={`voice-qa-bubble ${
-                  message.role === "user" ? "voice-qa-bubble-user" : "voice-qa-bubble-assistant"
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`voice-qa-message-row ${
+                  message.role === "user" ? "voice-qa-message-row-user" : "voice-qa-message-row-assistant"
                 }`}
               >
-                <div className="voice-qa-bubble-head">
-                  <span>{message.role === "user" ? "你" : "李雪老师"}</span>
-                  {message.status === "interrupted" ? (
-                    <span className="voice-qa-bubble-tag">已打断</span>
-                  ) : null}
-                </div>
-                <p className="voice-qa-bubble-text">{message.content || "..."}</p>
-              </article>
-            </div>
-          ))}
+                <article
+                  className={`voice-qa-bubble ${
+                    message.role === "user" ? "voice-qa-bubble-user" : "voice-qa-bubble-assistant"
+                  }`}
+                >
+                  <div className="voice-qa-bubble-head">
+                    <span>{message.role === "user" ? "你" : "李雪老师"}</span>
+                    {message.status === "interrupted" ? (
+                      <span className="voice-qa-bubble-tag">已打断</span>
+                    ) : null}
+                  </div>
+                  <p className="voice-qa-bubble-text">{message.content || "..."}</p>
+                </article>
+              </div>
+            ))}
 
-          {error ? <div className="voice-qa-error">{error}</div> : null}
-        </div>
+            {error ? <div className="voice-qa-error">{error}</div> : null}
+          </div>
+        ) : null}
       </section>
 
-      <footer className="voice-qa-controls">
-        <div className="voice-qa-control-item">
-          <button
-            type="button"
-            className="voice-qa-control-btn voice-qa-control-btn-primary"
-            onClick={toggleMicrophone}
-          >
-            {micOpen ? <PhoneOff size={28} /> : <Phone size={28} />}
-          </button>
-          <span className="voice-qa-control-label">{primaryControlLabel}</span>
-        </div>
-      </footer>
+      {!guideOpen ? (
+        <footer className="voice-qa-controls">
+          <div className="voice-qa-control-item">
+            <button
+              type="button"
+              className="voice-qa-control-btn voice-qa-control-btn-primary"
+              onClick={toggleMicrophone}
+            >
+              {micOpen ? <PhoneOff size={28} /> : <Phone size={28} />}
+            </button>
+            <span className="voice-qa-control-label">{primaryControlLabel}</span>
+          </div>
+        </footer>
+      ) : null}
 
     </main>
   );
