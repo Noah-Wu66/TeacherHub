@@ -23,7 +23,7 @@ import {
 const VOICE_QA_WS_URL = "wss://openspeech.bytedance.com/api/v3/realtime/dialogue";
 const VOICE_QA_RESOURCE_ID = "volc.speech.dialog";
 const VOICE_QA_APP_KEY = "PlgvMymc7f3tQnJ6";
-const VOICE_QA_DEFAULT_SPEAKER = "zh_female_vv_uranus_bigtts";
+const VOICE_QA_DEFAULT_SPEAKER = "zh_female_vv_jupiter_bigtts";
 
 type VoiceQaReadablePayload = {
   content?: string;
