@@ -24,9 +24,26 @@ const SPEECH_THRESHOLD = 0.04;
 const SPEECH_SILENCE_MS = 850;
 const MIN_RECORDING_MS = 450;
 const TARGET_SAMPLE_RATE = 16000;
+const STREAMING_RENDER_INTERVAL_MS = 96;
+const MONITOR_INTERVAL_MS = 48;
+const MOBILE_SAFARI_MONITOR_INTERVAL_MS = 96;
 
 // 波形条数量
 const WAVE_BARS = 20;
+
+function isMobileSafariBrowser() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const userAgent = window.navigator.userAgent;
+  const isAppleMobile =
+    /iPhone|iPad|iPod/i.test(userAgent) ||
+    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+  const isSafariEngine = /WebKit/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
+
+  return isAppleMobile && isSafariEngine;
+}
 
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -132,16 +149,19 @@ function throwIfAborted(signal?: AbortSignal) {
 }
 
 // 音频波形可视化组件
-function AudioWaveform({ 
-  phase, 
-  analyser 
-}: { 
-  phase: CallPhase; 
+function AudioWaveform({
+  phase,
+  analyser,
+  liteMode,
+}: {
+  phase: CallPhase;
   analyser: AnalyserNode | null;
+  liteMode: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const dataArrayRef = useRef<Uint8Array | null>(null);
+  const lastDrawAtRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -156,10 +176,25 @@ function AudioWaveform({
       dataArrayRef.current = new Uint8Array(bufferLength);
     }
 
+    const barCount = liteMode ? 12 : WAVE_BARS;
+    const frameInterval = liteMode ? 1000 / 12 : 1000 / 30;
+
+    const paintBar = (x: number, y: number, width: number, height: number, color: string | CanvasGradient) => {
+      ctx.fillStyle = color;
+      if (liteMode) {
+        ctx.fillRect(x, y, width, height);
+        return;
+      }
+
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, width * 0.5);
+      ctx.fill();
+    };
+
     const draw = () => {
       const width = canvas.width;
       const height = canvas.height;
-      const barWidth = width / WAVE_BARS;
+      const barWidth = width / barCount;
       const centerY = height / 2;
 
       ctx.clearRect(0, 0, width, height);
@@ -168,84 +203,100 @@ function AudioWaveform({
       if (phase === "listening" && analyser && dataArrayRef.current) {
         // 录音状态：实时波形
         analyser.getByteTimeDomainData(dataArrayRef.current as any);
-        
-        for (let i = 0; i < WAVE_BARS; i++) {
-          const dataIndex = Math.floor((i / WAVE_BARS) * dataArrayRef.current.length);
+
+        for (let i = 0; i < barCount; i++) {
+          const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
           const value = dataArrayRef.current[dataIndex];
           const normalized = (value - 128) / 128;
-          const barHeight = Math.abs(normalized) * height * 0.8;
-          
+          const barHeight = Math.max(4, Math.abs(normalized) * height * 0.8);
+
           const x = i * barWidth + barWidth * 0.1;
           const y = centerY - barHeight / 2;
-          
+
+          if (liteMode) {
+            paintBar(x, y, barWidth * 0.8, barHeight, "#3b82f6");
+            continue;
+          }
+
           const gradient = ctx.createLinearGradient(0, 0, 0, height);
           gradient.addColorStop(0, "#4f8ef7");
           gradient.addColorStop(0.5, "#1b52dc");
           gradient.addColorStop(1, "#4f8ef7");
-          
-          ctx.fillStyle = gradient;
-          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
-          ctx.fill();
+          paintBar(x, y, barWidth * 0.8, barHeight, gradient);
         }
       } else if (phase === "processing") {
         // 思考状态：脉动效果
         const time = Date.now() / 500;
-        for (let i = 0; i < WAVE_BARS; i++) {
-          const phase = (i / WAVE_BARS) * Math.PI * 2;
-          const value = Math.sin(time + phase) * 0.5 + 0.5;
+        for (let i = 0; i < barCount; i++) {
+          const offset = (i / barCount) * Math.PI * 2;
+          const value = Math.sin(time + offset) * 0.5 + 0.5;
           const barHeight = value * height * 0.6;
-          
+
           const x = i * barWidth + barWidth * 0.1;
           const y = centerY - barHeight / 2;
-          
-          ctx.fillStyle = "#b288d9";
-          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
-          ctx.fill();
+
+          paintBar(x, y, barWidth * 0.8, barHeight, "#b288d9");
         }
       } else if (phase === "speaking") {
         // 播放状态：活跃波形
         const time = Date.now() / 200;
-        for (let i = 0; i < WAVE_BARS; i++) {
-          const phase = (i / WAVE_BARS) * Math.PI * 4;
-          const value = Math.sin(time + phase) * 0.5 + 0.5;
+        for (let i = 0; i < barCount; i++) {
+          const offset = (i / barCount) * Math.PI * 4;
+          const value = Math.sin(time + offset) * 0.5 + 0.5;
           const barHeight = value * height * 0.8;
-          
+
           const x = i * barWidth + barWidth * 0.1;
           const y = centerY - barHeight / 2;
-          
+
+          if (liteMode) {
+            paintBar(x, y, barWidth * 0.8, barHeight, "#e85d9a");
+            continue;
+          }
+
           const gradient = ctx.createLinearGradient(0, 0, 0, height);
           gradient.addColorStop(0, "#e85d9a");
           gradient.addColorStop(0.5, "#d43d7a");
           gradient.addColorStop(1, "#e85d9a");
-          
-          ctx.fillStyle = gradient;
-          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
-          ctx.fill();
+          paintBar(x, y, barWidth * 0.8, barHeight, gradient);
         }
       } else {
         // 空闲/未开始：静止细线
-        for (let i = 0; i < WAVE_BARS; i++) {
+        for (let i = 0; i < barCount; i++) {
           const x = i * barWidth + barWidth * 0.1;
           const barHeight = 4;
           const y = centerY - barHeight / 2;
-          
-          ctx.fillStyle = "#d1d8e0";
-          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
-          ctx.fill();
+
+          paintBar(x, y, barWidth * 0.8, barHeight, "#d1d8e0");
         }
       }
-
-      animationRef.current = requestAnimationFrame(draw);
     };
 
     draw();
+
+    const animate = (now: number) => {
+      if (lastDrawAtRef.current && now - lastDrawAtRef.current < frameInterval) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      lastDrawAtRef.current = now;
+      draw();
+
+      if (phase !== "idle") {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (phase !== "idle") {
+      animationRef.current = requestAnimationFrame(animate);
+    }
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [phase, analyser]);
+  }, [phase, analyser, liteMode]);
 
   return (
     <canvas
@@ -272,7 +323,7 @@ export default function VoiceQaClient() {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const processorSinkRef = useRef<GainNode | null>(null);
-  const monitorFrameRef = useRef<number | null>(null);
+  const monitorTimerRef = useRef<number | null>(null);
   const monitorBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const captureBuffersRef = useRef<Float32Array[]>([]);
   const isCapturingRef = useRef(false);
@@ -290,7 +341,12 @@ export default function VoiceQaClient() {
   const playbackCursorRef = useRef(0);
   const playbackSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const assistantAudioEndedRef = useRef(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+  const [liteMode, setLiteMode] = useState(false);
+  const liteModeRef = useRef(false);
+  const lastUserTranscriptRenderAtRef = useRef(0);
+  const lastAssistantRenderAtRef = useRef(0);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -308,13 +364,39 @@ export default function VoiceQaClient() {
     micOpenRef.current = micOpen;
   }, [micOpen]);
 
+  useEffect(() => {
+    const nextLiteMode = isMobileSafariBrowser();
+    setLiteMode(nextLiteMode);
+    liteModeRef.current = nextLiteMode;
+  }, []);
+
   // 自动滚动到最新消息
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollFrameRef.current) {
+      cancelAnimationFrame(scrollFrameRef.current);
+    }
+
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+      scrollFrameRef.current = null;
+    });
+
+    return () => {
+      if (scrollFrameRef.current) {
+        cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+    };
   }, [messages]);
 
   useEffect(() => {
     return () => {
+      if (scrollFrameRef.current) {
+        cancelAnimationFrame(scrollFrameRef.current);
+      }
       cancelPendingStartup();
       interruptActiveTurn();
       teardownAudioEnvironment();
@@ -330,9 +412,9 @@ export default function VoiceQaClient() {
   }
 
   function stopMonitoring() {
-    if (monitorFrameRef.current) {
-      cancelAnimationFrame(monitorFrameRef.current);
-      monitorFrameRef.current = null;
+    if (monitorTimerRef.current) {
+      clearTimeout(monitorTimerRef.current);
+      monitorTimerRef.current = null;
     }
 
     captureBuffersRef.current = [];
@@ -661,6 +743,8 @@ export default function VoiceQaClient() {
     activeTurnAbortRef.current = controller;
     activeAssistantMessageIdRef.current = assistantMessageId;
     assistantAudioEndedRef.current = false;
+    lastUserTranscriptRenderAtRef.current = 0;
+    lastAssistantRenderAtRef.current = 0;
     setPhase("processing");
     setError(null);
 
@@ -708,6 +792,24 @@ export default function VoiceQaClient() {
       let buffer = "";
       let assistantContent = "";
       let assistantCreated = false;
+
+      const shouldRenderStreamingText = (target: "user" | "assistant") => {
+        const now = Date.now();
+        const lastRenderedAt =
+          target === "user" ? lastUserTranscriptRenderAtRef.current : lastAssistantRenderAtRef.current;
+
+        if (now - lastRenderedAt < STREAMING_RENDER_INTERVAL_MS) {
+          return false;
+        }
+
+        if (target === "user") {
+          lastUserTranscriptRenderAtRef.current = now;
+        } else {
+          lastAssistantRenderAtRef.current = now;
+        }
+
+        return true;
+      };
 
       const ensureAssistantMessage = () => {
         if (assistantCreated) {
@@ -769,6 +871,10 @@ export default function VoiceQaClient() {
           }
 
           if (event.type === "user_transcript_delta") {
+            if (!shouldRenderStreamingText("user")) {
+              continue;
+            }
+
             setMessages((current) =>
               current.map((item) =>
                 item.id === userMessageId
@@ -783,6 +889,7 @@ export default function VoiceQaClient() {
           }
 
           if (event.type === "user_transcript_final") {
+            lastUserTranscriptRenderAtRef.current = Date.now();
             setMessages((current) =>
               current.map((item) =>
                 item.id === userMessageId
@@ -799,6 +906,11 @@ export default function VoiceQaClient() {
           if (event.type === "assistant_text_delta") {
             ensureAssistantMessage();
             assistantContent += event.content;
+
+            if (!shouldRenderStreamingText("assistant")) {
+              continue;
+            }
+
             setMessages((current) =>
               current.map((item) =>
                 item.id === assistantMessageId
@@ -815,6 +927,7 @@ export default function VoiceQaClient() {
           if (event.type === "assistant_text_final") {
             ensureAssistantMessage();
             assistantContent = event.content;
+            lastAssistantRenderAtRef.current = Date.now();
             setMessages((current) =>
               current.map((item) =>
                 item.id === assistantMessageId
@@ -935,11 +1048,17 @@ export default function VoiceQaClient() {
   function startMonitoring() {
     const analyser = analyserRef.current;
     const buffer = monitorBufferRef.current;
-    if (!analyser || !buffer || monitorFrameRef.current) {
+    if (!analyser || !buffer || monitorTimerRef.current) {
       return;
     }
 
+    const monitorInterval = liteModeRef.current
+      ? MOBILE_SAFARI_MONITOR_INTERVAL_MS
+      : MONITOR_INTERVAL_MS;
+
     const loop = () => {
+      monitorTimerRef.current = null;
+
       if (!sessionRef.current) {
         return;
       }
@@ -968,10 +1087,10 @@ export default function VoiceQaClient() {
         stopSpeechCapture();
       }
 
-      monitorFrameRef.current = window.requestAnimationFrame(loop);
+      monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
     };
 
-    monitorFrameRef.current = window.requestAnimationFrame(loop);
+    monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
   }
 
   async function openMicrophone() {
@@ -1055,7 +1174,7 @@ export default function VoiceQaClient() {
   }, [phase, micOpen]);
 
   return (
-    <main className="voice-qa-shell">
+    <main className={`voice-qa-shell ${liteMode ? "voice-qa-shell-lite" : ""}`}>
       {/* 顶部导航 */}
       <header className="voice-qa-header">
         <div className="voice-qa-header-left">
@@ -1105,7 +1224,7 @@ export default function VoiceQaClient() {
             
             {/* 音频波形可视化 */}
             <div className="voice-qa-waveform-wrapper">
-              <AudioWaveform phase={phase} analyser={analyserRef.current} />
+              <AudioWaveform phase={phase} analyser={analyserRef.current} liteMode={liteMode} />
             </div>
           </div>
 
@@ -1151,7 +1270,7 @@ export default function VoiceQaClient() {
               <span className="voice-qa-chat-user">{user?.displayName || "用户"}</span>
             </div>
 
-            <div className="voice-qa-messages">
+            <div className="voice-qa-messages" ref={messagesContainerRef}>
               {messages.length === 0 ? (
                 <div className="voice-qa-empty">
                   <p>暂无对话内容</p>
@@ -1182,7 +1301,6 @@ export default function VoiceQaClient() {
                   </div>
                 ))
               )}
-              <div ref={messagesEndRef} />
             </div>
           </div>
         </div>
