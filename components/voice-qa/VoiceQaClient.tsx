@@ -417,11 +417,29 @@ export default function VoiceQaClient() {
       monitorTimerRef.current = null;
     }
 
+    resetSpeechDetection();
+  }
+
+  function resetSpeechDetection() {
+    if (isCapturingRef.current && workletNodeRef.current) {
+      workletNodeRef.current.port.postMessage({ type: "stop" });
+    }
+
     captureBuffersRef.current = [];
     isCapturingRef.current = false;
     speechActiveRef.current = false;
     speechStartedAtRef.current = 0;
     lastVoiceAtRef.current = 0;
+  }
+
+  function isAssistantReplyLocked() {
+    const currentPhase = phaseRef.current;
+    return (
+      currentPhase === "processing" ||
+      currentPhase === "speaking" ||
+      activeTurnAbortRef.current !== null ||
+      playbackSourcesRef.current.size > 0
+    );
   }
 
   async function ensureSession(signal?: AbortSignal) {
@@ -1029,11 +1047,10 @@ export default function VoiceQaClient() {
   }
 
   function startSpeechCapture() {
-    if (!sessionRef.current || isCapturingRef.current) {
+    if (!sessionRef.current || isCapturingRef.current || isAssistantReplyLocked()) {
       return;
     }
 
-    interruptActiveTurn();
     captureBuffersRef.current = [];
     isCapturingRef.current = true;
     speechStartedAtRef.current = Date.now();
@@ -1060,6 +1077,12 @@ export default function VoiceQaClient() {
       monitorTimerRef.current = null;
 
       if (!sessionRef.current) {
+        return;
+      }
+
+      if (isAssistantReplyLocked()) {
+        resetSpeechDetection();
+        monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
         return;
       }
 
