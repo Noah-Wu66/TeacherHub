@@ -27,6 +27,7 @@ const TARGET_SAMPLE_RATE = 16000;
 const STREAMING_RENDER_INTERVAL_MS = 96;
 const MONITOR_INTERVAL_MS = 48;
 const MOBILE_SAFARI_MONITOR_INTERVAL_MS = 96;
+const FIRST_TURN_TEXT_DELAY_MS = 900;
 
 // 波形条数量
 const WAVE_BARS = 20;
@@ -754,10 +755,12 @@ export default function VoiceQaClient() {
       return;
     }
 
+    const isFirstTurn = !dialogIdRef.current;
     const userMessageId = generateId();
     const assistantMessageId = generateId();
     const turnId = generateId();
     const controller = new AbortController();
+    let assistantTextRevealTimer: number | null = null;
     activeTurnAbortRef.current = controller;
     activeAssistantMessageIdRef.current = assistantMessageId;
     assistantAudioEndedRef.current = false;
@@ -810,6 +813,8 @@ export default function VoiceQaClient() {
       let buffer = "";
       let assistantContent = "";
       let assistantCreated = false;
+      let assistantTextVisible = !isFirstTurn;
+      let assistantTextStatus: MessageStatus = "streaming";
 
       const shouldRenderStreamingText = (target: "user" | "assistant") => {
         const now = Date.now();
@@ -844,6 +849,57 @@ export default function VoiceQaClient() {
             status: "streaming",
           },
         ]);
+      };
+
+      const syncAssistantMessage = (status: MessageStatus, force = false) => {
+        ensureAssistantMessage();
+
+        if (status === "streaming" && !force && !shouldRenderStreamingText("assistant")) {
+          return;
+        }
+
+        lastAssistantRenderAtRef.current = Date.now();
+        setMessages((current) =>
+          current.map((item) =>
+            item.id === assistantMessageId
+              ? {
+                  ...item,
+                  content: assistantContent,
+                  status,
+                }
+              : item
+          )
+        );
+      };
+
+      const revealAssistantText = () => {
+        if (assistantTextVisible) {
+          return;
+        }
+
+        assistantTextVisible = true;
+
+        if (assistantTextRevealTimer) {
+          clearTimeout(assistantTextRevealTimer);
+          assistantTextRevealTimer = null;
+        }
+
+        if (!assistantContent) {
+          return;
+        }
+
+        syncAssistantMessage(assistantTextStatus, true);
+      };
+
+      const scheduleAssistantTextReveal = () => {
+        if (!isFirstTurn || assistantTextVisible || assistantTextRevealTimer) {
+          return;
+        }
+
+        assistantTextRevealTimer = window.setTimeout(() => {
+          assistantTextRevealTimer = null;
+          revealAssistantText();
+        }, FIRST_TURN_TEXT_DELAY_MS);
       };
 
       while (true) {
@@ -922,45 +978,31 @@ export default function VoiceQaClient() {
           }
 
           if (event.type === "assistant_text_delta") {
-            ensureAssistantMessage();
             assistantContent += event.content;
+            assistantTextStatus = "streaming";
+            scheduleAssistantTextReveal();
 
-            if (!shouldRenderStreamingText("assistant")) {
+            if (!assistantTextVisible) {
               continue;
             }
 
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === assistantMessageId
-                  ? {
-                      ...item,
-                      content: assistantContent,
-                      status: "streaming",
-                    }
-                  : item
-              )
-            );
+            syncAssistantMessage("streaming");
           }
 
           if (event.type === "assistant_text_final") {
-            ensureAssistantMessage();
             assistantContent = event.content;
-            lastAssistantRenderAtRef.current = Date.now();
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === assistantMessageId
-                  ? {
-                      ...item,
-                      content: event.content,
-                      status: "final",
-                    }
-                  : item
-              )
-            );
+            assistantTextStatus = "final";
+            scheduleAssistantTextReveal();
+
+            if (!assistantTextVisible) {
+              continue;
+            }
+
+            syncAssistantMessage("final", true);
           }
 
           if (event.type === "assistant_audio_chunk") {
-            ensureAssistantMessage();
+            revealAssistantText();
             queueAssistantAudio(event.audio, event.sampleRate);
           }
 
@@ -1001,6 +1043,10 @@ export default function VoiceQaClient() {
         setPhase(micOpenRef.current ? "listening" : "idle");
       }
     } finally {
+      if (assistantTextRevealTimer) {
+        clearTimeout(assistantTextRevealTimer);
+      }
+
       if (activeTurnAbortRef.current === controller) {
         activeTurnAbortRef.current = null;
       }
