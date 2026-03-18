@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Phone, PhoneOff } from "lucide-react";
+import { ArrowLeft, Phone, PhoneOff, Mic, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/platform/auth/AuthProvider";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
@@ -24,6 +24,9 @@ const SPEECH_THRESHOLD = 0.04;
 const SPEECH_SILENCE_MS = 850;
 const MIN_RECORDING_MS = 450;
 const TARGET_SAMPLE_RATE = 16000;
+
+// 波形条数量
+const WAVE_BARS = 20;
 
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -128,14 +131,140 @@ function throwIfAborted(signal?: AbortSignal) {
   }
 }
 
+// 音频波形可视化组件
+function AudioWaveform({ 
+  phase, 
+  analyser 
+}: { 
+  phase: CallPhase; 
+  analyser: AnalyserNode | null;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // 初始化数据数组
+    if (analyser && !dataArrayRef.current) {
+      const bufferLength = analyser.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
+    }
+
+    const draw = () => {
+      const width = canvas.width;
+      const height = canvas.height;
+      const barWidth = width / WAVE_BARS;
+      const centerY = height / 2;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // 根据不同状态绘制不同的波形
+      if (phase === "listening" && analyser && dataArrayRef.current) {
+        // 录音状态：实时波形
+        analyser.getByteTimeDomainData(dataArrayRef.current);
+        
+        for (let i = 0; i < WAVE_BARS; i++) {
+          const dataIndex = Math.floor((i / WAVE_BARS) * dataArrayRef.current.length);
+          const value = dataArrayRef.current[dataIndex];
+          const normalized = (value - 128) / 128;
+          const barHeight = Math.abs(normalized) * height * 0.8;
+          
+          const x = i * barWidth + barWidth * 0.1;
+          const y = centerY - barHeight / 2;
+          
+          const gradient = ctx.createLinearGradient(0, 0, 0, height);
+          gradient.addColorStop(0, "#4f8ef7");
+          gradient.addColorStop(0.5, "#1b52dc");
+          gradient.addColorStop(1, "#4f8ef7");
+          
+          ctx.fillStyle = gradient;
+          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
+          ctx.fill();
+        }
+      } else if (phase === "processing") {
+        // 思考状态：脉动效果
+        const time = Date.now() / 500;
+        for (let i = 0; i < WAVE_BARS; i++) {
+          const phase = (i / WAVE_BARS) * Math.PI * 2;
+          const value = Math.sin(time + phase) * 0.5 + 0.5;
+          const barHeight = value * height * 0.6;
+          
+          const x = i * barWidth + barWidth * 0.1;
+          const y = centerY - barHeight / 2;
+          
+          ctx.fillStyle = "#b288d9";
+          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
+          ctx.fill();
+        }
+      } else if (phase === "speaking") {
+        // 播放状态：活跃波形
+        const time = Date.now() / 200;
+        for (let i = 0; i < WAVE_BARS; i++) {
+          const phase = (i / WAVE_BARS) * Math.PI * 4;
+          const value = Math.sin(time + phase) * 0.5 + 0.5;
+          const barHeight = value * height * 0.8;
+          
+          const x = i * barWidth + barWidth * 0.1;
+          const y = centerY - barHeight / 2;
+          
+          const gradient = ctx.createLinearGradient(0, 0, 0, height);
+          gradient.addColorStop(0, "#e85d9a");
+          gradient.addColorStop(0.5, "#d43d7a");
+          gradient.addColorStop(1, "#e85d9a");
+          
+          ctx.fillStyle = gradient;
+          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
+          ctx.fill();
+        }
+      } else {
+        // 空闲/未开始：静止细线
+        for (let i = 0; i < WAVE_BARS; i++) {
+          const x = i * barWidth + barWidth * 0.1;
+          const barHeight = 4;
+          const y = centerY - barHeight / 2;
+          
+          ctx.fillStyle = "#d1d8e0";
+          ctx.roundRect(x, y, barWidth * 0.8, barHeight, barWidth * 0.4);
+          ctx.fill();
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [phase, analyser]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={200}
+      height={60}
+      className="voice-qa-waveform"
+    />
+  );
+}
+
 export default function VoiceQaClient() {
   const { user } = useAuth();
   const [session, setSession] = useState<VoiceQaSessionResponse | null>(null);
   const [messages, setMessages] = useState<VoiceQaMessage[]>([]);
   const [phase, setPhase] = useState<CallPhase>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [guideOpen, setGuideOpen] = useState(true);
   const [micOpen, setMicOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -160,6 +289,7 @@ export default function VoiceQaClient() {
   const playbackCursorRef = useRef(0);
   const playbackSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const assistantAudioEndedRef = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -176,6 +306,11 @@ export default function VoiceQaClient() {
   useEffect(() => {
     micOpenRef.current = micOpen;
   }, [micOpen]);
+
+  // 自动滚动到最新消息
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   useEffect(() => {
     return () => {
@@ -241,6 +376,7 @@ export default function VoiceQaClient() {
     messagesRef.current = greetingMessages;
     setSession(nextSession);
     setMessages(greetingMessages);
+    setShowGuide(false);
     return nextSession;
   }
 
@@ -769,7 +905,6 @@ export default function VoiceQaClient() {
         return;
       }
 
-      setGuideOpen(false);
       await prepareAudioEnvironment(controller.signal);
       throwIfAborted(controller.signal);
       setError(null);
@@ -812,154 +947,153 @@ export default function VoiceQaClient() {
     openMicrophone().catch(() => undefined);
   }
 
-  const accountLabel =
-    user?.accountType === "guest" ? "游客模式" : user?.accountType === "formal" ? "正式账号" : "未登录";
-  const hasSession = Boolean(session || sessionRef.current);
-  const statusLabel =
-    phase === "connecting"
-      ? "正在开启"
-      : phase === "processing"
-        ? "老师思考中"
-        : phase === "speaking"
-          ? "老师正在回答"
-          : phase === "error"
-            ? "出现异常"
-            : hasSession
-              ? micOpen
-                ? "正在聆听"
-                : "麦克风已关闭"
-              : "未开始";
-  const primaryControlLabel =
-    phase === "connecting" ? "正在开启" : micOpen ? "关闭麦克风" : "开启麦克风";
-  const phaseClassName =
-    phase === "speaking"
-      ? "voice-qa-hero-avatar-shell-speaking"
-      : phase === "processing"
-        ? "voice-qa-hero-avatar-shell-processing"
-        : phase === "listening" && micOpen
-          ? "voice-qa-hero-avatar-shell-listening"
-          : "";
+  // 获取状态标签
+  const getStatusLabel = useCallback(() => {
+    switch (phase) {
+      case "connecting":
+        return "正在连接...";
+      case "processing":
+        return "老师思考中...";
+      case "speaking":
+        return "老师正在回答";
+      case "error":
+        return "出现异常";
+      case "listening":
+        return "正在聆听";
+      default:
+        return micOpen ? "麦克风已开启" : "未开始";
+    }
+  }, [phase, micOpen]);
+
+  // 获取头像样式
+  const getAvatarClass = useCallback(() => {
+    if (phase === "speaking") return "speaking";
+    if (phase === "processing") return "processing";
+    if (phase === "listening" && micOpen) return "listening";
+    return "";
+  }, [phase, micOpen]);
 
   return (
     <main className="voice-qa-shell">
+      {/* 顶部导航 */}
       <header className="voice-qa-header">
         <div className="voice-qa-header-left">
           <Link href="/" className="voice-qa-back">
-            <ArrowLeft size={18} />
+            <ArrowLeft size={20} />
           </Link>
-          <div>
-            <p className="voice-qa-eyebrow">语音互动</p>
-            <h1 className="voice-qa-title">你问我答</h1>
+          <div className="voice-qa-header-title">
+            <span className="voice-qa-header-subtitle">语音互动</span>
+            <h1 className="voice-qa-header-main">你问我答</h1>
           </div>
         </div>
         <div className="voice-qa-header-right">
-          <span className="voice-qa-pill">{accountLabel}</span>
-          <span className="voice-qa-pill voice-qa-pill-strong">{statusLabel}</span>
+          <span className={`voice-qa-status ${phase === "error" ? "error" : ""}`}>
+            {getStatusLabel()}
+          </span>
         </div>
       </header>
 
-      <section className="voice-qa-stage">
-        <div className={`voice-qa-hero ${guideOpen ? "voice-qa-hero-guide-open" : ""}`}>
-          {guideOpen ? (
-            <section className="voice-qa-guide-inline" aria-label="使用提示">
-              <div className="voice-qa-guide-card">
-                <p className="voice-qa-guide-title">使用前先看一下</p>
-                <ul className="voice-qa-guide-list">
-                  <li>点“开启麦克风”后，需要先同意麦克风权限。</li>
-                  <li>你只要正常说话，停顿一小会儿后老师就会自动回答。</li>
-                  <li>想暂时停一下，就点“关闭麦克风”。</li>
-                  <li>游客和正式账号都能用，但这里不会保存聊天记录。</li>
-                </ul>
-                <div className="voice-qa-guide-actions">
-                  <button
-                    type="button"
-                    className="voice-qa-guide-btn voice-qa-guide-btn-primary"
-                    onClick={() => {
-                      setGuideOpen(false);
-                      openMicrophone().catch(() => undefined);
-                    }}
-                  >
-                    我知道了，开始
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : (
-            <>
-              <div className="voice-qa-hero-top">
-                <span className="voice-qa-hero-pill">{accountLabel}</span>
-                <span className="voice-qa-hero-pill">{statusLabel}</span>
-              </div>
-
-              <div className={`voice-qa-hero-avatar-shell ${phaseClassName}`}>
-                <img
-                  src="/voice-qa/avatar.gif"
-                  alt="李雪老师头像"
-                  className="voice-qa-hero-avatar"
-                />
-              </div>
-
-              <div className="voice-qa-hero-dots" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-            </>
-          )}
+      {/* 错误提示 - 浮动在内容上方 */}
+      {error && (
+        <div className="voice-qa-error-banner">
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>×</button>
         </div>
+      )}
 
-        {!guideOpen ? (
-          <div className="voice-qa-panel voice-qa-transcript">
-            <div className="voice-qa-transcript-head">
-              <div>
-                <p className="voice-qa-panel-label">对话内容</p>
-                <p className="voice-qa-panel-value">当前账号：{user?.displayName || accountLabel}</p>
-              </div>
+      {/* 引导提示 */}
+      {showGuide && !session && (
+        <div className="voice-qa-guide">
+          <Mic size={24} />
+          <p>点击下方麦克风按钮，与李雪老师开始语音对话</p>
+        </div>
+      )}
+
+      {/* 主要内容区 */}
+      <section className="voice-qa-content">
+        {/* 左侧：头像+控制区 */}
+        <div className="voice-qa-left">
+          <div className="voice-qa-avatar-wrapper">
+            <div className={`voice-qa-avatar ${getAvatarClass()}`}>
+              <img
+                src="/voice-qa/avatar.gif"
+                alt="李雪老师"
+                className="voice-qa-avatar-img"
+              />
             </div>
-
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`voice-qa-message-row ${
-                  message.role === "user" ? "voice-qa-message-row-user" : "voice-qa-message-row-assistant"
-                }`}
-              >
-                <article
-                  className={`voice-qa-bubble ${
-                    message.role === "user" ? "voice-qa-bubble-user" : "voice-qa-bubble-assistant"
-                  }`}
-                >
-                  <div className="voice-qa-bubble-head">
-                    <span>{message.role === "user" ? "你" : "李雪老师"}</span>
-                    {message.status === "interrupted" ? (
-                      <span className="voice-qa-bubble-tag">已打断</span>
-                    ) : null}
-                  </div>
-                  <p className="voice-qa-bubble-text">{message.content || "..."}</p>
-                </article>
-              </div>
-            ))}
-
-            {error ? <div className="voice-qa-error">{error}</div> : null}
+            
+            {/* 音频波形可视化 */}
+            <div className="voice-qa-waveform-wrapper">
+              <AudioWaveform phase={phase} analyser={analyserRef.current} />
+            </div>
           </div>
-        ) : null}
-      </section>
 
-      {!guideOpen ? (
-        <footer className="voice-qa-controls">
-          <div className="voice-qa-control-item">
+          {/* 控制按钮 */}
+          <div className="voice-qa-controls">
             <button
               type="button"
-              className="voice-qa-control-btn voice-qa-control-btn-primary"
+              className={`voice-qa-mic-btn ${micOpen ? "active" : ""} ${phase === "connecting" ? "loading" : ""}`}
               onClick={toggleMicrophone}
+              disabled={phase === "connecting"}
             >
-              {micOpen ? <PhoneOff size={28} /> : <Phone size={28} />}
+              {phase === "connecting" ? (
+                <Loader2 size={32} className="spin" />
+              ) : micOpen ? (
+                <PhoneOff size={32} />
+              ) : (
+                <Phone size={32} />
+              )}
             </button>
-            <span className="voice-qa-control-label">{primaryControlLabel}</span>
+            <span className="voice-qa-mic-label">
+              {phase === "connecting" ? "正在开启..." : micOpen ? "点击结束" : "点击开始"}
+            </span>
           </div>
-        </footer>
-      ) : null}
+        </div>
 
+        {/* 右侧：对话记录 */}
+        <div className="voice-qa-right">
+          <div className="voice-qa-chat">
+            <div className="voice-qa-chat-header">
+              <span className="voice-qa-chat-label">对话内容</span>
+              <span className="voice-qa-chat-user">{user?.displayName || "用户"}</span>
+            </div>
+
+            <div className="voice-qa-messages">
+              {messages.length === 0 ? (
+                <div className="voice-qa-empty">
+                  <p>暂无对话内容</p>
+                  <p>点击麦克风开始对话</p>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`voice-qa-message ${message.role}`}
+                  >
+                    <div className="voice-qa-message-bubble">
+                      <div className="voice-qa-message-header">
+                        <span className="voice-qa-message-author">
+                          {message.role === "user" ? "你" : "李雪老师"}
+                        </span>
+                        {message.status === "interrupted" && (
+                          <span className="voice-qa-message-tag">已打断</span>
+                        )}
+                        {message.status === "streaming" && (
+                          <span className="voice-qa-message-tag streaming">输入中...</span>
+                        )}
+                      </div>
+                      <p className="voice-qa-message-text">
+                        {message.content || "..."}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
