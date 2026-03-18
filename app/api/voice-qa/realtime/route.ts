@@ -1,10 +1,10 @@
-import type { VoiceQaTurnRequest } from "@/lib/teacher-tools/voice-qa/types";
+import type { VoiceQaTurnRequest } from "@/lib/voice-qa/types";
 import {
   decodeVoiceQaAudio,
   requireVoiceQaUser,
   streamVoiceQaTurn,
   toFriendlyVoiceQaError,
-} from "@/lib/teacher-tools/voice-qa/server";
+} from "@/lib/voice-qa/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
           },
         });
       } catch (error) {
-        console.error("[teacher-tools/voice-qa/realtime] failed:", error);
+        console.error("[voice-qa/realtime] failed:", error);
         const message = toFriendlyVoiceQaError(error);
         if (message) {
           push({ type: "error", error: message });

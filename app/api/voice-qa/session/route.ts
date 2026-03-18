@@ -3,7 +3,7 @@ import {
   buildVoiceQaSessionResponse,
   recordVoiceQaUsage,
   requireVoiceQaUser,
-} from "@/lib/teacher-tools/voice-qa/server";
+} from "@/lib/voice-qa/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function POST() {
       headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
     });
   } catch (error) {
-    console.error("[teacher-tools/voice-qa/session] failed:", error);
+    console.error("[voice-qa/session] failed:", error);
     return NextResponse.json(
       { error: "会话初始化失败，请稍后再试。" },
       { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }

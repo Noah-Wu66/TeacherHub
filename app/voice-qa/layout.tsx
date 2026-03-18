@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "../teacher-tools/globals.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "你问我答",

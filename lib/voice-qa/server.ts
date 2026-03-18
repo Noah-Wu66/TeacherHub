@@ -317,7 +317,7 @@ export function buildVoiceQaSessionResponse(user: any): VoiceQaSessionResponse {
   const publicUser = toPublicUser(user);
   return {
     sessionId: generateId(),
-    realtimeUrl: "/teacher-tools/api/voice-qa/realtime",
+    realtimeUrl: "/api/voice-qa/realtime",
     userType: publicUser.accountType === "guest" ? "guest" : "formal",
     displayName: publicUser.displayName || "同学",
     greeting: VOICE_QA_GREETING,
@@ -335,7 +335,7 @@ export async function recordVoiceQaUsage(user: any) {
     return;
   }
 
-  await incrementUsageCount(user._id, "teacher-tools-voice-qa");
+  await incrementUsageCount(user._id, "voice-qa");
 }
 
 export async function streamVoiceQaTurn(params: VoiceQaTurnStreamParams) {

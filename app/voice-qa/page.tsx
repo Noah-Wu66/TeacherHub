@@ -1,5 +1,5 @@
 import ToolAccessGuard from "@/components/platform/auth/ToolAccessGuard";
-import VoiceQaClient from "@/components/teacher-tools/voice-qa/VoiceQaClient";
+import VoiceQaClient from "@/components/voice-qa/VoiceQaClient";
 
 export default function VoiceQaPage() {
   return (

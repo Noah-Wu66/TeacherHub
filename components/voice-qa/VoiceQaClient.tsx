@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mic, MicOff, PhoneOff, RefreshCcw, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Phone, PhoneOff } from "lucide-react";
 import { useAuth } from "@/components/platform/auth/AuthProvider";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
   VoiceQaServerEvent,
   VoiceQaSessionResponse,
-} from "@/lib/teacher-tools/voice-qa/types";
+} from "@/lib/voice-qa/types";
 
 type MessageStatus = "pending" | "streaming" | "final" | "interrupted";
 type CallPhase = "idle" | "connecting" | "listening" | "processing" | "speaking" | "error";
@@ -135,7 +135,7 @@ export default function VoiceQaClient() {
   const [phase, setPhase] = useState<CallPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [micOpen, setMicOpen] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -155,6 +155,7 @@ export default function VoiceQaClient() {
   const sessionRef = useRef<VoiceQaSessionResponse | null>(null);
   const messagesRef = useRef<VoiceQaMessage[]>([]);
   const phaseRef = useRef<CallPhase>("idle");
+  const micOpenRef = useRef(false);
   const dialogIdRef = useRef("");
   const playbackCursorRef = useRef(0);
   const playbackSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
@@ -173,6 +174,10 @@ export default function VoiceQaClient() {
   }, [phase]);
 
   useEffect(() => {
+    micOpenRef.current = micOpen;
+  }, [micOpen]);
+
+  useEffect(() => {
     return () => {
       cancelPendingStartup();
       interruptActiveTurn();
@@ -188,6 +193,19 @@ export default function VoiceQaClient() {
     }
   }
 
+  function stopMonitoring() {
+    if (monitorFrameRef.current) {
+      cancelAnimationFrame(monitorFrameRef.current);
+      monitorFrameRef.current = null;
+    }
+
+    captureBuffersRef.current = [];
+    isCapturingRef.current = false;
+    speechActiveRef.current = false;
+    speechStartedAtRef.current = 0;
+    lastVoiceAtRef.current = 0;
+  }
+
   async function ensureSession(signal?: AbortSignal) {
     if (sessionRef.current) {
       return sessionRef.current;
@@ -196,7 +214,7 @@ export default function VoiceQaClient() {
     setPhase("connecting");
     setError(null);
 
-    const response = await fetch("/teacher-tools/api/voice-qa/session", {
+    const response = await fetch("/api/voice-qa/session", {
       method: "POST",
       credentials: "include",
       cache: "no-store",
@@ -357,11 +375,7 @@ export default function VoiceQaClient() {
   }
 
   function teardownAudioEnvironment() {
-    if (monitorFrameRef.current) {
-      cancelAnimationFrame(monitorFrameRef.current);
-      monitorFrameRef.current = null;
-    }
-
+    stopMonitoring();
     stopPlayback();
 
     if (mediaStreamRef.current) {
@@ -387,31 +401,20 @@ export default function VoiceQaClient() {
 
     analyserRef.current = null;
     monitorBufferRef.current = null;
-    captureBuffersRef.current = [];
-    isCapturingRef.current = false;
-    speechActiveRef.current = false;
-    speechStartedAtRef.current = 0;
-    lastVoiceAtRef.current = 0;
   }
 
-  function stopCall() {
+  function closeMicrophone() {
     cancelPendingStartup();
     interruptActiveTurn();
     teardownAudioEnvironment();
-    dialogIdRef.current = "";
-    sessionRef.current = null;
-    messagesRef.current = [];
-    setPhase("idle");
+    micOpenRef.current = false;
     setError(null);
-    setSession(null);
-    setMessages([]);
+    setPhase("idle");
+    stopMonitoring();
+    setMicOpen(false);
   }
 
   function queueAssistantAudio(audioBase64: string, sampleRate: number) {
-    if (isMuted) {
-      return;
-    }
-
     const audioContext = audioContextRef.current;
     if (!audioContext) {
       return;
@@ -659,7 +662,7 @@ export default function VoiceQaClient() {
           setPhase("error");
         }
       } else if (isCurrentTurn) {
-        setPhase("listening");
+        setPhase(micOpenRef.current ? "listening" : "idle");
       }
     } finally {
       if (activeTurnAbortRef.current === controller) {
@@ -716,7 +719,7 @@ export default function VoiceQaClient() {
   function startMonitoring() {
     const analyser = analyserRef.current;
     const buffer = monitorBufferRef.current;
-    if (!analyser || !buffer) {
+    if (!analyser || !buffer || monitorFrameRef.current) {
       return;
     }
 
@@ -755,7 +758,7 @@ export default function VoiceQaClient() {
     monitorFrameRef.current = window.requestAnimationFrame(loop);
   }
 
-  async function startCall() {
+  async function openMicrophone() {
     cancelPendingStartup();
     const controller = new AbortController();
     startupAbortRef.current = controller;
@@ -769,15 +772,21 @@ export default function VoiceQaClient() {
       setGuideOpen(false);
       await prepareAudioEnvironment(controller.signal);
       throwIfAborted(controller.signal);
+      setError(null);
+      micOpenRef.current = true;
+      setMicOpen(true);
       setPhase("listening");
       startMonitoring();
     } catch (caughtError) {
       if (caughtError instanceof Error && caughtError.name === "AbortError") {
-        teardownAudioEnvironment();
+        stopMonitoring();
+        micOpenRef.current = false;
+        setMicOpen(false);
+        setPhase("idle");
         return;
       }
 
-      console.error("[voice-qa/startCall] failed:", caughtError);
+      console.error("[voice-qa/openMicrophone] failed:", caughtError);
       setError(
         caughtError instanceof Error ? caughtError.message : "麦克风或会话启动失败，请稍后再试。"
       );
@@ -789,46 +798,45 @@ export default function VoiceQaClient() {
     }
   }
 
-  async function reconnectCall() {
-    stopCall();
-    await startCall();
+  function toggleMicrophone() {
+    if (startupAbortRef.current) {
+      closeMicrophone();
+      return;
+    }
+
+    if (micOpen) {
+      closeMicrophone();
+      return;
+    }
+
+    openMicrophone().catch(() => undefined);
   }
 
   const accountLabel =
     user?.accountType === "guest" ? "游客模式" : user?.accountType === "formal" ? "正式账号" : "未登录";
+  const hasSession = Boolean(session || sessionRef.current);
   const statusLabel =
-    phase === "idle"
-      ? "未开始"
-      : phase === "connecting"
-        ? "正在连接"
-        : phase === "listening"
-          ? "正在聆听"
-          : phase === "processing"
-            ? "老师思考中"
+    phase === "connecting"
+      ? "正在开启"
+      : phase === "processing"
+        ? "老师思考中"
         : phase === "speaking"
           ? "老师正在回答"
-          : "出现异常";
-  const latestUserMessage = [...messages].reverse().find((message) => message.role === "user") || null;
-  const latestAssistantMessage =
-    [...messages].reverse().find((message) => message.role === "assistant") || null;
-  const heroText =
-    phase === "idle"
-      ? "你可以开始说话"
-      : phase === "connecting"
-        ? "正在连接李雪老师"
-        : phase === "listening"
-          ? "我在听，你直接说就行"
-          : phase === "processing"
-            ? "我在想一想，马上回答你"
-            : phase === "speaking"
-              ? "李雪老师正在回答"
-              : "现在出了点小问题";
+          : phase === "error"
+            ? "出现异常"
+            : hasSession
+              ? micOpen
+                ? "正在聆听"
+                : "麦克风已关闭"
+              : "未开始";
+  const primaryControlLabel =
+    phase === "connecting" ? "正在开启" : micOpen ? "关闭麦克风" : "开启麦克风";
   const phaseClassName =
     phase === "speaking"
       ? "voice-qa-hero-avatar-shell-speaking"
       : phase === "processing"
         ? "voice-qa-hero-avatar-shell-processing"
-        : phase === "listening"
+        : phase === "listening" && micOpen
           ? "voice-qa-hero-avatar-shell-listening"
           : "";
 
@@ -850,6 +858,32 @@ export default function VoiceQaClient() {
         </div>
       </header>
 
+      {guideOpen ? (
+        <section className="voice-qa-guide-inline" aria-label="使用提示">
+          <div className="voice-qa-guide-card">
+            <p className="voice-qa-guide-title">使用前先看一下</p>
+            <ul className="voice-qa-guide-list">
+              <li>点“开启麦克风”后，需要先同意麦克风权限。</li>
+              <li>你只要正常说话，停顿一小会儿后老师就会自动回答。</li>
+              <li>想暂时停一下，就点“关闭麦克风”。</li>
+              <li>游客和正式账号都能用，但这里不会保存聊天记录。</li>
+            </ul>
+            <div className="voice-qa-guide-actions">
+              <button
+                type="button"
+                className="voice-qa-guide-btn voice-qa-guide-btn-primary"
+                onClick={() => {
+                  setGuideOpen(false);
+                  openMicrophone().catch(() => undefined);
+                }}
+              >
+                我知道了，开始
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="voice-qa-stage">
         <div className="voice-qa-hero">
           <div className="voice-qa-hero-top">
@@ -859,7 +893,7 @@ export default function VoiceQaClient() {
 
           <div className={`voice-qa-hero-avatar-shell ${phaseClassName}`}>
             <img
-              src="/teacher-tools/voice-qa/avatar.gif"
+              src="/voice-qa/avatar.gif"
               alt="李雪老师头像"
               className="voice-qa-hero-avatar"
             />
@@ -870,25 +904,6 @@ export default function VoiceQaClient() {
             <span />
             <span />
           </div>
-
-          <p className="voice-qa-hero-text">{heroText}</p>
-
-          <div className="voice-qa-live-card">
-            <p className="voice-qa-live-line">
-              <span className="voice-qa-live-label">你刚才说</span>
-              <span className="voice-qa-live-content">
-                {latestUserMessage?.content || "点开始通话后，直接说出你的问题。"}
-              </span>
-            </p>
-            <p className="voice-qa-live-line">
-              <span className="voice-qa-live-label">老师回应</span>
-              <span className="voice-qa-live-content">
-                {latestAssistantMessage?.content || "我会在这里实时显示老师的回答。"}
-              </span>
-            </p>
-          </div>
-
-          <p className="voice-qa-hero-note">本页刷新后自动清空，不保存聊天内容</p>
         </div>
 
         <div className="voice-qa-panel voice-qa-transcript">
@@ -898,15 +913,6 @@ export default function VoiceQaClient() {
               <p className="voice-qa-panel-value">当前账号：{user?.displayName || accountLabel}</p>
             </div>
           </div>
-
-          {messages.length === 0 ? (
-            <div className="voice-qa-empty">
-              <p className="voice-qa-empty-title">准备好了就直接开口</p>
-              <p className="voice-qa-empty-text">
-                点开始后，我会持续听你说话。你停下来一小会儿，我就会自动回答。
-              </p>
-            </div>
-          ) : null}
 
           {messages.map((message) => (
             <div
@@ -940,88 +946,14 @@ export default function VoiceQaClient() {
           <button
             type="button"
             className="voice-qa-control-btn voice-qa-control-btn-primary"
-            onClick={() => {
-              if (phase === "idle") {
-                startCall();
-                return;
-              }
-              stopCall();
-            }}
+            onClick={toggleMicrophone}
           >
-            {phase === "idle" ? <Mic size={28} /> : <PhoneOff size={28} />}
+            {micOpen ? <PhoneOff size={28} /> : <Phone size={28} />}
           </button>
-          <span className="voice-qa-control-label">{phase === "idle" ? "开始通话" : "挂断"}</span>
-        </div>
-
-        <div className="voice-qa-control-item">
-          <button
-            type="button"
-            className="voice-qa-control-btn"
-            onClick={() => {
-              setIsMuted((current) => {
-                const next = !current;
-                if (next) {
-                  stopPlayback();
-                }
-                return next;
-              });
-            }}
-          >
-            {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
-          </button>
-          <span className="voice-qa-control-label">{isMuted ? "已静音" : "播放开"}</span>
-        </div>
-
-        <div className="voice-qa-control-item">
-          <button type="button" className="voice-qa-control-btn" onClick={reconnectCall}>
-            <RefreshCcw size={28} />
-          </button>
-          <span className="voice-qa-control-label">重连</span>
-        </div>
-
-        <div className="voice-qa-control-item">
-          <button
-            type="button"
-            className="voice-qa-control-btn voice-qa-control-btn-danger"
-            onClick={() => {
-              if (!sessionRef.current) {
-                return;
-              }
-              interruptActiveTurn();
-              setPhase("listening");
-            }}
-          >
-            <MicOff size={28} />
-          </button>
-          <span className="voice-qa-control-label">打断回答</span>
+          <span className="voice-qa-control-label">{primaryControlLabel}</span>
         </div>
       </footer>
 
-      {guideOpen ? (
-        <div className="voice-qa-guide-mask">
-          <div className="voice-qa-guide-card">
-            <p className="voice-qa-guide-title">使用前先看一下</p>
-            <ul className="voice-qa-guide-list">
-              <li>点“开始通话”后，需要先同意麦克风权限。</li>
-              <li>你只要正常说话，停顿一小会儿后老师就会自动回答。</li>
-              <li>如果老师还在说话，你直接开口或者点“打断回答”都能停下。</li>
-              <li>游客和正式账号都能用，但这里不会保存聊天记录。</li>
-            </ul>
-            <div className="voice-qa-guide-actions">
-              <button type="button" className="voice-qa-guide-btn" onClick={() => setGuideOpen(false)}>
-                先看看页面
-              </button>
-              <button
-                type="button"
-                className="voice-qa-guide-btn voice-qa-guide-btn-primary"
-                onClick={startCall}
-              >
-                我知道了，开始
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </main>
   );
 }
