@@ -167,7 +167,7 @@ function AudioWaveform({
       // 根据不同状态绘制不同的波形
       if (phase === "listening" && analyser && dataArrayRef.current) {
         // 录音状态：实时波形
-        analyser.getByteTimeDomainData(dataArrayRef.current);
+        analyser.getByteTimeDomainData(dataArrayRef.current as Uint8Array);
         
         for (let i = 0; i < WAVE_BARS; i++) {
           const dataIndex = Math.floor((i / WAVE_BARS) * dataArrayRef.current.length);
