@@ -143,7 +143,7 @@ export default function VoiceQaClient() {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const processorSinkRef = useRef<GainNode | null>(null);
   const monitorFrameRef = useRef<number | null>(null);
-  const monitorBufferRef = useRef<Uint8Array | null>(null);
+  const monitorBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const captureBuffersRef = useRef<Float32Array[]>([]);
   const isCapturingRef = useRef(false);
   const speechActiveRef = useRef(false);
@@ -292,7 +292,7 @@ export default function VoiceQaClient() {
     analyserRef.current = analyser;
     processorRef.current = processor;
     processorSinkRef.current = silentGain;
-    monitorBufferRef.current = new Uint8Array(analyser.fftSize);
+    monitorBufferRef.current = new Uint8Array(new ArrayBuffer(analyser.fftSize));
   }
 
   function ensurePlaybackCursor() {
