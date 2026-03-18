@@ -140,7 +140,7 @@ function AudioWaveform({
   analyser: AnalyserNode | null;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const dataArrayRef = useRef<Uint8Array | null>(null);
 
   useEffect(() => {
