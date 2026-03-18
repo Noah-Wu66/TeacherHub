@@ -359,6 +359,36 @@
   color: var(--vq-text-secondary);
 }
 
+/* 挂断按钮样式 */
+.voice-qa-hangup-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 
+    0 4px 12px rgba(220, 38, 38, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--vq-transition);
+  margin-top: 8px;
+}
+
+.voice-qa-hangup-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 6px 16px rgba(220, 38, 38, 0.4),
+    0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.voice-qa-hangup-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
 @keyframes pulse {
   0%, 100% {
     box-shadow: 

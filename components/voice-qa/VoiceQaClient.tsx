@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Phone, PhoneOff, Mic, Loader2 } from "lucide-react";
+import { ArrowLeft, Phone, PhoneOff, Mic, MicOff, Loader2, PhoneMissed } from "lucide-react";
 import { useAuth } from "@/components/platform/auth/AuthProvider";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
@@ -270,6 +270,7 @@ export default function VoiceQaClient() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const processorSinkRef = useRef<GainNode | null>(null);
   const monitorFrameRef = useRef<number | null>(null);
   const monitorBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
@@ -381,7 +382,7 @@ export default function VoiceQaClient() {
   }
 
   async function prepareAudioEnvironment(signal?: AbortSignal) {
-    if (mediaStreamRef.current && analyserRef.current && audioContextRef.current && processorRef.current) {
+    if (mediaStreamRef.current && analyserRef.current && audioContextRef.current && (workletNodeRef.current || processorRef.current)) {
       return;
     }
 
@@ -415,25 +416,64 @@ export default function VoiceQaClient() {
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
     const silentGain = audioContext.createGain();
     silentGain.gain.value = 0;
 
-    processor.onaudioprocess = (event) => {
-      if (!isCapturingRef.current) {
-        return;
-      }
-
-      const channelData = event.inputBuffer.getChannelData(0);
-      captureBuffersRef.current.push(new Float32Array(channelData));
-    };
-
     source.connect(analyser);
-    source.connect(processor);
-    processor.connect(silentGain);
-    silentGain.connect(audioContext.destination);
+
+    // 尝试使用 AudioWorklet（新API，无警告）
+    let useWorklet = false;
+    try {
+      if (audioContext.audioWorklet) {
+        await audioContext.audioWorklet.addModule('/voice-qa/audio-worklet-processor.js');
+        const workletNode = new AudioWorkletNode(audioContext, 'voice-capture-processor', {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          channelCount: 1,
+        });
+
+        // 接收 worklet 发来的音频数据
+        workletNode.port.onmessage = (event) => {
+          if (event.data.type === 'audio' && isCapturingRef.current) {
+            captureBuffersRef.current.push(new Float32Array(event.data.data));
+          }
+        };
+
+        workletNode.connect(silentGain);
+        silentGain.connect(audioContext.destination);
+        source.connect(workletNode);
+        workletNodeRef.current = workletNode;
+        useWorklet = true;
+      }
+    } catch (workletError) {
+      console.warn('[voice-qa] AudioWorklet 加载失败，回退到 ScriptProcessorNode:', workletError);
+    }
+
+    // 如果 AudioWorklet 不可用，回退到 ScriptProcessorNode
+    if (!useWorklet) {
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processor.onaudioprocess = (event) => {
+        if (!isCapturingRef.current) {
+          return;
+        }
+        const channelData = event.inputBuffer.getChannelData(0);
+        captureBuffersRef.current.push(new Float32Array(channelData));
+      };
+      source.connect(processor);
+      processor.connect(silentGain);
+      silentGain.connect(audioContext.destination);
+      processorRef.current = processor;
+    }
+
     if (signal?.aborted) {
-      processor.disconnect();
+      if (workletNodeRef.current) {
+        workletNodeRef.current.disconnect();
+        workletNodeRef.current.port.close();
+      }
+      if (processorRef.current) {
+        processorRef.current.disconnect();
+        processorRef.current.onaudioprocess = null;
+      }
       silentGain.disconnect();
       source.disconnect();
       stream.getTracks().forEach((track) => track.stop());
@@ -444,7 +484,6 @@ export default function VoiceQaClient() {
     mediaStreamRef.current = stream;
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
-    processorRef.current = processor;
     processorSinkRef.current = silentGain;
     monitorBufferRef.current = new Uint8Array(new ArrayBuffer(analyser.fftSize));
   }
@@ -519,6 +558,13 @@ export default function VoiceQaClient() {
       mediaStreamRef.current = null;
     }
 
+    if (workletNodeRef.current) {
+      workletNodeRef.current.disconnect();
+      workletNodeRef.current.port.postMessage({ type: 'stop' });
+      workletNodeRef.current.port.close();
+      workletNodeRef.current = null;
+    }
+
     if (processorRef.current) {
       processorRef.current.disconnect();
       processorRef.current.onaudioprocess = null;
@@ -539,6 +585,14 @@ export default function VoiceQaClient() {
     monitorBufferRef.current = null;
   }
 
+  // 只暂停麦克风录音，保留会话
+  function pauseMicrophone() {
+    stopMonitoring();
+    micOpenRef.current = false;
+    setMicOpen(false);
+    setPhase("idle");
+  }
+
   function closeMicrophone() {
     cancelPendingStartup();
     interruptActiveTurn();
@@ -548,6 +602,21 @@ export default function VoiceQaClient() {
     setPhase("idle");
     stopMonitoring();
     setMicOpen(false);
+  }
+
+  // 挂断通话 - 完全结束对话
+  function hangupCall() {
+    cancelPendingStartup();
+    interruptActiveTurn();
+    teardownAudioEnvironment();
+    micOpenRef.current = false;
+    setMicOpen(false);
+    sessionRef.current = null;
+    setSession(null);
+    dialogIdRef.current = null;
+    setMessages([]);
+    setPhase("idle");
+    setError(null);
   }
 
   function queueAssistantAudio(audioBase64: string, sampleRate: number) {
@@ -813,6 +882,12 @@ export default function VoiceQaClient() {
     }
 
     isCapturingRef.current = false;
+
+    // 通知 AudioWorklet 停止录制
+    if (workletNodeRef.current) {
+      workletNodeRef.current.port.postMessage({ type: 'stop' });
+    }
+
     const chunks = captureBuffersRef.current;
     captureBuffersRef.current = [];
 
@@ -850,6 +925,11 @@ export default function VoiceQaClient() {
     isCapturingRef.current = true;
     speechStartedAtRef.current = Date.now();
     setPhase("listening");
+
+    // 通知 AudioWorklet 开始录制
+    if (workletNodeRef.current) {
+      workletNodeRef.current.port.postMessage({ type: 'start' });
+    }
   }
 
   function startMonitoring() {
@@ -935,12 +1015,13 @@ export default function VoiceQaClient() {
 
   function toggleMicrophone() {
     if (startupAbortRef.current) {
-      closeMicrophone();
+      pauseMicrophone();
       return;
     }
 
     if (micOpen) {
-      closeMicrophone();
+      // 点击通话按钮只是暂停录音，保留会话
+      pauseMicrophone();
       return;
     }
 
@@ -1039,14 +1120,26 @@ export default function VoiceQaClient() {
               {phase === "connecting" ? (
                 <Loader2 size={32} className="spin" />
               ) : micOpen ? (
-                <PhoneOff size={32} />
+                <MicOff size={32} />
               ) : (
-                <Phone size={32} />
+                <Mic size={32} />
               )}
             </button>
             <span className="voice-qa-mic-label">
-              {phase === "connecting" ? "正在开启..." : micOpen ? "点击结束" : "点击开始"}
+              {phase === "connecting" ? "正在开启..." : micOpen ? "点击暂停" : "点击说话"}
             </span>
+            
+            {/* 挂断按钮 - 只在有会话时显示 */}
+            {session && (
+              <button
+                type="button"
+                className="voice-qa-hangup-btn"
+                onClick={hangupCall}
+                title="挂断通话"
+              >
+                <PhoneMissed size={24} />
+              </button>
+            )}
           </div>
         </div>
 
