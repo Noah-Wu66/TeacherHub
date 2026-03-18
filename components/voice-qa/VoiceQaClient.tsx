@@ -286,7 +286,7 @@ export default function VoiceQaClient() {
   const messagesRef = useRef<VoiceQaMessage[]>([]);
   const phaseRef = useRef<CallPhase>("idle");
   const micOpenRef = useRef(false);
-  const dialogIdRef = useRef("");
+  const dialogIdRef = useRef<string | null>(null);
   const playbackCursorRef = useRef(0);
   const playbackSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const assistantAudioEndedRef = useRef(false);
