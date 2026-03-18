@@ -145,6 +145,23 @@ function IconCube() {
   )
 }
 
+function IconVoiceQa() {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
+      <rect x="10" y="6" width="28" height="36" rx="14" fill="url(#voice-grad)" opacity="0.15"/>
+      <rect x="16" y="8" width="16" height="22" rx="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M12 22a12 12 0 0 0 24 0M24 30v8M18 38h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M20 16h8M20 21h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.45"/>
+      <defs>
+        <linearGradient id="voice-grad" x1="10" y1="6" x2="38" y2="42">
+          <stop stopColor="#F97316"/>
+          <stop offset="1" stopColor="#EF4444"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
 const projects = [
   {
     href: '/ai-education',
@@ -195,6 +212,14 @@ const projects = [
     Icon: IconTree,
   },
   {
+    href: '/voice-qa',
+    title: '你问我答',
+    description: '语音互动工具，学生可以直接开口提问，李雪老师实时回答',
+    color: 'orange',
+    tag: '语音',
+    Icon: IconVoiceQa,
+  },
+  {
     href: '/teacher-tools',
     title: '三视图教学工具',
     description: '交互式三视图教学工具，根据视图摆放小正方体',
@@ -240,6 +265,12 @@ const colorMap: Record<string, { card: string; icon: string; title: string; tag:
     icon: 'bg-green-50 text-green-600',
     title: 'group-hover:text-green-700',
     tag: 'bg-green-50 text-green-600',
+  },
+  orange: {
+    card: 'hover:border-orange-200 hover:shadow-orange-100/50',
+    icon: 'bg-orange-50 text-orange-600',
+    title: 'group-hover:text-orange-700',
+    tag: 'bg-orange-50 text-orange-600',
   },
   rose: {
     card: 'hover:border-rose-200 hover:shadow-rose-100/50',

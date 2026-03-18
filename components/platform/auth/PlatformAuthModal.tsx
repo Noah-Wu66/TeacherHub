@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import TeacherClassSelector from "@/components/ai-education/auth/components/TeacherClassSelector";
 import SubjectSelector from "@/components/ai-education/auth/components/SubjectSelector";
 
@@ -18,6 +19,15 @@ const SUBJECT_OPTIONS = [
 ];
 
 type RoleType = "student" | "teacher";
+type ToolDirectoryGroup = {
+  title: string;
+  items: Array<{
+    name: string;
+    path: string;
+    description: string;
+    url: string;
+  }>;
+};
 
 export default function PlatformAuthModal({
   open,
@@ -48,6 +58,23 @@ export default function PlatformAuthModal({
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [toolQueryOpen, setToolQueryOpen] = useState(false);
+  const [toolPassword, setToolPassword] = useState("");
+  const [toolQueryLoading, setToolQueryLoading] = useState(false);
+  const [toolQueryError, setToolQueryError] = useState("");
+  const [toolGroups, setToolGroups] = useState<ToolDirectoryGroup[]>([]);
+  const [toolTotal, setToolTotal] = useState(0);
+  const pathname = usePathname();
+  const showToolQueryButton = pathname === "/" && activeTab === "login";
+
+  const resetToolQueryState = useCallback(() => {
+    setToolQueryOpen(false);
+    setToolPassword("");
+    setToolQueryLoading(false);
+    setToolQueryError("");
+    setToolGroups([]);
+    setToolTotal(0);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -65,8 +92,9 @@ export default function PlatformAuthModal({
       setAgreed(false);
       setError("");
       setLoading(false);
+      resetToolQueryState();
     }
-  }, [open]);
+  }, [open, resetToolQueryState]);
 
   if (!open) return null;
 
@@ -188,6 +216,35 @@ export default function PlatformAuthModal({
     }
   };
 
+  const queryToolDirectory = async () => {
+    if (!/^\d{4}$/.test(toolPassword)) {
+      setToolQueryError("请输入 4 位数字密码");
+      return;
+    }
+
+    setToolQueryLoading(true);
+    setToolQueryError("");
+    try {
+      const response = await fetch("/api/tool-directory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: toolPassword }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "查询失败");
+      }
+      setToolGroups(Array.isArray(data?.groups) ? data.groups : []);
+      setToolTotal(Number(data?.total || 0));
+    } catch (queryError) {
+      setToolGroups([]);
+      setToolTotal(0);
+      setToolQueryError(queryError instanceof Error ? queryError.message : "查询失败");
+    } finally {
+      setToolQueryLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-3xl border border-black/10 bg-white p-5 shadow-2xl sm:p-6">
@@ -215,6 +272,7 @@ export default function PlatformAuthModal({
             onClick={() => {
               setActiveTab("login");
               setError("");
+              resetToolQueryState();
             }}
             className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
               activeTab === "login" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
@@ -227,6 +285,7 @@ export default function PlatformAuthModal({
             onClick={() => {
               setActiveTab("register");
               setError("");
+              resetToolQueryState();
             }}
             className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
               activeTab === "register" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
@@ -408,6 +467,94 @@ export default function PlatformAuthModal({
             >
               游客登录
             </button>
+          )}
+
+          {showToolQueryButton && (
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-gray-800">工具查询</div>
+                  <div className="mt-1 text-xs leading-5 text-gray-500">
+                    输入 4 位数字密码后，可以查看全部工具地址。
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setToolQueryOpen((current) => !current);
+                    setToolQueryError("");
+                  }}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+                >
+                  {toolQueryOpen ? "收起" : "工具查询"}
+                </button>
+              </div>
+
+              {toolQueryOpen && (
+                <div className="mt-4 space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={4}
+                      value={toolPassword}
+                      onChange={(event) => {
+                        const nextValue = event.target.value.replace(/\D/g, "").slice(0, 4);
+                        setToolPassword(nextValue);
+                        setToolQueryError("");
+                      }}
+                      className="flex-1 rounded-2xl border border-gray-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                      placeholder="请输入 4 位数字密码"
+                    />
+                    <button
+                      type="button"
+                      onClick={queryToolDirectory}
+                      disabled={toolQueryLoading}
+                      className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-60"
+                    >
+                      {toolQueryLoading ? "查询中..." : "查看地址"}
+                    </button>
+                  </div>
+
+                  {toolQueryError && (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+                      {toolQueryError}
+                    </div>
+                  )}
+
+                  {toolGroups.length > 0 && (
+                    <div className="rounded-2xl border border-gray-200 bg-white">
+                      <div className="border-b border-gray-100 px-4 py-3 text-sm font-medium text-gray-700">
+                        共找到 {toolTotal} 个地址
+                      </div>
+                      <div className="max-h-72 space-y-4 overflow-y-auto px-4 py-4">
+                        {toolGroups.map((group) => (
+                          <div key={group.title}>
+                            <div className="mb-2 text-sm font-semibold text-gray-900">{group.title}</div>
+                            <div className="space-y-2">
+                              {group.items.map((item) => (
+                                <div key={item.url} className="rounded-2xl border border-gray-100 px-3 py-3">
+                                  <div className="text-sm font-medium text-gray-800">{item.name}</div>
+                                  <div className="mt-1 text-xs text-gray-500">{item.description}</div>
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-2 block break-all text-xs text-blue-600 hover:text-blue-700"
+                                  >
+                                    {item.url}
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </form>
       </div>

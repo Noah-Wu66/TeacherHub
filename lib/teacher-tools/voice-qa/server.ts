@@ -23,8 +23,7 @@ import {
 const VOICE_QA_WS_URL = "wss://openspeech.bytedance.com/api/v3/realtime/dialogue";
 const VOICE_QA_RESOURCE_ID = "volc.speech.dialog";
 const VOICE_QA_APP_KEY = "PlgvMymc7f3tQnJ6";
-const VOICE_QA_MODEL_VERSION = "1.2.1.1";
-const VOICE_QA_SPEAKER = "zh_female_vv_jupiter_bigtts";
+const VOICE_QA_DEFAULT_SPEAKER = "zh_female_vv_uranus_bigtts";
 
 type VoiceQaReadablePayload = {
   content?: string;
@@ -67,6 +66,7 @@ function buildFriendlyVoiceError(defaultMessage: string) {
 function getVoiceQaRuntimeConfig() {
   const appId = String(process.env.VOLCENGINE_VOICE_APP_ID || "").trim();
   const accessToken = String(process.env.VOLCENGINE_VOICE_ACCESS_TOKEN || "").trim();
+  const speaker = String(process.env.VOLCENGINE_VOICE_SPEAKER || "").trim() || VOICE_QA_DEFAULT_SPEAKER;
 
   if (!appId || !accessToken) {
     throw new Error("火山语音配置缺失");
@@ -75,19 +75,15 @@ function getVoiceQaRuntimeConfig() {
   return {
     appId,
     accessToken,
+    speaker,
   };
 }
 
-function buildStartSessionPayload(dialogId?: string) {
+function buildStartSessionPayload(speaker: string, dialogId?: string) {
   return {
-    asr: {
-      extra: {
-        end_smooth_window_ms: 1200,
-        enable_custom_vad: true,
-      },
-    },
+    asr: {},
     tts: {
-      speaker: VOICE_QA_SPEAKER,
+      speaker,
       audio_config: {
         channel: 1,
         format: VOICE_QA_TTS_FORMAT,
@@ -104,9 +100,6 @@ function buildStartSessionPayload(dialogId?: string) {
         audit_response: VOICE_QA_AUDIT_RESPONSE,
         recv_timeout: 20,
         input_mod: "audio_file",
-        enable_loudness_norm: false,
-        enable_user_query_exit: false,
-        model: VOICE_QA_MODEL_VERSION,
       },
     },
   };
@@ -320,6 +313,7 @@ export async function requireVoiceQaUser() {
 }
 
 export function buildVoiceQaSessionResponse(user: any): VoiceQaSessionResponse {
+  const { speaker } = getVoiceQaRuntimeConfig();
   const publicUser = toPublicUser(user);
   return {
     sessionId: generateId(),
@@ -328,7 +322,7 @@ export function buildVoiceQaSessionResponse(user: any): VoiceQaSessionResponse {
     displayName: publicUser.displayName || "同学",
     greeting: VOICE_QA_GREETING,
     toolTitle: VOICE_QA_TOOL_TITLE,
-    speaker: VOICE_QA_SPEAKER,
+    speaker,
     outputSampleRate: VOICE_QA_TTS_SAMPLE_RATE,
     outputFormat: VOICE_QA_TTS_FORMAT,
     inputSampleRate: VOICE_QA_INPUT_SAMPLE_RATE,
@@ -345,7 +339,7 @@ export async function recordVoiceQaUsage(user: any) {
 }
 
 export async function streamVoiceQaTurn(params: VoiceQaTurnStreamParams) {
-  const { appId, accessToken } = getVoiceQaRuntimeConfig();
+  const { appId, accessToken, speaker } = getVoiceQaRuntimeConfig();
   const connectId = randomUUID();
   const NodeWebSocket = WebSocket as unknown as NodeWebSocketConstructor;
   const socket = new NodeWebSocket(VOICE_QA_WS_URL, {
@@ -366,7 +360,7 @@ export async function streamVoiceQaTurn(params: VoiceQaTurnStreamParams) {
     socket.send(buildJsonFrame(1, {}));
     await waitForEvent(reader, 50, params.signal);
 
-    socket.send(buildJsonFrame(100, buildStartSessionPayload(params.dialogId), params.sessionId));
+    socket.send(buildJsonFrame(100, buildStartSessionPayload(speaker, params.dialogId), params.sessionId));
     const sessionStarted = await waitForEvent(reader, 150, params.signal);
     const sessionPayload = readableTextPayload(sessionStarted.payloadJson);
     const nextDialogId = String(sessionPayload.dialog_id || params.dialogId || "");

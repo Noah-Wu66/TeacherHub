@@ -836,11 +836,11 @@ export default function VoiceQaClient() {
     <main className="voice-qa-shell">
       <header className="voice-qa-header">
         <div className="voice-qa-header-left">
-          <Link href="/teacher-tools" className="voice-qa-back">
+          <Link href="/" className="voice-qa-back">
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <p className="voice-qa-eyebrow">教师工具</p>
+            <p className="voice-qa-eyebrow">语音互动</p>
             <h1 className="voice-qa-title">你问我答</h1>
           </div>
         </div>
