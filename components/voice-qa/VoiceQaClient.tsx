@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Phone, PhoneOff, Mic, MicOff, Loader2, PhoneMissed } from "lucide-react";
-import { useAuth } from "@/components/platform/auth/AuthProvider";
+import { ChevronLeft, Volume2, MoreVertical, Phone, Grid } from "lucide-react";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
   VoiceQaServerEvent,
@@ -20,31 +19,10 @@ type VoiceQaMessage = {
   status: MessageStatus;
 };
 
-const SPEECH_THRESHOLD = 0.04;
-const SPEECH_SILENCE_MS = 850;
 const MIN_RECORDING_MS = 450;
 const TARGET_SAMPLE_RATE = 16000;
 const STREAMING_RENDER_INTERVAL_MS = 96;
-const MONITOR_INTERVAL_MS = 48;
-const MOBILE_SAFARI_MONITOR_INTERVAL_MS = 96;
 const FIRST_TURN_TEXT_DELAY_MS = 900;
-
-// 波形条数量
-const WAVE_BARS = 20;
-
-function isMobileSafariBrowser() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  const userAgent = window.navigator.userAgent;
-  const isAppleMobile =
-    /iPhone|iPad|iPod/i.test(userAgent) ||
-    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
-  const isSafariEngine = /WebKit/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
-
-  return isAppleMobile && isSafariEngine;
-}
 
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -149,174 +127,13 @@ function throwIfAborted(signal?: AbortSignal) {
   }
 }
 
-// 音频波形可视化组件
-function AudioWaveform({
-  phase,
-  analyser,
-  liteMode,
-}: {
-  phase: CallPhase;
-  analyser: AnalyserNode | null;
-  liteMode: boolean;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | undefined>(undefined);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
-  const lastDrawAtRef = useRef(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // 初始化数据数组
-    if (analyser && !dataArrayRef.current) {
-      const bufferLength = analyser.frequencyBinCount;
-      dataArrayRef.current = new Uint8Array(bufferLength);
-    }
-
-    const barCount = liteMode ? 12 : WAVE_BARS;
-    const frameInterval = liteMode ? 1000 / 12 : 1000 / 30;
-
-    const paintBar = (x: number, y: number, width: number, height: number, color: string | CanvasGradient) => {
-      ctx.fillStyle = color;
-      if (liteMode) {
-        ctx.fillRect(x, y, width, height);
-        return;
-      }
-
-      ctx.beginPath();
-      ctx.roundRect(x, y, width, height, width * 0.5);
-      ctx.fill();
-    };
-
-    const draw = () => {
-      const width = canvas.width;
-      const height = canvas.height;
-      const barWidth = width / barCount;
-      const centerY = height / 2;
-
-      ctx.clearRect(0, 0, width, height);
-
-      // 根据不同状态绘制不同的波形
-      if (phase === "listening" && analyser && dataArrayRef.current) {
-        // 录音状态：实时波形
-        analyser.getByteTimeDomainData(dataArrayRef.current as any);
-
-        for (let i = 0; i < barCount; i++) {
-          const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
-          const value = dataArrayRef.current[dataIndex];
-          const normalized = (value - 128) / 128;
-          const barHeight = Math.max(4, Math.abs(normalized) * height * 0.8);
-
-          const x = i * barWidth + barWidth * 0.1;
-          const y = centerY - barHeight / 2;
-
-          if (liteMode) {
-            paintBar(x, y, barWidth * 0.8, barHeight, "#3b82f6");
-            continue;
-          }
-
-          const gradient = ctx.createLinearGradient(0, 0, 0, height);
-          gradient.addColorStop(0, "#4f8ef7");
-          gradient.addColorStop(0.5, "#1b52dc");
-          gradient.addColorStop(1, "#4f8ef7");
-          paintBar(x, y, barWidth * 0.8, barHeight, gradient);
-        }
-      } else if (phase === "processing") {
-        // 思考状态：脉动效果
-        const time = Date.now() / 500;
-        for (let i = 0; i < barCount; i++) {
-          const offset = (i / barCount) * Math.PI * 2;
-          const value = Math.sin(time + offset) * 0.5 + 0.5;
-          const barHeight = value * height * 0.6;
-
-          const x = i * barWidth + barWidth * 0.1;
-          const y = centerY - barHeight / 2;
-
-          paintBar(x, y, barWidth * 0.8, barHeight, "#b288d9");
-        }
-      } else if (phase === "speaking") {
-        // 播放状态：活跃波形
-        const time = Date.now() / 200;
-        for (let i = 0; i < barCount; i++) {
-          const offset = (i / barCount) * Math.PI * 4;
-          const value = Math.sin(time + offset) * 0.5 + 0.5;
-          const barHeight = value * height * 0.8;
-
-          const x = i * barWidth + barWidth * 0.1;
-          const y = centerY - barHeight / 2;
-
-          if (liteMode) {
-            paintBar(x, y, barWidth * 0.8, barHeight, "#e85d9a");
-            continue;
-          }
-
-          const gradient = ctx.createLinearGradient(0, 0, 0, height);
-          gradient.addColorStop(0, "#e85d9a");
-          gradient.addColorStop(0.5, "#d43d7a");
-          gradient.addColorStop(1, "#e85d9a");
-          paintBar(x, y, barWidth * 0.8, barHeight, gradient);
-        }
-      } else {
-        // 空闲/未开始：静止细线
-        for (let i = 0; i < barCount; i++) {
-          const x = i * barWidth + barWidth * 0.1;
-          const barHeight = 4;
-          const y = centerY - barHeight / 2;
-
-          paintBar(x, y, barWidth * 0.8, barHeight, "#d1d8e0");
-        }
-      }
-    };
-
-    draw();
-
-    const animate = (now: number) => {
-      if (lastDrawAtRef.current && now - lastDrawAtRef.current < frameInterval) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      lastDrawAtRef.current = now;
-      draw();
-
-      if (phase !== "idle") {
-        animationRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    if (phase !== "idle") {
-      animationRef.current = requestAnimationFrame(animate);
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [phase, analyser, liteMode]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={200}
-      height={60}
-      className="voice-qa-waveform"
-    />
-  );
-}
-
 export default function VoiceQaClient() {
-  const { user } = useAuth();
   const [session, setSession] = useState<VoiceQaSessionResponse | null>(null);
   const [messages, setMessages] = useState<VoiceQaMessage[]>([]);
   const [phase, setPhase] = useState<CallPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [micOpen, setMicOpen] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
+  const [isPressing, setIsPressing] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -324,18 +141,13 @@ export default function VoiceQaClient() {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const processorSinkRef = useRef<GainNode | null>(null);
-  const monitorTimerRef = useRef<number | null>(null);
-  const monitorBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const captureBuffersRef = useRef<Float32Array[]>([]);
   const isCapturingRef = useRef(false);
-  const speechActiveRef = useRef(false);
   const speechStartedAtRef = useRef(0);
-  const lastVoiceAtRef = useRef(0);
   const activeTurnAbortRef = useRef<AbortController | null>(null);
   const startupAbortRef = useRef<AbortController | null>(null);
   const activeAssistantMessageIdRef = useRef<string | null>(null);
   const sessionRef = useRef<VoiceQaSessionResponse | null>(null);
-  const messagesRef = useRef<VoiceQaMessage[]>([]);
   const phaseRef = useRef<CallPhase>("idle");
   const micOpenRef = useRef(false);
   const dialogIdRef = useRef<string | null>(null);
@@ -344,18 +156,12 @@ export default function VoiceQaClient() {
   const assistantAudioEndedRef = useRef(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollFrameRef = useRef<number | null>(null);
-  const [liteMode, setLiteMode] = useState(false);
-  const liteModeRef = useRef(false);
   const lastUserTranscriptRenderAtRef = useRef(0);
   const lastAssistantRenderAtRef = useRef(0);
 
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
-
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -365,18 +171,11 @@ export default function VoiceQaClient() {
     micOpenRef.current = micOpen;
   }, [micOpen]);
 
-  useEffect(() => {
-    const nextLiteMode = isMobileSafariBrowser();
-    setLiteMode(nextLiteMode);
-    liteModeRef.current = nextLiteMode;
-  }, []);
-
-  // 自动滚动到最新消息
+  // Auto scroll
   useEffect(() => {
     if (scrollFrameRef.current) {
       cancelAnimationFrame(scrollFrameRef.current);
     }
-
     scrollFrameRef.current = window.requestAnimationFrame(() => {
       const container = messagesContainerRef.current;
       if (container) {
@@ -384,7 +183,6 @@ export default function VoiceQaClient() {
       }
       scrollFrameRef.current = null;
     });
-
     return () => {
       if (scrollFrameRef.current) {
         cancelAnimationFrame(scrollFrameRef.current);
@@ -410,27 +208,6 @@ export default function VoiceQaClient() {
       controller.abort();
       startupAbortRef.current = null;
     }
-  }
-
-  function stopMonitoring() {
-    if (monitorTimerRef.current) {
-      clearTimeout(monitorTimerRef.current);
-      monitorTimerRef.current = null;
-    }
-
-    resetSpeechDetection();
-  }
-
-  function resetSpeechDetection() {
-    if (isCapturingRef.current && workletNodeRef.current) {
-      workletNodeRef.current.port.postMessage({ type: "stop" });
-    }
-
-    captureBuffersRef.current = [];
-    isCapturingRef.current = false;
-    speechActiveRef.current = false;
-    speechStartedAtRef.current = 0;
-    lastVoiceAtRef.current = 0;
   }
 
   function isAssistantReplyLocked() {
@@ -475,10 +252,8 @@ export default function VoiceQaClient() {
     ];
 
     sessionRef.current = nextSession;
-    messagesRef.current = greetingMessages;
     setSession(nextSession);
     setMessages(greetingMessages);
-    setShowGuide(false);
     return nextSession;
   }
 
@@ -522,7 +297,6 @@ export default function VoiceQaClient() {
 
     source.connect(analyser);
 
-    // 尝试使用 AudioWorklet（新API，无警告）
     let useWorklet = false;
     try {
       if (audioContext.audioWorklet) {
@@ -533,7 +307,6 @@ export default function VoiceQaClient() {
           channelCount: 1,
         });
 
-        // 接收 worklet 发来的音频数据
         workletNode.port.onmessage = (event) => {
           if (event.data.type === 'audio' && isCapturingRef.current) {
             captureBuffersRef.current.push(new Float32Array(event.data.data));
@@ -550,7 +323,6 @@ export default function VoiceQaClient() {
       console.warn('[voice-qa] AudioWorklet 加载失败，回退到 ScriptProcessorNode:', workletError);
     }
 
-    // 如果 AudioWorklet 不可用，回退到 ScriptProcessorNode
     if (!useWorklet) {
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
       processor.onaudioprocess = (event) => {
@@ -586,7 +358,6 @@ export default function VoiceQaClient() {
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
     processorSinkRef.current = silentGain;
-    monitorBufferRef.current = new Uint8Array(new ArrayBuffer(analyser.fftSize));
   }
 
   function ensurePlaybackCursor() {
@@ -612,7 +383,6 @@ export default function VoiceQaClient() {
         source.onended = null;
         source.stop();
       } catch {
-        // 忽略已经结束的节点
       }
     }
 
@@ -651,7 +421,6 @@ export default function VoiceQaClient() {
   }
 
   function teardownAudioEnvironment() {
-    stopMonitoring();
     stopPlayback();
 
     if (mediaStreamRef.current) {
@@ -683,29 +452,8 @@ export default function VoiceQaClient() {
     }
 
     analyserRef.current = null;
-    monitorBufferRef.current = null;
   }
 
-  // 只暂停麦克风录音，保留会话
-  function pauseMicrophone() {
-    stopMonitoring();
-    micOpenRef.current = false;
-    setMicOpen(false);
-    setPhase("idle");
-  }
-
-  function closeMicrophone() {
-    cancelPendingStartup();
-    interruptActiveTurn();
-    teardownAudioEnvironment();
-    micOpenRef.current = false;
-    setError(null);
-    setPhase("idle");
-    stopMonitoring();
-    setMicOpen(false);
-  }
-
-  // 挂断通话 - 完全结束对话
   function hangupCall() {
     cancelPendingStartup();
     interruptActiveTurn();
@@ -740,7 +488,7 @@ export default function VoiceQaClient() {
     source.onended = () => {
       playbackSourcesRef.current.delete(source);
       if (playbackSourcesRef.current.size === 0 && assistantAudioEndedRef.current) {
-        setPhase("listening");
+        setPhase("idle");
       }
     };
 
@@ -1009,14 +757,14 @@ export default function VoiceQaClient() {
           if (event.type === "assistant_audio_end") {
             assistantAudioEndedRef.current = true;
             if (playbackSourcesRef.current.size === 0) {
-              setPhase("listening");
+              setPhase("idle");
             }
           }
 
           if (event.type === "session_finished") {
             dialogIdRef.current = event.dialogId;
             if (playbackSourcesRef.current.size === 0) {
-              setPhase("listening");
+              setPhase("idle");
             }
           }
 
@@ -1040,7 +788,7 @@ export default function VoiceQaClient() {
           setPhase("error");
         }
       } else if (isCurrentTurn) {
-        setPhase(micOpenRef.current ? "listening" : "idle");
+        setPhase("idle");
       }
     } finally {
       if (assistantTextRevealTimer) {
@@ -1053,14 +801,32 @@ export default function VoiceQaClient() {
     }
   }
 
+  function startSpeechCapture() {
+    if (!sessionRef.current || isCapturingRef.current || isAssistantReplyLocked()) {
+      return;
+    }
+    
+    // Stop any ongoing playback from the assistant if user interrupts
+    interruptActiveTurn();
+
+    captureBuffersRef.current = [];
+    isCapturingRef.current = true;
+    speechStartedAtRef.current = Date.now();
+    setPhase("listening");
+
+    if (workletNodeRef.current) {
+      workletNodeRef.current.port.postMessage({ type: 'start' });
+    }
+  }
+
   function stopSpeechCapture() {
     if (!isCapturingRef.current) {
       return;
     }
 
     isCapturingRef.current = false;
+    setPhase("processing");
 
-    // 通知 AudioWorklet 停止录制
     if (workletNodeRef.current) {
       workletNodeRef.current.port.postMessage({ type: 'stop' });
     }
@@ -1069,15 +835,18 @@ export default function VoiceQaClient() {
     captureBuffersRef.current = [];
 
     if (!chunks.length) {
+      setPhase("idle");
       return;
     }
 
     if (Date.now() - speechStartedAtRef.current < MIN_RECORDING_MS) {
+      setPhase("idle");
       return;
     }
 
     const audioContext = audioContextRef.current;
     if (!audioContext) {
+      setPhase("idle");
       return;
     }
 
@@ -1090,76 +859,6 @@ export default function VoiceQaClient() {
       setError("这次语音没有处理成功，你可以再说一遍。");
       setPhase("error");
     });
-  }
-
-  function startSpeechCapture() {
-    if (!sessionRef.current || isCapturingRef.current || isAssistantReplyLocked()) {
-      return;
-    }
-
-    captureBuffersRef.current = [];
-    isCapturingRef.current = true;
-    speechStartedAtRef.current = Date.now();
-    setPhase("listening");
-
-    // 通知 AudioWorklet 开始录制
-    if (workletNodeRef.current) {
-      workletNodeRef.current.port.postMessage({ type: 'start' });
-    }
-  }
-
-  function startMonitoring() {
-    const analyser = analyserRef.current;
-    const buffer = monitorBufferRef.current;
-    if (!analyser || !buffer || monitorTimerRef.current) {
-      return;
-    }
-
-    const monitorInterval = liteModeRef.current
-      ? MOBILE_SAFARI_MONITOR_INTERVAL_MS
-      : MONITOR_INTERVAL_MS;
-
-    const loop = () => {
-      monitorTimerRef.current = null;
-
-      if (!sessionRef.current) {
-        return;
-      }
-
-      if (isAssistantReplyLocked()) {
-        resetSpeechDetection();
-        monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
-        return;
-      }
-
-      analyser.getByteTimeDomainData(buffer);
-      let sum = 0;
-      for (let index = 0; index < buffer.length; index += 1) {
-        const normalized = (buffer[index] - 128) / 128;
-        sum += normalized * normalized;
-      }
-      const rms = Math.sqrt(sum / buffer.length);
-      const now = Date.now();
-
-      if (rms > SPEECH_THRESHOLD) {
-        lastVoiceAtRef.current = now;
-        if (!speechActiveRef.current) {
-          speechActiveRef.current = true;
-          startSpeechCapture();
-        }
-      } else if (
-        speechActiveRef.current &&
-        lastVoiceAtRef.current > 0 &&
-        now - lastVoiceAtRef.current > SPEECH_SILENCE_MS
-      ) {
-        speechActiveRef.current = false;
-        stopSpeechCapture();
-      }
-
-      monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
-    };
-
-    monitorTimerRef.current = window.setTimeout(loop, monitorInterval);
   }
 
   async function openMicrophone() {
@@ -1178,11 +877,8 @@ export default function VoiceQaClient() {
       setError(null);
       micOpenRef.current = true;
       setMicOpen(true);
-      setPhase("listening");
-      startMonitoring();
     } catch (caughtError) {
       if (caughtError instanceof Error && caughtError.name === "AbortError") {
-        stopMonitoring();
         micOpenRef.current = false;
         setMicOpen(false);
         setPhase("idle");
@@ -1201,64 +897,54 @@ export default function VoiceQaClient() {
     }
   }
 
-  function toggleMicrophone() {
-    if (startupAbortRef.current) {
-      pauseMicrophone();
-      return;
+  const handlePointerDown = async () => {
+    if (isAssistantReplyLocked() && phase !== "speaking") return; 
+    
+    setIsPressing(true);
+
+    if (!micOpenRef.current && phase !== "connecting") {
+      setPhase("connecting");
+      await openMicrophone();
+      startSpeechCapture();
+    } else {
+      startSpeechCapture();
     }
+  };
 
-    if (micOpen) {
-      // 点击通话按钮只是暂停录音，保留会话
-      pauseMicrophone();
-      return;
-    }
+  const handlePointerUp = () => {
+    setIsPressing(false);
+    stopSpeechCapture();
+  };
 
-    openMicrophone().catch(() => undefined);
-  }
+  const handlePointerCancel = () => {
+    setIsPressing(false);
+    stopSpeechCapture();
+  };
 
-  // 获取状态标签
-  const getStatusLabel = useCallback(() => {
-    switch (phase) {
-      case "connecting":
-        return "正在连接...";
-      case "processing":
-        return "老师思考中...";
-      case "speaking":
-        return "老师正在回答";
-      case "error":
-        return "出现异常";
-      case "listening":
-        return "正在聆听";
-      default:
-        return micOpen ? "麦克风已开启" : "未开始";
-    }
-  }, [phase, micOpen]);
-
-  // 获取头像样式
-  const getAvatarClass = useCallback(() => {
-    if (phase === "speaking") return "speaking";
-    if (phase === "processing") return "processing";
-    if (phase === "listening" && micOpen) return "listening";
-    return "";
-  }, [phase, micOpen]);
+  const bgImage = phase === "speaking" ? "/voice-qa/teacher.gif" : "/voice-qa/frame.png";
 
   return (
-    <main className={`voice-qa-shell ${liteMode ? "voice-qa-shell-lite" : ""}`}>
+    <main className="voice-qa-shell">
+      {/* Background Image / GIF */}
+      <div 
+        className="voice-qa-bg" 
+        style={{ backgroundImage: `url(${bgImage})` }} 
+      />
+      
       {/* 顶部导航 */}
       <header className="voice-qa-header">
-        <div className="voice-qa-header-left">
-          <Link href="/" className="voice-qa-back">
-            <ArrowLeft size={20} />
-          </Link>
-          <div className="voice-qa-header-title">
-            <span className="voice-qa-header-subtitle">语音互动</span>
-            <h1 className="voice-qa-header-main">你问我答</h1>
+        <Link href="/" className="voice-qa-back">
+          <ChevronLeft size={24} color="#fff" />
+        </Link>
+        <div className="voice-qa-header-title">
+          <div className="voice-qa-avatar">
+            <img src="/voice-qa/frame.png" alt="Avatar" />
           </div>
+          <span className="voice-qa-header-main">老师</span>
         </div>
         <div className="voice-qa-header-right">
-          <span className={`voice-qa-status ${phase === "error" ? "error" : ""}`}>
-            {getStatusLabel()}
-          </span>
+          <Volume2 size={24} color="#fff" />
+          <MoreVertical size={24} color="#fff" />
         </div>
       </header>
 
@@ -1270,110 +956,63 @@ export default function VoiceQaClient() {
         </div>
       )}
 
-      {/* 引导提示 */}
-      {showGuide && !session && (
-        <div className="voice-qa-guide">
-          <Mic size={24} />
-          <p>点击下方麦克风按钮，与李雪老师开始语音对话</p>
-        </div>
-      )}
-
       {/* 主要内容区 */}
       <section className="voice-qa-content">
-        {/* 左侧：头像+控制区 */}
-        <div className="voice-qa-left">
-          <div className="voice-qa-avatar-wrapper">
-            <div className={`voice-qa-avatar ${getAvatarClass()}`}>
-              <img
-                src="/voice-qa/avatar.gif"
-                alt="李雪老师"
-                className="voice-qa-avatar-img"
-              />
-            </div>
-            
-            {/* 音频波形可视化 */}
-            <div className="voice-qa-waveform-wrapper">
-              <AudioWaveform phase={phase} analyser={analyserRef.current} liteMode={liteMode} />
-            </div>
-          </div>
-
-          {/* 控制按钮 */}
-          <div className="voice-qa-controls">
-            <button
-              type="button"
-              className={`voice-qa-mic-btn ${micOpen ? "active" : ""} ${phase === "connecting" ? "loading" : ""}`}
-              onClick={toggleMicrophone}
-              disabled={phase === "connecting"}
+        <div className="voice-qa-messages" ref={messagesContainerRef}>
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`voice-qa-message ${message.role}`}
             >
-              {phase === "connecting" ? (
-                <Loader2 size={32} className="spin" />
-              ) : micOpen ? (
-                <MicOff size={32} />
-              ) : (
-                <Mic size={32} />
-              )}
-            </button>
-            <span className="voice-qa-mic-label">
-              {phase === "connecting" ? "正在开启..." : micOpen ? "点击暂停" : "点击说话"}
-            </span>
-            
-            {/* 挂断按钮 - 只在有会话时显示 */}
-            {session && (
-              <button
-                type="button"
-                className="voice-qa-hangup-btn"
-                onClick={hangupCall}
-                title="挂断通话"
-              >
-                <PhoneMissed size={24} />
-              </button>
-            )}
-          </div>
+              <div className="voice-qa-message-bubble">
+                {message.role === "assistant" && (
+                  <div className="voice-qa-audio-indicator">
+                    <span className="play-icon">▶</span>
+                  </div>
+                )}
+                <p className="voice-qa-message-text">
+                  {message.content || "..."}
+                </p>
+                {message.status === "interrupted" && (
+                  <span className="voice-qa-message-tag">已打断</span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* 右侧：对话记录 */}
-        <div className="voice-qa-right">
-          <div className="voice-qa-chat">
-            <div className="voice-qa-chat-header">
-              <span className="voice-qa-chat-label">对话内容</span>
-              <span className="voice-qa-chat-user">{user?.displayName || "用户"}</span>
-            </div>
-
-            <div className="voice-qa-messages" ref={messagesContainerRef}>
-              {messages.length === 0 ? (
-                <div className="voice-qa-empty">
-                  <p>暂无对话内容</p>
-                  <p>点击麦克风开始对话</p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`voice-qa-message ${message.role}`}
-                  >
-                    <div className="voice-qa-message-bubble">
-                      <div className="voice-qa-message-header">
-                        <span className="voice-qa-message-author">
-                          {message.role === "user" ? "你" : "李雪老师"}
-                        </span>
-                        {message.status === "interrupted" && (
-                          <span className="voice-qa-message-tag">已打断</span>
-                        )}
-                        {message.status === "streaming" && (
-                          <span className="voice-qa-message-tag streaming">输入中...</span>
-                        )}
-                      </div>
-                      <p className="voice-qa-message-text">
-                        {message.content || "..."}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        {/* 推荐问题 */}
+        <div className="voice-qa-suggestions">
+          <div className="suggestion-item">你能帮我解析一下这次的考试吗</div>
+          <div className="suggestion-item">你平时喜欢做什么来放松自己</div>
+          <div className="suggestion-item">最近有没有什么有趣的事情发生</div>
         </div>
       </section>
+
+      {/* 底部控制区 */}
+      <footer className="voice-qa-footer">
+        <div className="voice-qa-bottom-bar">
+          <button className="icon-btn" onClick={hangupCall}>
+            <Phone size={22} color="#fff" />
+          </button>
+          
+          <button 
+            className={`ptt-btn ${isPressing ? "pressing" : ""}`}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            onPointerLeave={handlePointerCancel}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {isPressing ? "松开 结束" : phase === "connecting" ? "连接中..." : "按住 说话"}
+          </button>
+          
+          <button className="icon-btn">
+            <Grid size={22} color="#fff" />
+          </button>
+        </div>
+        <div className="ai-notice">内容由AI生成</div>
+      </footer>
     </main>
   );
 }
