@@ -23,6 +23,8 @@ const MIN_RECORDING_MS = 450;
 const TARGET_SAMPLE_RATE = 16000;
 const STREAMING_RENDER_INTERVAL_MS = 96;
 const FIRST_TURN_TEXT_DELAY_MS = 900;
+const FRAME_IMAGE_SRC = "/voice-qa/frame.png";
+const TEACHER_GIF_SRC = "/voice-qa/teacher.gif";
 
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -134,6 +136,7 @@ export default function VoiceQaClient() {
   const [error, setError] = useState<string | null>(null);
   const [micOpen, setMicOpen] = useState(false);
   const [isPressing, setIsPressing] = useState(false);
+  const [teacherGifReady, setTeacherGifReady] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -170,6 +173,24 @@ export default function VoiceQaClient() {
   useEffect(() => {
     micOpenRef.current = micOpen;
   }, [micOpen]);
+
+  useEffect(() => {
+    const frameImage = new window.Image();
+    frameImage.src = FRAME_IMAGE_SRC;
+
+    const teacherImage = new window.Image();
+    const markReady = () => setTeacherGifReady(true);
+    teacherImage.addEventListener("load", markReady, { once: true });
+    teacherImage.src = TEACHER_GIF_SRC;
+
+    if (teacherImage.complete) {
+      setTeacherGifReady(true);
+    }
+
+    return () => {
+      teacherImage.removeEventListener("load", markReady);
+    };
+  }, []);
 
   // Auto scroll
   useEffect(() => {
@@ -921,10 +942,12 @@ export default function VoiceQaClient() {
     stopSpeechCapture();
   };
 
-  const bgImage = phase === "speaking" ? "/voice-qa/teacher.gif" : "/voice-qa/frame.png";
+  const bgImage = phase === "speaking" && teacherGifReady ? TEACHER_GIF_SRC : FRAME_IMAGE_SRC;
 
   return (
     <main className="voice-qa-shell">
+      <img src={TEACHER_GIF_SRC} alt="" aria-hidden="true" className="voice-qa-preload-asset" />
+
       {/* Background Image / GIF */}
       <div 
         className="voice-qa-bg" 
@@ -938,7 +961,7 @@ export default function VoiceQaClient() {
         </Link>
         <div className="voice-qa-header-title">
           <div className="voice-qa-avatar">
-            <img src="/voice-qa/frame.png" alt="Avatar" />
+            <img src={FRAME_IMAGE_SRC} alt="Avatar" />
           </div>
           <span className="voice-qa-header-main">老师</span>
         </div>
