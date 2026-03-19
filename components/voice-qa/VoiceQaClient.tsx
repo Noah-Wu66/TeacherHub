@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, Volume2, MoreVertical, Phone, Grid } from "lucide-react";
+import { MoreVertical, Volume2, VolumeX } from "lucide-react";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
   VoiceQaServerEvent,
@@ -137,6 +136,8 @@ export default function VoiceQaClient() {
   const [micOpen, setMicOpen] = useState(false);
   const [isPressing, setIsPressing] = useState(false);
   const [teacherGifReady, setTeacherGifReady] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -144,8 +145,10 @@ export default function VoiceQaClient() {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const processorSinkRef = useRef<GainNode | null>(null);
+  const playbackGainRef = useRef<GainNode | null>(null);
   const captureBuffersRef = useRef<Float32Array[]>([]);
   const isCapturingRef = useRef(false);
+  const isMutedRef = useRef(false);
   const speechStartedAtRef = useRef(0);
   const activeTurnAbortRef = useRef<AbortController | null>(null);
   const startupAbortRef = useRef<AbortController | null>(null);
@@ -158,6 +161,7 @@ export default function VoiceQaClient() {
   const playbackSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const assistantAudioEndedRef = useRef(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const topActionsRef = useRef<HTMLDivElement | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
   const lastUserTranscriptRenderAtRef = useRef(0);
   const lastAssistantRenderAtRef = useRef(0);
@@ -173,6 +177,39 @@ export default function VoiceQaClient() {
   useEffect(() => {
     micOpenRef.current = micOpen;
   }, [micOpen]);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+    if (playbackGainRef.current) {
+      playbackGainRef.current.gain.value = isMuted ? 0 : 1;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!topActionsRef.current?.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     const frameImage = new window.Image();
@@ -315,8 +352,11 @@ export default function VoiceQaClient() {
     analyser.fftSize = 2048;
     const silentGain = audioContext.createGain();
     silentGain.gain.value = 0;
+    const playbackGain = audioContext.createGain();
+    playbackGain.gain.value = isMutedRef.current ? 0 : 1;
 
     source.connect(analyser);
+    playbackGain.connect(audioContext.destination);
 
     let useWorklet = false;
     try {
@@ -368,6 +408,7 @@ export default function VoiceQaClient() {
         processorRef.current.disconnect();
         processorRef.current.onaudioprocess = null;
       }
+      playbackGain.disconnect();
       silentGain.disconnect();
       source.disconnect();
       stream.getTracks().forEach((track) => track.stop());
@@ -379,6 +420,7 @@ export default function VoiceQaClient() {
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
     processorSinkRef.current = silentGain;
+    playbackGainRef.current = playbackGain;
   }
 
   function ensurePlaybackCursor() {
@@ -467,26 +509,17 @@ export default function VoiceQaClient() {
       processorSinkRef.current = null;
     }
 
+    if (playbackGainRef.current) {
+      playbackGainRef.current.disconnect();
+      playbackGainRef.current = null;
+    }
+
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(() => undefined);
       audioContextRef.current = null;
     }
 
     analyserRef.current = null;
-  }
-
-  function hangupCall() {
-    cancelPendingStartup();
-    interruptActiveTurn();
-    teardownAudioEnvironment();
-    micOpenRef.current = false;
-    setMicOpen(false);
-    sessionRef.current = null;
-    setSession(null);
-    dialogIdRef.current = null;
-    setMessages([]);
-    setPhase("idle");
-    setError(null);
   }
 
   function queueAssistantAudio(audioBase64: string, sampleRate: number) {
@@ -502,7 +535,7 @@ export default function VoiceQaClient() {
 
     const source = audioContext.createBufferSource();
     source.buffer = buffer;
-    source.connect(audioContext.destination);
+    source.connect(playbackGainRef.current || audioContext.destination);
 
     const startAt = ensurePlaybackCursor();
     playbackSourcesRef.current.add(source);
@@ -918,6 +951,32 @@ export default function VoiceQaClient() {
     }
   }
 
+  function toggleMute() {
+    setIsMuted((current) => !current);
+  }
+
+  function clearConversation() {
+    cancelPendingStartup();
+    interruptActiveTurn();
+    isCapturingRef.current = false;
+    captureBuffersRef.current = [];
+    speechStartedAtRef.current = 0;
+    dialogIdRef.current = null;
+    activeAssistantMessageIdRef.current = null;
+    assistantAudioEndedRef.current = false;
+    lastUserTranscriptRenderAtRef.current = 0;
+    lastAssistantRenderAtRef.current = 0;
+    setIsPressing(false);
+    setIsMenuOpen(false);
+    setMessages([]);
+    setError(null);
+    setPhase("idle");
+
+    if (workletNodeRef.current) {
+      workletNodeRef.current.port.postMessage({ type: "stop" });
+    }
+  }
+
   const handlePointerDown = async () => {
     if (isAssistantReplyLocked() && phase !== "speaking") return; 
     
@@ -953,24 +1012,44 @@ export default function VoiceQaClient() {
         className="voice-qa-bg" 
         style={{ backgroundImage: `url(${bgImage})` }} 
       />
-      
-      {/* 顶部导航 */}
-      <header className="voice-qa-header">
-        <Link href="/" className="voice-qa-back">
-          <ChevronLeft size={24} color="#fff" />
-        </Link>
-        <div className="voice-qa-header-title">
-          <div className="voice-qa-avatar">
-            <img src={FRAME_IMAGE_SRC} alt="Avatar" />
-          </div>
-          <span className="voice-qa-header-main">老师</span>
-        </div>
-        <div className="voice-qa-header-right">
-          <Volume2 size={24} color="#fff" />
-          <MoreVertical size={24} color="#fff" />
-        </div>
-      </header>
 
+      <div className="voice-qa-top-actions" ref={topActionsRef}>
+        <button
+          type="button"
+          className={`voice-qa-top-action ${isMuted ? "is-active" : ""}`}
+          onClick={toggleMute}
+          aria-label={isMuted ? "取消静音" : "静音"}
+          title={isMuted ? "取消静音" : "静音"}
+        >
+          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
+
+        <div className="voice-qa-menu-wrap">
+          <button
+            type="button"
+            className={`voice-qa-top-action ${isMenuOpen ? "is-active" : ""}`}
+            onClick={() => setIsMenuOpen((current) => !current)}
+            aria-label="更多操作"
+            aria-expanded={isMenuOpen}
+            title="更多操作"
+          >
+            <MoreVertical size={20} />
+          </button>
+
+          {isMenuOpen && (
+            <div className="voice-qa-dropdown-menu">
+              <button
+                type="button"
+                className="voice-qa-dropdown-item"
+                onClick={clearConversation}
+              >
+                清理上下文
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      
       {/* 错误提示 - 浮动在内容上方 */}
       {error && (
         <div className="voice-qa-error-banner">
@@ -1004,36 +1083,20 @@ export default function VoiceQaClient() {
           ))}
         </div>
 
-        {/* 推荐问题 */}
-        <div className="voice-qa-suggestions">
-          <div className="suggestion-item">你能帮我解析一下这次的考试吗</div>
-          <div className="suggestion-item">你平时喜欢做什么来放松自己</div>
-          <div className="suggestion-item">最近有没有什么有趣的事情发生</div>
-        </div>
       </section>
 
       {/* 底部控制区 */}
       <footer className="voice-qa-footer">
-        <div className="voice-qa-bottom-bar">
-          <button className="icon-btn" onClick={hangupCall}>
-            <Phone size={22} color="#fff" />
-          </button>
-          
-          <button 
-            className={`ptt-btn ${isPressing ? "pressing" : ""}`}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerCancel}
-            onPointerLeave={handlePointerCancel}
-            onContextMenu={(e) => e.preventDefault()}
-          >
-            {isPressing ? "松开 结束" : phase === "connecting" ? "连接中..." : "按住 说话"}
-          </button>
-          
-          <button className="icon-btn">
-            <Grid size={22} color="#fff" />
-          </button>
-        </div>
+        <button 
+          className={`ptt-btn ${isPressing ? "pressing" : ""}`}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          onPointerLeave={handlePointerCancel}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {isPressing ? "松开 结束" : phase === "connecting" ? "连接中..." : "按住 说话"}
+        </button>
         <div className="ai-notice">内容由AI生成</div>
       </footer>
     </main>
