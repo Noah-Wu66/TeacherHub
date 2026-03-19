@@ -24,8 +24,8 @@ const MIN_RECORDING_MS = 450;
 const TARGET_SAMPLE_RATE = 16000;
 const STREAMING_RENDER_INTERVAL_MS = 96;
 const FIRST_TURN_TEXT_DELAY_MS = 900;
-const FRAME_IMAGE_SRC = "/voice-qa/frame.png";
-const TEACHER_GIF_SRC = "/voice-qa/teacher.gif";
+const PAUSE_IMAGE_SRC = "/voice-qa/pause.png";
+const PLAY_GIF_SRC = "/voice-qa/play.gif";
 const DEFAULT_SYSTEM_ROLE = buildVoiceQaSystemRole();
 const SYSTEM_ROLE_STORAGE_KEY = "voice-qa-system-role";
 
@@ -238,12 +238,12 @@ export default function VoiceQaClient() {
 
   useEffect(() => {
     const frameImage = new window.Image();
-    frameImage.src = FRAME_IMAGE_SRC;
+    frameImage.src = PAUSE_IMAGE_SRC;
 
     const teacherImage = new window.Image();
     const markReady = () => setTeacherGifReady(true);
     teacherImage.addEventListener("load", markReady, { once: true });
-    teacherImage.src = TEACHER_GIF_SRC;
+    teacherImage.src = PLAY_GIF_SRC;
 
     if (teacherImage.complete) {
       setTeacherGifReady(true);
