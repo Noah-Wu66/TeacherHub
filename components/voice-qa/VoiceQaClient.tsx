@@ -1049,11 +1049,11 @@ export default function VoiceQaClient() {
     stopSpeechCapture();
   };
 
-  const bgImage = phase === "speaking" && teacherGifReady ? TEACHER_GIF_SRC : FRAME_IMAGE_SRC;
+  const bgImage = phase === "speaking" && teacherGifReady ? PLAY_GIF_SRC : PAUSE_IMAGE_SRC;
 
   return (
     <main className="voice-qa-shell">
-      <img src={TEACHER_GIF_SRC} alt="" aria-hidden="true" className="voice-qa-preload-asset" />
+      <img src={PLAY_GIF_SRC} alt="" aria-hidden="true" className="voice-qa-preload-asset" />
 
       {/* Background Image / GIF */}
       <div 
