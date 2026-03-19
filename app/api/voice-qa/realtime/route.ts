@@ -26,6 +26,7 @@ export async function POST(req: Request) {
   const sessionId = String(body?.sessionId || "").trim();
   const turnId = String(body?.turnId || "").trim();
   const dialogId = String(body?.dialogId || "").trim();
+  const systemRole = typeof body?.systemRole === "string" ? body.systemRole : undefined;
   const audio = String(body?.audio || "").trim();
   const sampleRate = Number(body?.sampleRate || 0);
   const format = String(body?.format || "").trim();
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
           sessionId,
           turnId,
           dialogId,
+          systemRole,
           audioBuffer,
           signal: req.signal,
           onEvent(event) {

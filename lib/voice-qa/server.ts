@@ -48,6 +48,7 @@ type VoiceQaTurnStreamParams = {
   sessionId: string;
   turnId: string;
   dialogId?: string;
+  systemRole?: string;
   audioBuffer: Buffer;
   onEvent: (event: VoiceQaServerEvent) => void;
   signal?: AbortSignal;
@@ -79,7 +80,13 @@ function getVoiceQaRuntimeConfig() {
   };
 }
 
-function buildStartSessionPayload(speaker: string, dialogId?: string) {
+function buildStartSessionPayload(
+  speaker: string,
+  options?: {
+    dialogId?: string;
+    systemRole?: string;
+  }
+) {
   return {
     asr: {},
     tts: {
@@ -91,9 +98,9 @@ function buildStartSessionPayload(speaker: string, dialogId?: string) {
       },
     },
     dialog: {
-      dialog_id: dialogId || "",
+      dialog_id: options?.dialogId || "",
       bot_name: VOICE_QA_BOT_NAME,
-      system_role: buildVoiceQaSystemRole(),
+      system_role: options?.systemRole ?? buildVoiceQaSystemRole(),
       speaking_style: buildVoiceQaSpeakingStyle(),
       extra: {
         strict_audit: true,
@@ -360,7 +367,16 @@ export async function streamVoiceQaTurn(params: VoiceQaTurnStreamParams) {
     socket.send(buildJsonFrame(1, {}));
     await waitForEvent(reader, 50, params.signal);
 
-    socket.send(buildJsonFrame(100, buildStartSessionPayload(speaker, params.dialogId), params.sessionId));
+    socket.send(
+      buildJsonFrame(
+        100,
+        buildStartSessionPayload(speaker, {
+          dialogId: params.dialogId,
+          systemRole: params.systemRole,
+        }),
+        params.sessionId
+      )
+    );
     const sessionStarted = await waitForEvent(reader, 150, params.signal);
     const sessionPayload = readableTextPayload(sessionStarted.payloadJson);
     const nextDialogId = String(sessionPayload.dialog_id || params.dialogId || "");

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MoreVertical, Volume2, VolumeX } from "lucide-react";
+import Modal from "@/components/24-point/ui/Modal";
+import { buildVoiceQaSystemRole } from "@/lib/voice-qa/prompt";
 import { generateId } from "@/utils/ai-education/helpers";
 import type {
   VoiceQaServerEvent,
@@ -24,6 +26,8 @@ const STREAMING_RENDER_INTERVAL_MS = 96;
 const FIRST_TURN_TEXT_DELAY_MS = 900;
 const FRAME_IMAGE_SRC = "/voice-qa/frame.png";
 const TEACHER_GIF_SRC = "/voice-qa/teacher.gif";
+const DEFAULT_SYSTEM_ROLE = buildVoiceQaSystemRole();
+const SYSTEM_ROLE_STORAGE_KEY = "voice-qa-system-role";
 
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -138,6 +142,9 @@ export default function VoiceQaClient() {
   const [teacherGifReady, setTeacherGifReady] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [systemRole, setSystemRole] = useState(DEFAULT_SYSTEM_ROLE);
+  const [systemRoleDraft, setSystemRoleDraft] = useState(DEFAULT_SYSTEM_ROLE);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -162,6 +169,7 @@ export default function VoiceQaClient() {
   const assistantAudioEndedRef = useRef(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const topActionsRef = useRef<HTMLDivElement | null>(null);
+  const systemRoleLoadedRef = useRef(false);
   const scrollFrameRef = useRef<number | null>(null);
   const lastUserTranscriptRenderAtRef = useRef(0);
   const lastAssistantRenderAtRef = useRef(0);
@@ -177,6 +185,23 @@ export default function VoiceQaClient() {
   useEffect(() => {
     micOpenRef.current = micOpen;
   }, [micOpen]);
+
+  useEffect(() => {
+    if (systemRoleLoadedRef.current) {
+      return;
+    }
+
+    systemRoleLoadedRef.current = true;
+
+    try {
+      const savedSystemRole = window.localStorage.getItem(SYSTEM_ROLE_STORAGE_KEY);
+      if (savedSystemRole !== null) {
+        setSystemRole(savedSystemRole);
+        setSystemRoleDraft(savedSystemRole);
+      }
+    } catch {
+    }
+  }, []);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -593,6 +618,7 @@ export default function VoiceQaClient() {
           sessionId: currentSession.sessionId,
           turnId,
           dialogId: dialogIdRef.current || undefined,
+          systemRole,
           audio: audioBase64,
           sampleRate: currentSession.inputSampleRate,
           format: currentSession.inputFormat,
@@ -951,6 +977,28 @@ export default function VoiceQaClient() {
     }
   }
 
+  function openAgentSettings() {
+    setIsMenuOpen(false);
+    setSystemRoleDraft(systemRole);
+    setIsSettingsOpen(true);
+  }
+
+  function closeAgentSettings() {
+    setIsSettingsOpen(false);
+    setSystemRoleDraft(systemRole);
+  }
+
+  function saveAgentSettings() {
+    setSystemRole(systemRoleDraft);
+
+    try {
+      window.localStorage.setItem(SYSTEM_ROLE_STORAGE_KEY, systemRoleDraft);
+    } catch {
+    }
+
+    setIsSettingsOpen(false);
+  }
+
   function toggleMute() {
     setIsMuted((current) => !current);
   }
@@ -1041,6 +1089,13 @@ export default function VoiceQaClient() {
               <button
                 type="button"
                 className="voice-qa-dropdown-item"
+                onClick={openAgentSettings}
+              >
+                智能体设置
+              </button>
+              <button
+                type="button"
+                className="voice-qa-dropdown-item"
                 onClick={clearConversation}
               >
                 清理上下文
@@ -1099,6 +1154,32 @@ export default function VoiceQaClient() {
         </button>
         <div className="ai-notice">内容由AI生成</div>
       </footer>
+
+      <Modal open={isSettingsOpen} onClose={closeAgentSettings} title="智能体设置">
+        <div className="voice-qa-settings-panel">
+          <label className="voice-qa-settings-label" htmlFor="voice-qa-system-role">
+            系统提示词
+          </label>
+          <textarea
+            id="voice-qa-system-role"
+            className="voice-qa-settings-textarea"
+            value={systemRoleDraft}
+            onChange={(event) => setSystemRoleDraft(event.target.value)}
+            spellCheck={false}
+          />
+          <div className="voice-qa-settings-hint">
+            保存后，下一轮语音问答会按这里的内容来回答。
+          </div>
+          <div className="voice-qa-settings-actions">
+            <button type="button" className="voice-qa-settings-cancel" onClick={closeAgentSettings}>
+              取消
+            </button>
+            <button type="button" className="voice-qa-settings-save" onClick={saveAgentSettings}>
+              保存
+            </button>
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }

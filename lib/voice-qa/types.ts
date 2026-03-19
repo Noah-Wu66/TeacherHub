@@ -22,6 +22,7 @@ export type VoiceQaTurnRequest = {
   sessionId: string;
   turnId: string;
   dialogId?: string;
+  systemRole?: string;
   audio: string;
   sampleRate: number;
   format: string;
