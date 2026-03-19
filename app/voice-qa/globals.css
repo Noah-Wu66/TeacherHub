@@ -75,9 +75,9 @@ html, body {
   width: var(--voice-qa-stage-width);
   max-width: 800px;
   box-sizing: border-box;
-  padding: 0 16px;
+  padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 10px;
 }
