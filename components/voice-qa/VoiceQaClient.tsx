@@ -39,14 +39,35 @@ const DEMO_PRESETS: Array<{ id: DemoPresetId; name: string }> = [
 
 function ParallelogramDemo() {
   return (
-    <div style={{ marginTop: "12px", display: "flex", justifyContent: "center" }}>
-      <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "300px" }}>
+    <div style={{ marginTop: "8px", display: "flex", justifyContent: "center" }}>
+      <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "200px" }}>
           <line x1="100" y1="40" x2="260" y2="40" stroke="black" strokeWidth="2" />
           <line x1="260" y1="40" x2="200" y2="160" stroke="black" strokeWidth="2" />
           <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="6" strokeLinecap="round" />
           <line x1="40" y1="160" x2="100" y2="40" stroke="red" strokeWidth="6" strokeLinecap="round" />
           <text x="120" y="195" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle">邻边</text>
           <text x="45" y="100" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle" transform="rotate(-63.4, 45, 100)">邻边</text>
+      </svg>
+    </div>
+  );
+}
+
+function AreaDemo() {
+  return (
+    <div style={{ marginTop: "8px", display: "flex", justifyContent: "center" }}>
+      <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "200px" }}>
+          {/* 平行四边形 */}
+          <polygon points="100,40 260,40 200,160 40,160" fill="none" stroke="black" strokeWidth="2" />
+          {/* 底边 */}
+          <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="4" strokeLinecap="round" />
+          {/* 高线 - 从顶边垂直到底边 */}
+          <line x1="260" y1="40" x2="260" y2="160" stroke="blue" strokeWidth="3" strokeDasharray="6,4" />
+          {/* 高的箭头 */}
+          <polygon points="255,45 260,35 265,45" fill="blue" />
+          <polygon points="255,155 260,165 265,155" fill="blue" />
+          {/* 标签 */}
+          <text x="120" y="195" fontSize="20" fontWeight="bold" fill="red" textAnchor="middle">底</text>
+          <text x="280" y="105" fontSize="20" fontWeight="bold" fill="blue" textAnchor="start">高</text>
       </svg>
     </div>
   );
@@ -299,7 +320,25 @@ export default function VoiceQaClient() {
     };
   }, [messages]);
 
+  // 页面加载时自动请求麦克风权限
   useEffect(() => {
+    const initAudio = async () => {
+      try {
+        const nextSession = await ensureSession();
+        if (nextSession) {
+          await prepareAudioEnvironment();
+          micOpenRef.current = true;
+          setMicOpen(true);
+        }
+      } catch (err) {
+        console.error("[voice-qa] 初始化麦克风失败:", err);
+        if (err instanceof Error && err.name !== "AbortError") {
+          setError(err.message || "麦克风初始化失败，请检查权限设置");
+        }
+      }
+    };
+    initAudio();
+
     return () => {
       if (scrollFrameRef.current) {
         cancelAnimationFrame(scrollFrameRef.current);
@@ -1164,8 +1203,11 @@ export default function VoiceQaClient() {
       {/* 主要内容区 */}
       <section className="voice-qa-content">
         <div className="voice-qa-messages" ref={messagesContainerRef}>
-          {messages.map((message) => {
+          {messages.map((message, index) => {
+            const isFirstUserMessage = message.role === "user" && index === 0;
             const showParallelogramDemo =
+              isFirstUserMessage && demoPreset === "parallelogram";
+            const showAreaDemo =
               message.role === "assistant" && message.demoPreset === "parallelogram";
 
             return (
@@ -1183,6 +1225,7 @@ export default function VoiceQaClient() {
                     {message.content || "..."}
                   </p>
                   {showParallelogramDemo && <ParallelogramDemo />}
+                  {showAreaDemo && <AreaDemo />}
                   {message.status === "interrupted" && (
                     <span className="voice-qa-message-tag">已打断</span>
                   )}
