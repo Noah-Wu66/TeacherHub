@@ -12,12 +12,14 @@ import type {
 
 type MessageStatus = "pending" | "streaming" | "final" | "interrupted";
 type CallPhase = "idle" | "connecting" | "listening" | "processing" | "speaking" | "error";
+type DemoPresetId = "parallelogram";
 
 type VoiceQaMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
   status: MessageStatus;
+  demoPreset?: DemoPresetId;
 };
 
 const MIN_RECORDING_MS = 450;
@@ -31,31 +33,21 @@ const SYSTEM_ROLE_STORAGE_KEY = "voice-qa-system-role";
 
 const PARALLELOGRAM_FORCED_TEXT = "不对的，长方形的面积可以直接用两个邻边相乘计算，也就是长乘以宽。但如果是一般平行四边形的面积，正确公式是：底 × 高，而不是邻边相乘。我们一起分析原因：长方形的邻边垂直，此时宽就是高，所以邻边相乘 就是底×高。但一般平行四边形的邻边不垂直，此时邻边相乘算出的是底边 × 斜边，这个数值会比实际面积大。";
 
-const DEMO_PRESETS = [
+const DEMO_PRESETS: Array<{ id: DemoPresetId; name: string }> = [
   { id: "parallelogram", name: "平行四边形" }
 ];
 
 function ParallelogramDemo() {
   return (
-    <div className="voice-qa-message assistant" style={{ width: '100%', marginTop: '8px' }}>
-      <div className="voice-qa-message-bubble" style={{ 
-        padding: '16px', 
-        background: 'rgba(255, 255, 255, 0.85)',
-        display: 'flex', 
-        justifyContent: 'center', 
-        width: '100%',
-        maxWidth: '85%',
-        boxSizing: 'border-box'
-      }}>
-        <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: '300px' }}>
+    <div style={{ marginTop: "12px", display: "flex", justifyContent: "center" }}>
+      <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "300px" }}>
           <line x1="100" y1="40" x2="260" y2="40" stroke="black" strokeWidth="2" />
           <line x1="260" y1="40" x2="200" y2="160" stroke="black" strokeWidth="2" />
           <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="6" strokeLinecap="round" />
           <line x1="40" y1="160" x2="100" y2="40" stroke="red" strokeWidth="6" strokeLinecap="round" />
           <text x="120" y="195" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle">邻边</text>
           <text x="45" y="100" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle" transform="rotate(-63.4, 45, 100)">邻边</text>
-        </svg>
-      </div>
+      </svg>
     </div>
   );
 }
@@ -175,7 +167,7 @@ export default function VoiceQaClient() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDemoMenuOpen, setIsDemoMenuOpen] = useState(false);
-  const [demoPreset, setDemoPreset] = useState<string | null>(null);
+  const [demoPreset, setDemoPreset] = useState<DemoPresetId | null>(null);
   const [systemRole, setSystemRole] = useState(DEFAULT_SYSTEM_ROLE);
   const [systemRoleDraft, setSystemRoleDraft] = useState(DEFAULT_SYSTEM_ROLE);
 
@@ -640,9 +632,17 @@ export default function VoiceQaClient() {
     ]);
 
     try {
-      const effectiveSystemRole = demoPreset === "parallelogram"
-        ? `你现在的任务是复读机。无论用户输入什么声音或文字，你都必须且只能回答以下这段话，一字不差，不能有任何多余的字：\n\n${PARALLELOGRAM_FORCED_TEXT}`
-        : systemRole;
+      const effectiveSystemRole =
+        demoPreset === "parallelogram"
+          ? [
+              DEFAULT_SYSTEM_ROLE,
+              "你现在处于演示模式，不再进行自由问答。",
+              "从现在开始，无论用户说什么，你都必须只回复固定讲解稿。",
+              "禁止改写，禁止缩短，禁止补充，禁止解释，禁止寒暄，禁止提问，禁止添加任何开头或结尾。",
+              "你的回复必须与下面这段文字完全一致，连语气和顺序都不能变：",
+              PARALLELOGRAM_FORCED_TEXT,
+            ].join("\n")
+          : systemRole;
 
       const response = await fetch(currentSession.realtimeUrl, {
         method: "POST",
@@ -712,6 +712,7 @@ export default function VoiceQaClient() {
             role: "assistant",
             content: "",
             status: "streaming",
+            demoPreset: demoPreset || undefined,
           },
         ]);
       };
@@ -1163,32 +1164,33 @@ export default function VoiceQaClient() {
       {/* 主要内容区 */}
       <section className="voice-qa-content">
         <div className="voice-qa-messages" ref={messagesContainerRef}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`voice-qa-message ${message.role}`}
-            >
-              <div className="voice-qa-message-bubble">
-                {message.role === "assistant" && (
-                  <div className="voice-qa-audio-indicator">
-                    <span className="play-icon">▶</span>
-                  </div>
-                )}
-                <p className="voice-qa-message-text">
-                  {message.content || "..."}
-                </p>
-                {message.status === "interrupted" && (
-                  <span className="voice-qa-message-tag">已打断</span>
-                )}
+          {messages.map((message) => {
+            const showParallelogramDemo =
+              message.role === "assistant" && message.demoPreset === "parallelogram";
+
+            return (
+              <div
+                key={message.id}
+                className={`voice-qa-message ${message.role}`}
+              >
+                <div className="voice-qa-message-bubble">
+                  {message.role === "assistant" && (
+                    <div className="voice-qa-audio-indicator">
+                      <span className="play-icon">▶</span>
+                    </div>
+                  )}
+                  <p className="voice-qa-message-text">
+                    {message.content || "..."}
+                  </p>
+                  {showParallelogramDemo && <ParallelogramDemo />}
+                  {message.status === "interrupted" && (
+                    <span className="voice-qa-message-tag">已打断</span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-          {demoPreset === "parallelogram" && messages.length >= 3 && (
-            <ParallelogramDemo />
-          )}
-          
-          {/* 添加一个空的撑起底部高度的元素，避免被播放动图遮挡 */}
-          <div style={{ height: '80px', flexShrink: 0 }}></div>
+            );
+          })}
+          <div style={{ height: "80px", flexShrink: 0 }} />
         </div>
 
       </section>
@@ -1214,17 +1216,18 @@ export default function VoiceQaClient() {
             {DEMO_PRESETS.map(preset => (
               <button
                 key={preset.id}
-                className="voice-qa-settings-save"
                 style={{
                   width: "100%",
-                  padding: "12px",
+                  padding: "14px 16px",
                   textAlign: "left",
-                  background: demoPreset === preset.id ? "var(--primary)" : "#f1f5f9",
-                  color: demoPreset === preset.id ? "#fff" : "var(--text-main)",
+                  background: demoPreset === preset.id ? "#111827" : "#f1f5f9",
+                  color: demoPreset === preset.id ? "#ffffff" : "#111827",
                   border: "none",
-                  borderRadius: "8px",
+                  borderRadius: "12px",
                   cursor: "pointer",
-                  fontSize: "16px"
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  transition: "all 0.2s"
                 }}
                 onClick={() => {
                   if (demoPreset !== preset.id) {
