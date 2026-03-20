@@ -68,6 +68,47 @@ function AreaDemo() {
   );
 }
 
+function AutoScrollArea({ children, hasDemo }: { children: React.ReactNode; hasDemo?: boolean }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+
+  // 监听滚动，内容被往上推时给顶部加遮罩
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const sync = () => el.classList.toggle("scrolled", el.scrollTop > 10);
+    el.addEventListener("scroll", sync, { passive: true });
+    return () => el.removeEventListener("scroll", sync);
+  }, []);
+
+  // 每次内容更新自动滚到底部
+  useEffect(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const el = scrollRef.current;
+      if (el) {
+        el.scrollTo({ top: el.scrollHeight, behavior: hasDemo ? "smooth" : "auto" });
+      }
+      rafRef.current = null;
+    });
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  });
+
+  return (
+    <div
+      className={`voice-qa-message-scroll-area${hasDemo ? " has-demo" : ""}`}
+      ref={scrollRef}
+    >
+      {children}
+    </div>
+  );
+}
+
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -1216,7 +1257,7 @@ export default function VoiceQaClient() {
                       <span className="play-icon">▶</span>
                     </div>
                   )}
-                  <div className="voice-qa-message-scroll-area">
+                  <AutoScrollArea hasDemo={showParallelogramDemo || showAreaDemo}>
                     <p className="voice-qa-message-text">
                       {message.content || "..."}
                     </p>
@@ -1225,7 +1266,7 @@ export default function VoiceQaClient() {
                     {message.status === "interrupted" && (
                       <span className="voice-qa-message-tag">已打断</span>
                     )}
-                  </div>
+                  </AutoScrollArea>
                 </div>
               </div>
             );
