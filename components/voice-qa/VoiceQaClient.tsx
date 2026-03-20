@@ -39,7 +39,7 @@ const DEMO_PRESETS: Array<{ id: DemoPresetId; name: string }> = [
 
 function ParallelogramDemo() {
   return (
-    <div style={{ marginTop: "8px", display: "flex", justifyContent: "center" }}>
+    <div className="voice-qa-demo">
       <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "200px" }}>
           <line x1="100" y1="40" x2="260" y2="40" stroke="black" strokeWidth="2" />
           <line x1="260" y1="40" x2="200" y2="160" stroke="black" strokeWidth="2" />
@@ -54,18 +54,13 @@ function ParallelogramDemo() {
 
 function AreaDemo() {
   return (
-    <div style={{ marginTop: "8px", display: "flex", justifyContent: "center" }}>
+    <div className="voice-qa-demo">
       <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "200px" }}>
-          {/* 平行四边形 */}
           <polygon points="100,40 260,40 200,160 40,160" fill="none" stroke="black" strokeWidth="2" />
-          {/* 底边 */}
           <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="4" strokeLinecap="round" />
-          {/* 高线 - 从顶边垂直到底边 */}
           <line x1="260" y1="40" x2="260" y2="160" stroke="blue" strokeWidth="3" strokeDasharray="6,4" />
-          {/* 高的箭头 */}
           <polygon points="255,45 260,35 265,45" fill="blue" />
           <polygon points="255,155 260,165 265,155" fill="blue" />
-          {/* 标签 */}
           <text x="120" y="195" fontSize="20" fontWeight="bold" fill="red" textAnchor="middle">底</text>
           <text x="280" y="105" fontSize="20" fontWeight="bold" fill="blue" textAnchor="start">高</text>
       </svg>
@@ -1206,9 +1201,9 @@ export default function VoiceQaClient() {
           {messages.map((message, index) => {
             const isFirstUserMessage = message.role === "user" && index === 0;
             const showParallelogramDemo =
-              isFirstUserMessage && demoPreset === "parallelogram";
+              isFirstUserMessage && demoPreset === "parallelogram" && message.status === "final";
             const showAreaDemo =
-              message.role === "assistant" && message.demoPreset === "parallelogram";
+              message.role === "assistant" && message.demoPreset === "parallelogram" && message.status === "final";
 
             return (
               <div
