@@ -1216,14 +1216,16 @@ export default function VoiceQaClient() {
                       <span className="play-icon">▶</span>
                     </div>
                   )}
-                  <p className="voice-qa-message-text">
-                    {message.content || "..."}
-                  </p>
-                  {showParallelogramDemo && <ParallelogramDemo />}
-                  {showAreaDemo && <AreaDemo />}
-                  {message.status === "interrupted" && (
-                    <span className="voice-qa-message-tag">已打断</span>
-                  )}
+                  <div className="voice-qa-message-scroll-area">
+                    <p className="voice-qa-message-text">
+                      {message.content || "..."}
+                    </p>
+                    {showParallelogramDemo && <ParallelogramDemo />}
+                    {showAreaDemo && <AreaDemo />}
+                    {message.status === "interrupted" && (
+                      <span className="voice-qa-message-tag">已打断</span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
