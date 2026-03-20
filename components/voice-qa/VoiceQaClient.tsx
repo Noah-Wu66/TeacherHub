@@ -29,6 +29,37 @@ const PLAY_GIF_SRC = "/voice-qa/play.gif";
 const DEFAULT_SYSTEM_ROLE = buildVoiceQaSystemRole();
 const SYSTEM_ROLE_STORAGE_KEY = "voice-qa-system-role";
 
+const PARALLELOGRAM_FORCED_TEXT = "不对的，长方形的面积可以直接用两个邻边相乘计算，也就是长乘以宽。但如果是一般平行四边形的面积，正确公式是：底 × 高，而不是邻边相乘。我们一起分析原因：长方形的邻边垂直，此时宽就是高，所以邻边相乘 就是底×高。但一般平行四边形的邻边不垂直，此时邻边相乘算出的是底边 × 斜边，这个数值会比实际面积大。";
+
+const DEMO_PRESETS = [
+  { id: "parallelogram", name: "平行四边形" }
+];
+
+function ParallelogramDemo() {
+  return (
+    <div className="voice-qa-message assistant" style={{ width: '100%', marginTop: '8px' }}>
+      <div className="voice-qa-message-bubble" style={{ 
+        padding: '16px', 
+        background: 'rgba(255, 255, 255, 0.85)',
+        display: 'flex', 
+        justifyContent: 'center', 
+        width: '100%',
+        maxWidth: '85%',
+        boxSizing: 'border-box'
+      }}>
+        <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: '300px' }}>
+          <line x1="100" y1="40" x2="260" y2="40" stroke="black" strokeWidth="2" />
+          <line x1="260" y1="40" x2="200" y2="160" stroke="black" strokeWidth="2" />
+          <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="6" strokeLinecap="round" />
+          <line x1="40" y1="160" x2="100" y2="40" stroke="red" strokeWidth="6" strokeLinecap="round" />
+          <text x="120" y="195" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle">邻边</text>
+          <text x="45" y="100" fontSize="24" fontWeight="bold" fill="black" textAnchor="middle" transform="rotate(-63.4, 45, 100)">邻边</text>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 function readJsonIfPossible(response: Response) {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -143,6 +174,8 @@ export default function VoiceQaClient() {
   const [isMuted, setIsMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDemoMenuOpen, setIsDemoMenuOpen] = useState(false);
+  const [demoPreset, setDemoPreset] = useState<string | null>(null);
   const [systemRole, setSystemRole] = useState(DEFAULT_SYSTEM_ROLE);
   const [systemRoleDraft, setSystemRoleDraft] = useState(DEFAULT_SYSTEM_ROLE);
 
@@ -607,6 +640,10 @@ export default function VoiceQaClient() {
     ]);
 
     try {
+      const effectiveSystemRole = demoPreset === "parallelogram"
+        ? `你现在的任务是复读机。无论用户输入什么声音或文字，你都必须且只能回答以下这段话，一字不差，不能有任何多余的字：\n\n${PARALLELOGRAM_FORCED_TEXT}`
+        : systemRole;
+
       const response = await fetch(currentSession.realtimeUrl, {
         method: "POST",
         credentials: "include",
@@ -618,7 +655,7 @@ export default function VoiceQaClient() {
           sessionId: currentSession.sessionId,
           turnId,
           dialogId: dialogIdRef.current || undefined,
-          systemRole,
+          systemRole: effectiveSystemRole,
           audio: audioBase64,
           sampleRate: currentSession.inputSampleRate,
           format: currentSession.inputFormat,
@@ -1089,6 +1126,16 @@ export default function VoiceQaClient() {
               <button
                 type="button"
                 className="voice-qa-dropdown-item"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsDemoMenuOpen(true);
+                }}
+              >
+                演示模式
+              </button>
+              <button
+                type="button"
+                className="voice-qa-dropdown-item"
                 onClick={openAgentSettings}
               >
                 智能体设置
@@ -1136,6 +1183,12 @@ export default function VoiceQaClient() {
               </div>
             </div>
           ))}
+          {demoPreset === "parallelogram" && messages.length >= 3 && (
+            <ParallelogramDemo />
+          )}
+          
+          {/* 添加一个空的撑起底部高度的元素，避免被播放动图遮挡 */}
+          <div style={{ height: '80px', flexShrink: 0 }}></div>
         </div>
 
       </section>
@@ -1154,6 +1207,51 @@ export default function VoiceQaClient() {
         </button>
         <div className="ai-notice">内容由AI生成</div>
       </footer>
+
+      <Modal open={isDemoMenuOpen} onClose={() => setIsDemoMenuOpen(false)} title="选择演示预设">
+        <div className="voice-qa-settings-panel">
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {DEMO_PRESETS.map(preset => (
+              <button
+                key={preset.id}
+                className="voice-qa-settings-save"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  textAlign: "left",
+                  background: demoPreset === preset.id ? "var(--primary)" : "#f1f5f9",
+                  color: demoPreset === preset.id ? "#fff" : "var(--text-main)",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "16px"
+                }}
+                onClick={() => {
+                  if (demoPreset !== preset.id) {
+                    setDemoPreset(preset.id);
+                    clearConversation();
+                  }
+                  setIsDemoMenuOpen(false);
+                }}
+              >
+                {preset.name} {demoPreset === preset.id && " (当前选中)"}
+              </button>
+            ))}
+            {demoPreset && (
+              <button
+                className="voice-qa-settings-cancel"
+                style={{ marginTop: "12px", padding: "12px", width: "100%", fontSize: "16px" }}
+                onClick={() => {
+                  setDemoPreset(null);
+                  setIsDemoMenuOpen(false);
+                }}
+              >
+                取消演示模式
+              </button>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       <Modal open={isSettingsOpen} onClose={closeAgentSettings} title="智能体设置">
         <div className="voice-qa-settings-panel">
