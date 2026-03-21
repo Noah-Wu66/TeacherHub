@@ -11,6 +11,7 @@ import {
   getSudokuHint,
   getSudokuValueList,
   isMutableSudokuCell,
+  isSudokuBoardShapeValid,
   isSudokuBoardSolved,
 } from '@/lib/sudoku/board'
 import type { SudokuBoard, SudokuHint, SudokuPuzzle } from '@/types/sudoku'
@@ -65,7 +66,8 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
   const mistakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loadPuzzle = useCallback((nextPuzzle: SudokuPuzzle, options?: LoadPuzzleOptions) => {
-    const nextBoard = options?.board ? cloneSudokuBoard(options.board) : createSudokuBoard(nextPuzzle.initial)
+    const isShapeValid = options?.board ? isSudokuBoardShapeValid(options.board, nextPuzzle.size) : false
+    const nextBoard = isShapeValid && options?.board ? cloneSudokuBoard(options.board) : createSudokuBoard(nextPuzzle.initial)
     const nextStartedAt = normalizeTimestamp(options?.startedAt) ?? Date.now()
     const nextCompletedAt = normalizeTimestamp(options?.completedAt)
     const solved =
@@ -109,7 +111,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
   }, [])
 
   const triggerMistake = useCallback((row: number, col: number) => {
-    setErrorCount((prev) => prev + 1)
+    setErrorCount((prev: number) => prev + 1)
     setMistakeCell({ row, col })
     if (mistakeTimerRef.current) {
       clearTimeout(mistakeTimerRef.current)
@@ -172,7 +174,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
       return
     }
 
-    setBoard((prevBoard) => {
+    setBoard((prevBoard: SudokuBoard) => {
       if (prevBoard[row][col] === 0) {
         return prevBoard
       }
@@ -205,7 +207,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
     }
 
     setSelectedCell({ row, col })
-    setBoard((prevBoard) => {
+    setBoard((prevBoard: SudokuBoard) => {
       const nextBoard = cloneSudokuBoard(prevBoard)
       nextBoard[row][col] = hint.answer
       if (isSudokuBoardSolved(nextBoard, puzzle.solution)) {
