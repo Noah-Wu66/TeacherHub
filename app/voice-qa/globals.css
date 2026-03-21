@@ -351,9 +351,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.voice-qa-message.assistant .voice-qa-message-scroll-area {
-  padding-top: 28px;
-}
+
 
 .voice-qa-message-text {
   margin: 0;
@@ -390,25 +388,7 @@ html, body {
   }
 }
 
-.voice-qa-audio-indicator {
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: #000;
-}
 
-.play-icon {
-  font-size: 10px;
-}
 
 .voice-qa-message-tag {
   display: inline-block;
