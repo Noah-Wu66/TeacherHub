@@ -58,11 +58,11 @@ function AreaDemo() {
       <svg width="100%" height="auto" viewBox="0 0 300 220" style={{ maxWidth: "200px" }}>
           <polygon points="100,40 260,40 200,160 40,160" fill="none" stroke="black" strokeWidth="2" />
           <line x1="40" y1="160" x2="200" y2="160" stroke="red" strokeWidth="4" strokeLinecap="round" />
-          <line x1="140" y1="40" x2="140" y2="160" stroke="blue" strokeWidth="3" strokeDasharray="6,4" />
-          <polygon points="135,45 140,35 145,45" fill="blue" />
-          <polygon points="135,155 140,165 145,155" fill="blue" />
+          <line x1="100" y1="40" x2="100" y2="160" stroke="blue" strokeWidth="3" strokeDasharray="6,4" />
+          <polygon points="95,45 100,35 105,45" fill="blue" />
+          <polygon points="95,155 100,165 105,155" fill="blue" />
           <text x="120" y="195" fontSize="20" fontWeight="bold" fill="red" textAnchor="middle">底</text>
-          <text x="150" y="105" fontSize="20" fontWeight="bold" fill="blue" textAnchor="start">高</text>
+          <text x="110" y="105" fontSize="20" fontWeight="bold" fill="blue" textAnchor="start">高</text>
       </svg>
     </div>
   );

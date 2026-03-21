@@ -1,5 +1,3 @@
-import { TOOLS } from "@/lib/teacher-tools/tools";
-
 export type ToolDirectoryItem = {
   name: string;
   path: string;
@@ -11,106 +9,35 @@ export type ToolDirectoryGroup = {
   items: ToolDirectoryItem[];
 };
 
-const teacherToolItems: ToolDirectoryItem[] = TOOLS.map((tool) => ({
-  name: tool.title,
-  path: tool.route,
-  description: tool.description,
-}));
-
 export const TOOL_DIRECTORY_GROUPS: ToolDirectoryGroup[] = [
   {
-    title: "总入口",
+    title: "应用集合",
     items: [
       {
         name: "教学工具集首页",
         path: "/",
         description: "全部工具总入口。",
       },
-    ],
-  },
-  {
-    title: "智趣学",
-    items: [
       {
-        name: "智趣学首页",
+        name: "智趣学",
         path: "/ai-education",
         description: "AI 学习平台主页面。",
       },
       {
-        name: "语音通话",
-        path: "/ai-education/voice",
-        description: "语音问答页面。",
-      },
-      {
-        name: "大思政课入口",
-        path: "/ai-education/dasi-zhengke",
-        description: "会根据身份跳到教师页或学生页。",
-      },
-      {
-        name: "大思政课教师页",
-        path: "/ai-education/dasi-zhengke/teacher",
-        description: "教师端专题页面。",
-      },
-      {
-        name: "大思政课学生页",
-        path: "/ai-education/dasi-zhengke/student",
-        description: "学生端专题页面。",
-      },
-    ],
-  },
-  {
-    title: "24点挑战",
-    items: [
-      {
-        name: "24点首页",
+        name: "24点挑战",
         path: "/24-point",
         description: "24点模式选择页。",
       },
       {
-        name: "单人练习",
-        path: "/24-point/solo",
-        description: "24点单人练习。",
-      },
-      {
-        name: "人机对战",
-        path: "/24-point/vs-ai",
-        description: "24点人机对战。",
-      },
-      {
-        name: "多人联机",
-        path: "/24-point/multiplayer",
-        description: "24点联机大厅。",
-      },
-    ],
-  },
-  {
-    title: "数独挑战",
-    items: [
-      {
-        name: "数独首页",
+        name: "数独挑战",
         path: "/sudoku",
-        description: "数独模式选择页。",
+        description: "数独游戏系统。",
       },
       {
-        name: "单人闯关",
-        path: "/sudoku/solo",
-        description: "数独单人闯关。",
+        name: "三视图教学工具",
+        path: "/teacher-tools",
+        description: "三视图教学演示与练习工具。",
       },
-      {
-        name: "教学陪练",
-        path: "/sudoku/coach",
-        description: "数独教学陪练。",
-      },
-      {
-        name: "双人竞速",
-        path: "/sudoku/multiplayer",
-        description: "数独联机大厅。",
-      },
-    ],
-  },
-  {
-    title: "其它单页工具",
-    items: [
       {
         name: "数你最棒",
         path: "/math",
@@ -129,24 +56,8 @@ export const TOOL_DIRECTORY_GROUPS: ToolDirectoryGroup[] = [
       {
         name: "你问我答",
         path: "/voice-qa",
-        description: "李雪老师语音互动工具。",
+        description: "语音互动及查询工具。",
       },
-    ],
-  },
-  {
-    title: "三视图教学工具",
-    items: [
-      {
-        name: "三视图首页",
-        path: "/teacher-tools",
-        description: "三视图工具总入口。",
-      },
-      {
-        name: "工具设置页",
-        path: "/teacher-tools/tools",
-        description: "三视图工具默认入口。",
-      },
-      ...teacherToolItems,
     ],
   },
 ];
