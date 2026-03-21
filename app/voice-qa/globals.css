@@ -363,7 +363,7 @@ html, body {
   margin-top: 8px;
   display: flex;
   justify-content: center;
-  animation: voice-qa-demo-fade 0.32s ease-out;
+  animation: voice-qa-demo-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes voice-qa-bubble-rise {
@@ -381,7 +381,7 @@ html, body {
 @keyframes voice-qa-demo-fade {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(16px);
   }
 
   to {
