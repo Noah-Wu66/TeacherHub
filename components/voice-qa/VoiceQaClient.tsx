@@ -336,19 +336,27 @@ export default function VoiceQaClient() {
     };
   }, []);
 
-  // Auto scroll
+  // Auto scroll and air wall
   useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const syncScroll = () => {
+      container.classList.toggle("scrolled", container.scrollTop > 10);
+    };
+    container.addEventListener("scroll", syncScroll, { passive: true });
+
     if (scrollFrameRef.current) {
       cancelAnimationFrame(scrollFrameRef.current);
     }
     scrollFrameRef.current = window.requestAnimationFrame(() => {
-      const container = messagesContainerRef.current;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
+      container.scrollTop = container.scrollHeight;
+      syncScroll();
       scrollFrameRef.current = null;
     });
+
     return () => {
+      container.removeEventListener("scroll", syncScroll);
       if (scrollFrameRef.current) {
         cancelAnimationFrame(scrollFrameRef.current);
         scrollFrameRef.current = null;
