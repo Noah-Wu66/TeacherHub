@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Card from '@/components/24-point/ui/Card'
 import NicknameInput from '@/components/24-point/ui/NicknameInput'
 import { useNickname } from '@/hooks/24-point/useNickname'
 import { useAccessControl } from '@/components/platform/auth/useAccessControl'
@@ -89,7 +88,7 @@ export default function Home() {
             <div
               className={`
                 group relative h-full rounded-3xl p-6 sm:p-8
-                bg-white/70 backdrop-blur-xl
+                bg-white/85 backdrop-blur-xl
                 border-2 border-white shadow-[0_8px_32px_rgba(99,102,241,0.15)]
                 hover:bg-white/95 hover:border-indigo-100
                 hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)]
@@ -101,7 +100,7 @@ export default function Home() {
             >
               {/* 卡片内置流光溢彩（浅色模式叠加） */}
               <div 
-                className="absolute inset-0 opacity-[0.85] group-hover:opacity-100 transition-opacity duration-500 pointer-events-none mix-blend-multiply"
+                className="absolute inset-0 opacity-[0.55] group-hover:opacity-[0.72] transition-opacity duration-500 pointer-events-none"
                 style={{
                   background: index === 0 
                     ? 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(59,130,246,0.08) 0%, transparent 60%)' 
@@ -125,15 +124,15 @@ export default function Home() {
                 </div>
                 
                 {/* 标题与描述 */}
-                <h2 className="text-2xl font-black text-slate-100 mb-2 drop-shadow-sm">
+                <h2 className="text-2xl font-black text-slate-800 mb-2 transition-colors group-hover:text-indigo-700">
                   {mode.title}
                 </h2>
-                <p className="text-sm sm:text-base text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
+                <p className="text-sm sm:text-base text-slate-600 font-medium group-hover:text-slate-700 transition-colors">
                   {mode.description}
                 </p>
                 
                 {/* 箭头装饰 */}
-                <div className="mt-6 flex items-center justify-center w-10 h-10 rounded-full bg-white/5 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 text-slate-500 transition-all duration-300">
+                <div className="mt-6 flex items-center justify-center w-10 h-10 rounded-full bg-white/70 group-hover:bg-indigo-50 group-hover:text-indigo-600 text-slate-600 shadow-sm shadow-indigo-100/80 transition-all duration-300">
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
