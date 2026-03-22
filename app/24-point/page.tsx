@@ -57,74 +57,91 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-8 sm:py-12">
-      {/* 昵称输入弹窗 */}
       <NicknameInput
         open={!hasNickname}
         onSubmit={setNickname}
       />
 
-      {/* 标题区域 */}
-      <div className="text-center mb-10 sm:mb-14 animate-slide-up">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-3 tracking-tight">
-          24<span className="text-indigo-500">点</span>挑战
-        </h1>
-        <p className="text-gray-400 text-base sm:text-lg md:text-xl">
+      {/* 标题区域：科幻发光字体与立体阴影 */}
+      <div className="text-center mb-10 sm:mb-14 animate-slide-up flex flex-col items-center">
+        <div className="inline-block relative">
+          <h1 className="text-5xl sm:text-7xl font-black text-white mb-2 tracking-tight drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+            24<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">点</span>挑战
+          </h1>
+          <div className="absolute -inset-1 blur-2xl opacity-30 bg-indigo-500 rounded-full mix-blend-screen pointer-events-none -z-10" />
+        </div>
+        <p className="text-indigo-200/80 text-lg sm:text-xl font-medium tracking-wide drop-shadow-sm mt-2 font-mono">
           用 4 个数字，算出 24
         </p>
         {hasNickname && (
-          <p className="text-gray-400 text-sm mt-2">
-            欢迎回来，<span className="inline-flex items-center min-h-[44px] px-2 text-indigo-400">{nickname}</span>
-          </p>
+          <div className="mt-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            <p className="text-slate-300 text-sm font-medium">
+              欢迎回来，<span className="text-indigo-300 font-bold ml-1">{nickname}</span>
+            </p>
+          </div>
         )}
       </div>
 
-      {/* 模式选择 */}
-      <div className="w-full max-w-lg md:max-w-xl space-y-4">
+      {/* 沉浸式模式选择：3D玻璃机能风 */}
+      <div className="w-full max-w-lg md:max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mt-4">
         {modes.map((mode, index) => (
-          <Link key={mode.href} href={mode.href} className="block">
-            <Card
-              glass
-              padding="none"
+          <Link key={mode.href} href={mode.href} className="block w-full outline-none">
+            <div
               className={`
-                group cursor-pointer
-                hover:shadow-xl hover:-translate-y-0.5
-                active:translate-y-0 active:shadow-lg
+                group relative h-full rounded-3xl p-6 sm:p-8
+                bg-white/5 backdrop-blur-xl
+                border border-white/10 shadow-[0_8px_32px_rgb(0,0,0,0.3)]
+                hover:bg-white/10 hover:border-white/20
+                hover:-translate-y-2 hover:shadow-[0_15px_40px_rgb(0,0,0,0.5)]
+                active:translate-y-0 active:scale-95
                 transition-all duration-300 ease-out
-                animate-slide-up
+                animate-slide-up overflow-hidden
               `}
+              style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="flex items-center gap-4 p-5 sm:p-6 md:p-7" style={{ animationDelay: `${index * 100}ms` }}>
-                {/* 图标 */}
+              {/* 卡片内置流光溢彩 */}
+              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${mode.gradient} opacity-20 blur-[50px] group-hover:opacity-40 transition-opacity duration-300`} />
+              <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${mode.gradient} opacity-10 blur-[40px] group-hover:opacity-30 transition-opacity duration-300`} />
+              
+              <div className="relative z-10 flex flex-col items-center text-center">
+                {/* 悬浮图标 */}
                 <div className={`
-                  w-14 h-14 rounded-2xl
+                  w-20 h-20 sm:w-24 sm:h-24 rounded-3xl mb-6
                   bg-gradient-to-br ${mode.gradient}
-                  shadow-lg ${mode.shadow}
+                  shadow-[0_0_20px_rgba(0,0,0,0.5)]
                   flex items-center justify-center text-white
-                  group-hover:scale-105 transition-transform duration-300
+                  group-hover:scale-110 group-hover:rotate-3
+                  transition-transform duration-500 ease-out
                 `}>
                   {mode.icon}
                 </div>
-                {/* 文字 */}
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                    {mode.title}
-                  </h2>
-                  <p className="text-sm text-gray-400 mt-0.5">{mode.description}</p>
+                
+                {/* 标题与描述 */}
+                <h2 className="text-2xl font-black text-slate-100 mb-2 drop-shadow-sm">
+                  {mode.title}
+                </h2>
+                <p className="text-sm sm:text-base text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
+                  {mode.description}
+                </p>
+                
+                {/* 箭头装饰 */}
+                <div className="mt-6 flex items-center justify-center w-10 h-10 rounded-full bg-white/5 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 text-slate-500 transition-all duration-300">
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-                {/* 箭头 */}
-                <svg className="w-5 h-5 text-gray-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
       </div>
 
-      {/* 底部说明 */}
-      <p className="text-gray-300 text-xs mt-10">
-        24点数学教学工具
-      </p>
+      {/* 底部装饰 */}
+      <div className="mt-16 sm:mt-24 text-center">
+        <p className="text-slate-500/50 text-xs font-bold uppercase tracking-[0.3em] font-mono">
+          Mathematics · Speed · Logic
+        </p>
+      </div>
     </div>
   )
 }
