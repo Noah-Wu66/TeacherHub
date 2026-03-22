@@ -148,15 +148,15 @@ export default function RoomLobby({
             <label className="text-sm text-gray-500">比赛轮数</label>
             <div className="flex gap-2 flex-wrap">
               {ROUND_OPTIONS.map((n) => (
-                <button
-                  key={n}
-                  onClick={() => onUpdateSettings({ totalRounds: n })}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
-                    totalRounds === n
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
+                  <button
+                    key={n}
+                    onClick={() => onUpdateSettings({ totalRounds: n })}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
+                      totalRounds === n
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-indigo-900/40 shadow-[0_4px_0_0_rgba(0,0,0,0.1)] hover:bg-black/30 hover:text-indigo-900/60 active:shadow-[0_0px_0_0_rgba(0,0,0,0.1)] active:translate-y-1'
+                    }`}
+                  >
                   {n}轮
                 </button>
               ))}
@@ -168,15 +168,15 @@ export default function RoomLobby({
             <label className="text-sm text-gray-500">每轮时间</label>
             <div className="flex gap-2 flex-wrap">
               {TIME_OPTIONS.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => onUpdateSettings({ timePerRound: t })}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
-                    timePerRound === t
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
+                  <button
+                    key={t}
+                    onClick={() => onUpdateSettings({ timePerRound: t })}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
+                      timePerRound === t
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-indigo-900/40 shadow-[0_4px_0_0_rgba(0,0,0,0.1)] hover:bg-black/30 hover:text-indigo-900/60 active:shadow-[0_0px_0_0_rgba(0,0,0,0.1)] active:translate-y-1'
+                    }`}
+                  >
                   {t}秒
                 </button>
               ))}

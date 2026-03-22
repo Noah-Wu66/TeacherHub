@@ -14,6 +14,7 @@ import {
   isSudokuBoardShapeValid,
   isSudokuBoardSolved,
 } from '@/lib/sudoku/board'
+import { useSudokuAudio } from '@/hooks/sudoku/useSudokuAudio'
 import type { SudokuBoard, SudokuHint, SudokuPuzzle } from '@/types/sudoku'
 
 type SelectedCell = { row: number; col: number } | null
@@ -65,6 +66,8 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
   const [mistakeCell, setMistakeCell] = useState<SelectedCell>(null)
   const mistakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const { playInput, playSelect, playClear, playError, playHint, playSuccess } = useSudokuAudio(puzzle !== null && !completed)
+
   const loadPuzzle = useCallback((nextPuzzle: SudokuPuzzle, options?: LoadPuzzleOptions) => {
     const isShapeValid = options?.board ? isSudokuBoardShapeValid(options.board, nextPuzzle.size) : false
     const nextBoard = isShapeValid && options?.board ? cloneSudokuBoard(options.board) : createSudokuBoard(nextPuzzle.initial)
@@ -111,6 +114,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
   }, [])
 
   const triggerMistake = useCallback((row: number, col: number) => {
+    playError()
     setErrorCount((prev: number) => prev + 1)
     setMistakeCell({ row, col })
     if (mistakeTimerRef.current) {
@@ -143,6 +147,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
 
       setBoard(nextBoard)
       setHint(null)
+      playInput()
       return true
     }
 
@@ -160,10 +165,13 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
       if (startedAt) {
         setElapsedSeconds(Math.floor((finishTime - startedAt) / 1000))
       }
+      playSuccess()
+    } else {
+      playInput()
     }
     setHint(null)
     return true
-  }, [board, completed, puzzle, selectedCell, startedAt, triggerMistake, validationMode])
+  }, [board, completed, puzzle, selectedCell, startedAt, triggerMistake, validationMode, playInput, playSuccess])
 
   const clearCell = useCallback(() => {
     if (!puzzle || !selectedCell || completed) {
@@ -183,7 +191,8 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
       return nextBoard
     })
     setHint(null)
-  }, [completed, puzzle, selectedCell])
+    playClear()
+  }, [completed, puzzle, selectedCell, playClear])
 
   const requestHint = useCallback(() => {
     if (!puzzle || completed || !hasSudokuSolution(puzzle, board)) {
@@ -193,9 +202,10 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
     setHint(nextHint)
     if (nextHint) {
       setSelectedCell({ row: nextHint.row, col: nextHint.col })
+      playHint()
     }
     return nextHint
-  }, [board, completed, hint, puzzle])
+  }, [board, completed, hint, playHint, puzzle])
 
   const applyHintAnswer = useCallback(() => {
     if (!hint || hint.level !== 'answer' || !puzzle || completed || !hasSudokuSolution(puzzle, board)) {
@@ -217,12 +227,15 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
         if (startedAt) {
           setElapsedSeconds(Math.floor((finishTime - startedAt) / 1000))
         }
+        playSuccess()
+      } else {
+        playInput()
       }
       return nextBoard
     })
     setHint(null)
     return true
-  }, [board, completed, hint, puzzle, startedAt])
+  }, [board, completed, hint, puzzle, startedAt, playInput, playSuccess])
 
   const filledCount = useMemo(() => countFilledSudokuCells(board), [board])
   const completionPercent = useMemo(() => {
@@ -232,6 +245,13 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
 
   const formattedElapsed = useMemo(() => formatSudokuElapsed(elapsedSeconds), [elapsedSeconds])
   const values = useMemo(() => (puzzle ? getSudokuValueList(puzzle.size) : []), [puzzle])
+
+  const setSelectedCellWrapper = useCallback((cell: SelectedCell) => {
+    setSelectedCell(cell)
+    if (cell) {
+      playSelect()
+    }
+  }, [playSelect])
 
   return {
     puzzle,
@@ -249,7 +269,7 @@ export function useSudokuGame(options?: { validationMode?: 'solution' | 'rule' }
     values,
     mistakeCell,
     loadPuzzle,
-    setSelectedCell,
+    setSelectedCell: setSelectedCellWrapper,
     inputValue,
     clearCell,
     requestHint,

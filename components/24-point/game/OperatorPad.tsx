@@ -40,7 +40,7 @@ export default function OperatorPad({
     <div className={`space-y-3 ${compact ? 'sm:space-y-4 md:space-y-5' : 'sm:space-y-5 md:space-y-6'}`}>
       
       {/* 运算符行 - 筹码风格 */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 md:gap-5">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5 justify-items-center">
         {operators.map((op) => (
           <button
             key={op.value}

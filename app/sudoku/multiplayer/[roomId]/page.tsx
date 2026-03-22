@@ -181,7 +181,7 @@ export default function SudokuRoomPage() {
 
     unsubs.push(on('player-surrendered', (data: unknown) => {
       const event = data as SudokuPusherPlayerSurrenderedData
-      setSurrenderMessage(`${event.nickname} 已罢手而去`)
+      setSurrenderMessage(`${event.nickname} 已认输离开`)
       setPlayers(event.players)
     }))
 
@@ -319,18 +319,18 @@ export default function SudokuRoomPage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            告辞
+            离开
           </button>
           <div className="text-center">
-            <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">{room?.roomName || '对局推演'}</h1>
-            <p className="text-sm text-stone-600 font-bold mt-2 tracking-widest">室号：{roomId}</p>
+            <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">{room?.roomName || '对战房间'}</h1>
+            <p className="text-sm text-stone-600 font-bold mt-2 tracking-widest">房间码：{roomId}</p>
           </div>
           <div className="w-[44px]" />
         </div>
 
         {loading && !room && (
           <div className="text-center text-stone-600 py-12 font-bold tracking-widest text-lg animate-pulse">
-            寻访雅间中...
+            加载房间中...
           </div>
         )}
 
@@ -371,7 +371,7 @@ export default function SudokuRoomPage() {
                     </h2>
                   </div>
                   <span className={`text-xs px-3 py-1 font-bold border-2 mt-2 ${isConnected ? 'border-amber-700 text-amber-900 bg-amber-100' : 'border-red-800 text-red-900 bg-red-100'}`}>
-                    {isConnected ? '传书畅通' : '飞鸽迷途'}
+                    {isConnected ? '已连接' : '连接中'}
                   </span>
                 </div>
 
@@ -379,7 +379,7 @@ export default function SudokuRoomPage() {
                   {[
                     { label: '耗时', value: game.formattedElapsed, color: 'text-stone-800' },
                     { label: '纰漏', value: game.errorCount, color: 'text-red-800' },
-                    { label: '大局', value: `${game.completionPercent}%`, color: 'text-stone-800' }
+                    { label: '进度', value: `${game.completionPercent}%`, color: 'text-stone-800' }
                   ].map((stat, i) => (
                     <div key={i} className="bg-[#f4ece1] px-4 py-3 border-2 border-stone-800 text-center">
                       <p className="text-xs text-stone-500 tracking-widest">{stat.label}</p>
@@ -416,9 +416,9 @@ export default function SudokuRoomPage() {
               />
 
               <ClassicalCard className="space-y-4">
-                <p className="text-sm text-stone-500 tracking-widest font-bold">对局守则</p>
+                <p className="text-sm text-stone-500 tracking-widest font-bold">比赛说明</p>
                 <p className="text-sm leading-relaxed text-stone-600 font-bold tracking-widest">
-                  你我同解一局，唯互通进度之毫厘。下笔无悔，各自参透。
+                  双方做同一题，只同步进度和错误数，不会互相透露每一步的填法。
                 </p>
                 {opponent && (
                   <div className="border-2 border-stone-800 bg-[#f4ece1] px-4 py-3 text-sm text-stone-600 font-bold tracking-widest">
@@ -436,12 +436,12 @@ export default function SudokuRoomPage() {
           <div className="bg-[#f4ece1] border-4 border-stone-800 p-8 max-w-sm w-full relative shadow-[8px_8px_0_0_#292524] animate-pop">
             <div className="absolute top-2 left-2 bottom-2 right-2 border-2 border-stone-600 pointer-events-none" />
             <h3 className="text-3xl font-bold text-stone-900 text-center mb-6 tracking-[0.3em] relative z-10">
-              {room?.winner === playerId ? '独占鳌头' : '对局告歇'}
+              {room?.winner === playerId ? '你赢了' : '对局结束'}
             </h3>
             
             <div className="space-y-6 relative z-10">
               <p className="text-center text-stone-700 tracking-widest font-bold text-lg">
-                {winnerNickname ? `此局胜者：${winnerNickname}` : '此局未分胜负'}
+                {winnerNickname ? `本局胜者：${winnerNickname}` : '本局已经结束'}
               </p>
               {surrenderMessage && (
                 <div className="border-2 border-stone-800 bg-[#e8dcc8] text-stone-800 px-4 py-3 text-sm font-bold tracking-widest text-center">
@@ -450,10 +450,10 @@ export default function SudokuRoomPage() {
               )}
               <div className="flex gap-4 mt-8">
                 <ClassicalButton variant="secondary" className="flex-1" onClick={() => router.push('/sudoku')}>
-                  归隐山林
+                  返回首页
                 </ClassicalButton>
                 <ClassicalButton className="flex-1" onClick={() => router.push('/sudoku/multiplayer')}>
-                  重返雅间
+                  返回大厅
                 </ClassicalButton>
               </div>
             </div>
@@ -466,19 +466,19 @@ export default function SudokuRoomPage() {
           <div className="bg-[#f4ece1] border-4 border-stone-800 p-8 max-w-sm w-full relative shadow-[8px_8px_0_0_#292524] animate-pop">
             <div className="absolute top-2 left-2 bottom-2 right-2 border-2 border-stone-600 pointer-events-none" />
             <h3 className="text-2xl font-bold text-stone-900 text-center mb-6 tracking-widest relative z-10">
-              决意离去？
+              确认离开
             </h3>
             
             <div className="space-y-6 relative z-10">
               <p className="text-center text-stone-700 tracking-widest font-bold leading-relaxed">
-                {gameStarted && !gameEnded ? '棋局未终，弃局而去将作罢负。确要离席？' : '是否决意离开此雅间？'}
+                {gameStarted && !gameEnded ? '比赛正在进行，离开会直接判负。确定要离开吗？' : '确定要离开这个房间吗？'}
               </p>
               <div className="flex gap-4 mt-8">
                 <ClassicalButton variant="secondary" className="flex-1" onClick={() => setShowLeaveConfirm(false)}>
-                  驻留
+                  取消
                 </ClassicalButton>
                 <ClassicalButton variant="danger" className="flex-1" onClick={handleLeave}>
-                  离席
+                  离开
                 </ClassicalButton>
               </div>
             </div>

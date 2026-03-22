@@ -182,16 +182,16 @@ export default function MultiplayerPage() {
             <label className="text-sm text-gray-500">比赛轮数</label>
             <div className="flex gap-2 flex-wrap">
               {[1, 3, 5, 7, 10].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setCreateTotalRounds(n)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
-                    createTotalRounds === n
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCreateTotalRounds(n)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
+                      createTotalRounds === n
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-indigo-900/40 shadow-[0_4px_0_0_rgba(0,0,0,0.1)] hover:bg-black/30 hover:text-indigo-900/60 active:shadow-[0_0px_0_0_rgba(0,0,0,0.1)] active:translate-y-1'
+                    }`}
+                  >
                   {n}轮
                 </button>
               ))}
@@ -203,16 +203,16 @@ export default function MultiplayerPage() {
             <label className="text-sm text-gray-500">每轮时间</label>
             <div className="flex gap-2 flex-wrap">
               {[30, 45, 60, 90, 120].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setCreateTimePerRound(t)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
-                    createTimePerRound === t
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setCreateTimePerRound(t)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
+                      createTimePerRound === t
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-indigo-900/40 shadow-[0_4px_0_0_rgba(0,0,0,0.1)] hover:bg-black/30 hover:text-indigo-900/60 active:shadow-[0_0px_0_0_rgba(0,0,0,0.1)] active:translate-y-1'
+                    }`}
+                  >
                   {t}秒
                 </button>
               ))}

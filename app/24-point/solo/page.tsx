@@ -69,10 +69,10 @@ export default function SoloPage() {
                   <button
                     key={n}
                     onClick={() => setTotalRounds(n)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
                       totalRounds === n
-                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
-                        : 'bg-white/10 text-white/80 hover:bg-white/20'
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-emerald-100/80 shadow-[0_4px_0_0_rgba(0,0,0,0.3)] hover:bg-black/30 hover:text-white active:shadow-[0_0px_0_0_rgba(0,0,0,0.3)] active:translate-y-1'
                     }`}
                   >
                     {n}轮
@@ -87,10 +87,10 @@ export default function SoloPage() {
                   <button
                     key={t}
                     onClick={() => setTimePerRound(t)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer min-h-[36px] select-none ${
                       timePerRound === t
-                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
-                        : 'bg-white/10 text-white/80 hover:bg-white/20'
+                        ? 'bg-indigo-500 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1'
+                        : 'bg-black/20 text-emerald-100/80 shadow-[0_4px_0_0_rgba(0,0,0,0.3)] hover:bg-black/30 hover:text-white active:shadow-[0_0px_0_0_rgba(0,0,0,0.3)] active:translate-y-1'
                     }`}
                   >
                     {t}秒

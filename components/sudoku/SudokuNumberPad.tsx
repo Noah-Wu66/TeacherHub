@@ -60,7 +60,7 @@ export default function SudokuNumberPad({
           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:shadow-[2px_2px_0_0_#292524]
         "
       >
-        抹去印记
+        擦除
       </button>
     </div>
   )

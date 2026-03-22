@@ -107,16 +107,16 @@ export default function SudokuMultiplayerPage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            归途
+            返回
           </Link>
-          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">双人对弈</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">双人对战</h1>
           <div className="w-[44px]" />
         </div>
 
         <div className="space-y-6 animate-slide-up">
           <div className="grid grid-cols-2 gap-4">
-            <ClassicalButton onClick={() => setShowCreate(true)}>设局约战</ClassicalButton>
-            <ClassicalButton variant="secondary" onClick={() => setShowJoin(true)}>凭令入局</ClassicalButton>
+            <ClassicalButton onClick={() => setShowCreate(true)}>创建房间</ClassicalButton>
+            <ClassicalButton variant="secondary" onClick={() => setShowJoin(true)}>输入房间码</ClassicalButton>
           </div>
 
           {error && (
@@ -128,17 +128,17 @@ export default function SudokuMultiplayerPage() {
           <ClassicalCard className="space-y-4">
             <div className="flex items-center justify-between border-b border-stone-400 pb-4">
               <div>
-                <p className="text-sm text-stone-500 tracking-widest">可赴之约</p>
-                <h2 className="text-xl font-bold text-stone-800 tracking-widest mt-1">虚席以待</h2>
+                <p className="text-sm text-stone-500 tracking-widest">可加入房间</p>
+                <h2 className="text-xl font-bold text-stone-800 tracking-widest mt-1">等待中的对战</h2>
               </div>
               <button type="button" onClick={loadRooms} className="text-sm text-stone-600 hover:text-stone-900 font-bold tracking-widest px-2 underline underline-offset-4">
-                观望
+                刷新
               </button>
             </div>
 
             {rooms.length === 0 ? (
               <div className="bg-[#f4ece1] border-2 border-stone-800 px-4 py-12 text-center">
-                <p className="text-stone-500 font-bold tracking-widest">天下太平，暂无对局邀约</p>
+                <p className="text-stone-500 font-bold tracking-widest">暂时没有可加入的房间</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -147,11 +147,11 @@ export default function SudokuMultiplayerPage() {
                     <div>
                       <p className="font-bold text-stone-900 tracking-widest text-lg">{room.roomName}</p>
                       <p className="text-sm text-stone-600 mt-2 font-bold tracking-widest">
-                        {SUDOKU_SIZE_CONFIG[room.size].title} · {SUDOKU_DIFFICULTY_LABELS[room.difficulty]} · 室号 {room.roomId}
+                        {SUDOKU_SIZE_CONFIG[room.size].title} · {SUDOKU_DIFFICULTY_LABELS[room.difficulty]} · 房间码 {room.roomId}
                       </p>
                     </div>
                     <ClassicalButton onClick={() => handleJoinRoom(room.roomId)} disabled={loading}>
-                      赴约
+                      加入
                     </ClassicalButton>
                   </div>
                 ))}
@@ -161,19 +161,19 @@ export default function SudokuMultiplayerPage() {
         </div>
       </div>
 
-      <ClassicalModal open={showCreate} onClose={() => setShowCreate(false)} title="摆下擂台">
+      <ClassicalModal open={showCreate} onClose={() => setShowCreate(false)} title="创建房间">
         <form onSubmit={handleCreateRoom} className="space-y-6">
           <input
             type="text"
             value={roomName}
             onChange={(event) => setRoomName(event.target.value)}
-            placeholder="题写雅号"
+            placeholder="给房间起个名字"
             maxLength={20}
             className="w-full bg-[#e8dcc8] border-2 border-stone-800 px-4 py-3 text-center text-lg font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-stone-600 text-stone-900 placeholder:text-stone-400"
           />
 
           <div className="space-y-3">
-            <p className="text-sm text-stone-600 font-bold tracking-widest">棋盘规制</p>
+            <p className="text-sm text-stone-600 font-bold tracking-widest">盘面大小</p>
             <div className="flex gap-3 flex-wrap">
               {SIZE_OPTIONS.map((option) => (
                 <button
@@ -193,7 +193,7 @@ export default function SudokuMultiplayerPage() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-sm text-stone-600 font-bold tracking-widest">题目深浅</p>
+            <p className="text-sm text-stone-600 font-bold tracking-widest">题目难度</p>
             <div className="flex gap-3 flex-wrap">
               {DIFFICULTY_OPTIONS.map((option) => (
                 <button
@@ -213,12 +213,12 @@ export default function SudokuMultiplayerPage() {
           </div>
 
           <ClassicalButton type="submit" className="w-full" disabled={!roomName.trim() || loading}>
-            {loading ? '设局中...' : '起阵宣战'}
+            {loading ? '创建中...' : '创建房间'}
           </ClassicalButton>
         </form>
       </ClassicalModal>
 
-      <ClassicalModal open={showJoin} onClose={() => setShowJoin(false)} title="凭令入局">
+      <ClassicalModal open={showJoin} onClose={() => setShowJoin(false)} title="输入房间码">
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -232,12 +232,12 @@ export default function SudokuMultiplayerPage() {
             type="text"
             value={joinRoomId}
             onChange={(event) => setJoinRoomId(event.target.value.toUpperCase())}
-            placeholder="输入六字密令"
+            placeholder="输入 6 位房间码"
             maxLength={6}
             className="w-full bg-[#e8dcc8] border-2 border-stone-800 px-4 py-4 text-center text-xl font-mono tracking-[0.4em] focus:outline-none focus:ring-2 focus:ring-stone-600 text-stone-900 placeholder:text-stone-400 uppercase"
           />
           <ClassicalButton type="submit" className="w-full" disabled={joinRoomId.trim().length !== 6 || loading}>
-            {loading ? '核验中...' : '入局对弈'}
+            {loading ? '加入中...' : '加入房间'}
           </ClassicalButton>
         </form>
       </ClassicalModal>

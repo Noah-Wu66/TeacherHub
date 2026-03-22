@@ -6,7 +6,7 @@ import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 const modes = [
   {
     href: '/sudoku/solo',
-    title: '独自修行',
+    title: '单人闯关',
     description: '循序渐进，挑战四宫至九宫数独',
     color: 'text-stone-800',
     borderColor: 'border-stone-800',
@@ -15,7 +15,7 @@ const modes = [
   },
   {
     href: '/sudoku/coach',
-    title: '名师指点',
+    title: '教学陪练',
     description: '分步提示，传授破解数独之法',
     color: 'text-amber-900',
     borderColor: 'border-amber-900',
@@ -24,12 +24,12 @@ const modes = [
   },
   {
     href: '/sudoku/multiplayer',
-    title: '双人对弈',
-    description: '设局约战，与同窗共解同一残局',
+    title: '双人对战',
+    description: '创建房间，与同窗共解同一局',
     color: 'text-rose-900',
     borderColor: 'border-rose-900',
     bgColor: 'bg-[#e8dcc8]',
-    icon: '弈',
+    icon: '战',
   },
 ]
 
@@ -57,7 +57,7 @@ export default function SudokuHomePage() {
         {/* 滑动弹幕式提示语 (古风适配) */}
         <div className="mt-6 overflow-hidden max-w-sm sm:max-w-md w-full relative h-10 flex items-center justify-center border-y border-stone-400">
            <p className="text-stone-600 text-sm sm:text-base whitespace-nowrap px-4 font-bold tracking-widest text-center">
-             纵横交错寻真理，九宫格内定乾坤
+             纵横交错，九宫之内定乾坤
            </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function SudokuHomePage() {
       <div className="mt-16 sm:mt-24 text-center pb-8 flex items-center justify-center space-x-4">
         <div className="w-12 h-px bg-stone-400" />
         <p className="text-stone-500 text-sm font-bold tracking-[0.3em]">
-          修心 · 明理 · 启智
+          逻辑 · 推理 · 挑战
         </p>
         <div className="w-12 h-px bg-stone-400" />
       </div>

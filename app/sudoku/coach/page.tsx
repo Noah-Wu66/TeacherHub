@@ -65,9 +65,9 @@ export default function SudokuCoachPage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            归途
+            返回
           </Link>
-          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">名师指点</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">教学陪练</h1>
           <div className="w-[44px]" />
         </div>
 
@@ -75,13 +75,13 @@ export default function SudokuCoachPage() {
           <div className="space-y-6">
             <ClassicalCard>
               <div className="border-b border-stone-400 pb-4 mb-5">
-                <p className="text-sm text-stone-500 tracking-widest">拜师学艺</p>
-                <h2 className="text-2xl font-bold text-stone-800 mt-2 tracking-widest">观微知著 · 算筹定音</h2>
+                <p className="text-sm text-stone-500 tracking-widest">陪练设置</p>
+                <h2 className="text-2xl font-bold text-stone-800 mt-2 tracking-widest">先看哪里 · 再填什么</h2>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className="text-sm font-bold text-stone-600 tracking-widest">棋局规制</p>
+                  <p className="text-sm font-bold text-stone-600 tracking-widest">盘面大小</p>
                   <div className="flex gap-3 flex-wrap">
                     {SIZE_OPTIONS.map((size) => (
                       <button
@@ -101,7 +101,7 @@ export default function SudokuCoachPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-sm font-bold text-stone-600 tracking-widest">深浅层次</p>
+                  <p className="text-sm font-bold text-stone-600 tracking-widest">提示难度</p>
                   <div className="flex gap-3 flex-wrap">
                     {DIFFICULTY_OPTIONS.map((difficulty) => (
                       <button
@@ -139,15 +139,15 @@ export default function SudokuCoachPage() {
                   </h2>
                 </div>
                 <ClassicalButton variant="secondary" onClick={() => game.loadPuzzle(puzzle)}>
-                  重起炉灶
+                  重新开始
                 </ClassicalButton>
               </div>
 
               <div className="grid grid-cols-3 gap-3 mt-5">
                 {[
-                  { label: '光阴', value: game.formattedElapsed, color: 'text-stone-800' },
-                  { label: '纰漏', value: game.errorCount, color: 'text-red-800' },
-                  { label: '造化', value: `${game.completionPercent}%`, color: 'text-stone-800' }
+                  { label: '用时', value: game.formattedElapsed, color: 'text-stone-800' },
+                  { label: '错误', value: game.errorCount, color: 'text-red-800' },
+                  { label: '进度', value: `${game.completionPercent}%`, color: 'text-stone-800' }
                 ].map((stat, i) => (
                   <div key={i} className="bg-[#f4ece1] px-4 py-3 border-2 border-stone-800 text-center">
                     <p className="text-xs text-stone-500 tracking-widest">{stat.label}</p>
@@ -180,11 +180,11 @@ export default function SudokuCoachPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4">
           <div className="bg-[#f4ece1] border-4 border-stone-800 p-8 max-w-sm w-full relative shadow-[8px_8px_0_0_#292524] animate-pop">
             <div className="absolute top-2 left-2 bottom-2 right-2 border-2 border-stone-600 pointer-events-none" />
-            <h3 className="text-3xl font-bold text-stone-900 text-center mb-6 tracking-[0.3em] relative z-10">指点功成</h3>
+            <h3 className="text-3xl font-bold text-stone-900 text-center mb-6 tracking-[0.3em] relative z-10">练习完成</h3>
             
             <div className="space-y-6 relative z-10">
               <p className="text-center text-stone-700 tracking-widest font-bold leading-relaxed">
-                此局已破，阁下可谓获益良多。<br />可更易盘面，再求精进。
+                这题已经完成。<br />可以换个难度继续练习。
               </p>
               
               <div className="flex gap-3 mt-8">
@@ -192,7 +192,7 @@ export default function SudokuCoachPage() {
                   再练一遍
                 </ClassicalButton>
                 <ClassicalButton className="flex-1" onClick={() => setSelectedDifficulty((prev) => prev === 'easy' ? 'normal' : prev === 'normal' ? 'hard' : 'easy')}>
-                  变幻难度
+                  换个难度
                 </ClassicalButton>
               </div>
             </div>

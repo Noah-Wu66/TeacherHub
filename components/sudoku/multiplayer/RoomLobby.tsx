@@ -57,46 +57,46 @@ export default function SudokuRoomLobby({
     <div className="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 animate-slide-up font-serif">
       <ClassicalCard className="space-y-6">
         <div className="text-center space-y-3 border-b border-stone-400 pb-5">
-          <p className="text-sm text-stone-500 tracking-widest">对弈雅间</p>
+          <p className="text-sm text-stone-500 tracking-widest">对战房间</p>
           <h2 className="text-2xl font-bold text-stone-800 tracking-widest">{roomName}</h2>
           <button
             type="button"
             onClick={() => navigator.clipboard.writeText(roomId)}
             className="inline-flex items-center gap-3 bg-[#f4ece1] px-6 py-3 text-xl sm:text-2xl font-bold tracking-[0.2em] text-stone-900 border-2 border-stone-800 hover:bg-[#d8cbb5] transition-colors"
           >
-            <span>室号：</span>
+            <span>房间码：</span>
             <span className="text-red-900">{roomId}</span>
           </button>
         </div>
 
         <div className="space-y-4">
-          <p className="text-sm text-stone-600 font-bold tracking-widest">雅间同道（{players.length}/2）</p>
+          <p className="text-sm text-stone-600 font-bold tracking-widest">房间成员（{players.length}/2）</p>
           {players.map((player) => (
             <div key={player.id} className="flex items-center justify-between border-2 border-stone-800 bg-[#f4ece1] px-4 py-3">
               <div>
                 <p className="font-bold text-stone-900 tracking-widest">{player.nickname}</p>
-                <p className="text-xs text-stone-500 mt-1 font-bold">{player.isHost ? '主客' : '同道'}</p>
+                <p className="text-xs text-stone-500 mt-1 font-bold">{player.isHost ? '房主' : '玩家'}</p>
               </div>
               <span className={`text-xs px-2 py-1 font-bold border-2 ${player.connected ? 'border-amber-700 text-amber-900 bg-amber-100' : 'border-stone-400 text-stone-500 bg-stone-200'}`}>
-                {player.connected ? '已入座' : '未现身'}
+                {player.connected ? '已准备' : '未连接'}
               </span>
             </div>
           ))}
 
           {players.length < 2 && (
             <div className="border-2 border-dashed border-stone-400 bg-[#f4ece1]/50 px-4 py-5 text-center text-stone-500 font-bold tracking-widest">
-              静候另一位同道赴约
+              等待另一位玩家加入
             </div>
           )}
         </div>
 
         <div className="flex gap-4 pt-2">
           <ClassicalButton variant="secondary" className="flex-1" onClick={onLeave}>
-            拂袖而去
+            离开房间
           </ClassicalButton>
           {isHost && (
             <ClassicalButton className="flex-1" onClick={onStart} disabled={!canStart}>
-              {canStart ? '设局开盘' : '等待同道'}
+              {canStart ? '开始比赛' : '等待对手'}
             </ClassicalButton>
           )}
         </div>
@@ -104,13 +104,13 @@ export default function SudokuRoomLobby({
 
       <ClassicalCard className="space-y-6">
         <div className="border-b border-stone-400 pb-5">
-          <p className="text-sm text-stone-500 tracking-widest">棋局章法</p>
-          <h3 className="text-xl font-bold text-stone-800 tracking-widest mt-2">规制与深浅</h3>
+          <p className="text-sm text-stone-500 tracking-widest">房间设置</p>
+          <h3 className="text-xl font-bold text-stone-800 tracking-widest mt-2">盘面与难度</h3>
         </div>
 
         <div className="space-y-5">
           <div className="space-y-3">
-            <p className="text-sm text-stone-600 font-bold tracking-widest">棋盘规制</p>
+            <p className="text-sm text-stone-600 font-bold tracking-widest">盘面大小</p>
             <div className="flex gap-3 flex-wrap">
               {SIZE_OPTIONS.map((option) => (
                 <button
@@ -131,7 +131,7 @@ export default function SudokuRoomLobby({
           </div>
 
           <div className="space-y-3">
-            <p className="text-sm text-stone-600 font-bold tracking-widest">题目深浅</p>
+            <p className="text-sm text-stone-600 font-bold tracking-widest">题目难度</p>
             <div className="flex gap-3 flex-wrap">
               {DIFFICULTY_OPTIONS.map((option) => (
                 <button
@@ -154,7 +154,7 @@ export default function SudokuRoomLobby({
 
         {!isHost && (
           <div className="border-2 border-stone-800 bg-[#f4ece1] px-4 py-3 text-sm text-stone-600 font-bold tracking-widest leading-relaxed">
-            客随主便，规制由主客定夺。双方将解同一残局。
+            当前由房主控制设置，双方会做同一题。
           </div>
         )}
       </ClassicalCard>

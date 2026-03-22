@@ -99,17 +99,17 @@ export default function SudokuSoloPage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            归途
+            返回
           </Link>
-          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">独自修行</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-stone-800 tracking-[0.2em]">单人闯关</h1>
           <div className="w-[44px]" />
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_1.05fr] gap-6">
           <ClassicalCard className="space-y-6">
             <div className="border-b border-stone-400 pb-4">
-              <p className="text-sm text-stone-500 tracking-widest">修行境地</p>
-              <h2 className="text-2xl font-bold text-stone-800 mt-2 tracking-widest">循序渐进 · 登峰造极</h2>
+              <p className="text-sm text-stone-500 tracking-widest">选择难度</p>
+              <h2 className="text-2xl font-bold text-stone-800 mt-2 tracking-widest">循序渐进 · 不断挑战</h2>
             </div>
 
             <div className="flex gap-3 flex-wrap">
@@ -161,12 +161,12 @@ export default function SudokuSoloPage() {
                       <span className={`text-xs px-3 py-1 font-bold border-2 ${
                         completed ? 'border-amber-700 text-amber-900 bg-amber-100' : unlocked ? 'border-stone-500 text-stone-700 bg-stone-100' : 'border-stone-300 text-stone-400 bg-stone-100'
                       }`}>
-                        {completed ? '已破局' : unlocked ? '可破局' : '未解锁'}
+                        {completed ? '已通关' : unlocked ? '可挑战' : '未解锁'}
                       </span>
                     </div>
                     {(record.bestSeconds !== null || record.lowestErrors !== null) && (
                       <div className="mt-3 pt-2 border-t border-stone-400/50 text-xs text-stone-600 font-medium">
-                        绝佳气力 {record.bestSeconds ?? '-'} 息 · 最少纰漏 {record.lowestErrors ?? '-'} 次
+                        最佳用时 {record.bestSeconds ?? '-'} 秒 · 最少错误 {record.lowestErrors ?? '-'} 次
                       </div>
                     )}
                   </button>
@@ -183,20 +183,20 @@ export default function SudokuSoloPage() {
                     {SUDOKU_SIZE_CONFIG[selectedPuzzle.size].title} · {selectedPuzzle.title}
                   </p>
                   <h2 className="text-2xl font-bold text-stone-800 mt-2 tracking-widest">
-                    此局：{SUDOKU_DIFFICULTY_LABELS[selectedPuzzle.difficulty]}
+                    当前关卡：{SUDOKU_DIFFICULTY_LABELS[selectedPuzzle.difficulty]}
                   </h2>
                 </div>
                 <ClassicalButton variant="secondary" onClick={restartCurrentPuzzle}>
-                  重起炉灶
+                  重新开始
                 </ClassicalButton>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
                 {[
-                  { label: '光阴', value: game.formattedElapsed, color: 'text-stone-800' },
-                  { label: '纰漏', value: game.errorCount, color: 'text-red-800' },
-                  { label: '造化', value: `${game.completionPercent}%`, color: 'text-stone-800' },
-                  { label: '最佳', value: currentRecord.bestSeconds === null ? '未成' : `${currentRecord.bestSeconds} 息`, color: 'text-amber-800' }
+                  { label: '用时', value: game.formattedElapsed, color: 'text-stone-800' },
+                  { label: '错误', value: game.errorCount, color: 'text-red-800' },
+                  { label: '进度', value: `${game.completionPercent}%`, color: 'text-stone-800' },
+                  { label: '最佳', value: currentRecord.bestSeconds === null ? '未通关' : `${currentRecord.bestSeconds} 秒`, color: 'text-amber-800' }
                 ].map((stat, i) => (
                   <div key={i} className="bg-[#f4ece1] px-4 py-3 border-2 border-stone-800 text-center">
                     <p className="text-xs text-stone-500 tracking-widest">{stat.label}</p>
@@ -222,7 +222,7 @@ export default function SudokuSoloPage() {
             </div>
 
             <ClassicalCard className="text-sm text-stone-600 leading-relaxed font-bold tracking-widest text-center py-4">
-              落子无悔：点按虚空，再印数字。错则记过，对则留痕。
+              玩法：先选空格，再选数字。填对落子，填错记过。
             </ClassicalCard>
           </div>
         </div>
@@ -232,20 +232,20 @@ export default function SudokuSoloPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4">
           <div className="bg-[#f4ece1] border-4 border-stone-800 p-8 max-w-sm w-full relative shadow-[8px_8px_0_0_#292524] animate-pop">
             <div className="absolute top-2 left-2 bottom-2 right-2 border-2 border-stone-600 pointer-events-none" />
-            <h3 className="text-3xl font-bold text-stone-900 text-center mb-6 tracking-[0.3em] relative z-10">破局成功</h3>
+            <h3 className="text-3xl font-bold text-stone-900 text-center mb-6 tracking-[0.3em] relative z-10">挑战成功</h3>
             
             <div className="space-y-6 relative z-10">
               <p className="text-center text-stone-700 tracking-widest font-bold">
-                阁下已解开 <span className="text-red-900 text-lg">{selectedPuzzle.title}</span>
+                你完成了 <span className="text-red-900 text-lg">{selectedPuzzle.title}</span>
               </p>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="border-2 border-stone-800 bg-[#e8dcc8] px-4 py-4 text-center">
-                  <p className="text-xs text-stone-500 tracking-widest">耗时</p>
-                  <p className="mt-2 text-xl font-bold text-stone-800">{game.elapsedSeconds} 息</p>
+                  <p className="text-xs text-stone-500 tracking-widest">用时</p>
+                  <p className="mt-2 text-xl font-bold text-stone-800">{game.elapsedSeconds} 秒</p>
                 </div>
                 <div className="border-2 border-stone-800 bg-[#e8dcc8] px-4 py-4 text-center">
-                  <p className="text-xs text-stone-500 tracking-widest">纰漏</p>
+                  <p className="text-xs text-stone-500 tracking-widest">错误</p>
                   <p className="mt-2 text-xl font-bold text-red-800">{game.errorCount} 次</p>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function SudokuSoloPage() {
                   </ClassicalButton>
                 ) : (
                   <ClassicalButton className="flex-1" onClick={() => setSelectedSize(nextSize)}>
-                    前往下区
+                    下一难度
                   </ClassicalButton>
                 )}
               </div>

@@ -21,8 +21,8 @@ export default function SudokuHintCard({
       <div className="relative z-10 space-y-4">
         <div className="flex items-start justify-between gap-3 border-b border-stone-400 pb-3">
           <div>
-            <p className="text-sm text-stone-500 tracking-widest">指点迷津</p>
-            <h3 className="text-xl font-bold text-stone-800 tracking-widest mt-1">锦囊妙计</h3>
+            <p className="text-sm text-stone-500 tracking-widest">分层提示</p>
+            <h3 className="text-xl font-bold text-stone-800 tracking-widest mt-1">获取思路</h3>
           </div>
           <button
             type="button"
@@ -35,7 +35,7 @@ export default function SudokuHintCard({
               disabled:opacity-50 disabled:cursor-not-allowed
             "
           >
-            索要锦囊
+            获取提示
           </button>
         </div>
 
@@ -44,7 +44,7 @@ export default function SudokuHintCard({
             <div className="space-y-3 relative z-10">
               <div className="flex items-center gap-2 text-xs font-bold tracking-widest">
                 <span className="border-2 border-stone-800 bg-[#e8dcc8] text-stone-800 px-2 py-1">
-                  {hint.level === 'observe' ? '壹 · 观' : hint.level === 'candidates' ? '贰 · 算' : '叁 · 定'}
+                  {hint.level === 'observe' ? '第一层' : hint.level === 'candidates' ? '第二层' : '第三层'}
                 </span>
                 <span className="text-stone-600 border-b-2 border-stone-400/50 pb-0.5">{hint.focusLabel}</span>
               </div>
@@ -58,14 +58,14 @@ export default function SudokuHintCard({
                     hover:bg-[#cbb592] transition-colors shadow-[2px_2px_0_0_#292524] active:translate-y-0.5 active:shadow-none
                   "
                 >
-                  依计行事
+                  直接填入
                 </button>
               )}
             </div>
           ) : (
             <div className="h-full flex items-center justify-center">
               <p className="text-sm text-stone-500 leading-relaxed font-bold tracking-widest text-center">
-                点击“索要锦囊”后，将依次传授：<br />先观何处，再算何数，终定乾坤。
+                点击“获取提示”后，会依次告诉你：<br />先看哪里，能填什么，最后填几。
               </p>
             </div>
           )}
