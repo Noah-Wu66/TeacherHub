@@ -83,9 +83,9 @@ export function useGameAudio(isPlaying: boolean) {
     const bgmGain = context.createGain()
     const sfxGain = context.createGain()
 
-    masterGain.gain.value = 1
-    bgmGain.gain.value = 0.42
-    sfxGain.gain.value = 1.15
+    masterGain.gain.value = 1.45
+    bgmGain.gain.value = 0.82
+    sfxGain.gain.value = 1.9
 
     bgmGain.connect(masterGain)
     sfxGain.connect(masterGain)
@@ -125,7 +125,7 @@ export function useGameAudio(isPlaying: boolean) {
       filter.frequency.value = 1200
       filter.Q.value = 0.4
 
-      const peak = 0.014 - index * 0.0017
+      const peak = 0.024 - index * 0.003
       gain.gain.setValueAtTime(0.0001, startAt)
       gain.gain.linearRampToValueAtTime(peak, startAt + 0.42)
       gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 2.6)
@@ -156,7 +156,7 @@ export function useGameAudio(isPlaying: boolean) {
       filter.Q.value = 0.25
 
       gain.gain.setValueAtTime(0.0001, noteTime)
-      gain.gain.linearRampToValueAtTime(0.009, noteTime + 0.04)
+      gain.gain.linearRampToValueAtTime(0.016, noteTime + 0.04)
       gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.34)
 
       oscillator.connect(filter)
@@ -279,63 +279,63 @@ export function useGameAudio(isPlaying: boolean) {
 
   const playStart = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.1, frequency: 392, endFrequency: 493.88, volume: 0.048 },
-      { offset: 0.1, duration: 0.13, frequency: 523.25, endFrequency: 659.25, volume: 0.054 },
+      { offset: 0, duration: 0.1, frequency: 392, endFrequency: 493.88, volume: 0.082 },
+      { offset: 0.1, duration: 0.13, frequency: 523.25, endFrequency: 659.25, volume: 0.092 },
     ])
   }, [playSequence])
 
   const playNumber = useCallback(() => {
-    playSequence([{ offset: 0, duration: 0.08, frequency: 520, endFrequency: 620, volume: 0.038, type: 'triangle' }])
+    playSequence([{ offset: 0, duration: 0.08, frequency: 520, endFrequency: 620, volume: 0.066, type: 'triangle' }])
   }, [playSequence])
 
   const playOperator = useCallback(() => {
-    playSequence([{ offset: 0, duration: 0.08, frequency: 410, endFrequency: 470, volume: 0.035, type: 'square', filterFrequency: 2200 }])
+    playSequence([{ offset: 0, duration: 0.08, frequency: 410, endFrequency: 470, volume: 0.06, type: 'square', filterFrequency: 2200 }])
   }, [playSequence])
 
   const playBackspace = useCallback(() => {
-    playSequence([{ offset: 0, duration: 0.09, frequency: 360, endFrequency: 250, volume: 0.032 }])
+    playSequence([{ offset: 0, duration: 0.09, frequency: 360, endFrequency: 250, volume: 0.056 }])
   }, [playSequence])
 
   const playClear = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.1, frequency: 320, endFrequency: 220, volume: 0.029 },
-      { offset: 0.03, duration: 0.12, frequency: 260, endFrequency: 180, volume: 0.025 },
+      { offset: 0, duration: 0.1, frequency: 320, endFrequency: 220, volume: 0.05 },
+      { offset: 0.03, duration: 0.12, frequency: 260, endFrequency: 180, volume: 0.043 },
     ])
   }, [playSequence])
 
   const playHint = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.1, frequency: 587.33, endFrequency: 659.25, volume: 0.035, type: 'sine' },
-      { offset: 0.1, duration: 0.14, frequency: 783.99, endFrequency: 987.77, volume: 0.039, type: 'triangle' },
+      { offset: 0, duration: 0.1, frequency: 587.33, endFrequency: 659.25, volume: 0.06, type: 'sine' },
+      { offset: 0.1, duration: 0.14, frequency: 783.99, endFrequency: 987.77, volume: 0.068, type: 'triangle' },
     ])
   }, [playSequence])
 
   const playSuccess = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.12, frequency: 523.25, endFrequency: 659.25, volume: 0.05, type: 'triangle' },
-      { offset: 0.11, duration: 0.12, frequency: 659.25, endFrequency: 783.99, volume: 0.054, type: 'triangle' },
-      { offset: 0.22, duration: 0.18, frequency: 783.99, endFrequency: 1046.5, volume: 0.058, type: 'sine' },
+      { offset: 0, duration: 0.12, frequency: 523.25, endFrequency: 659.25, volume: 0.086, type: 'triangle' },
+      { offset: 0.11, duration: 0.12, frequency: 659.25, endFrequency: 783.99, volume: 0.092, type: 'triangle' },
+      { offset: 0.22, duration: 0.18, frequency: 783.99, endFrequency: 1046.5, volume: 0.1, type: 'sine' },
     ])
   }, [playSequence])
 
   const playError = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.13, frequency: 430, endFrequency: 280, volume: 0.041, type: 'sawtooth', filterFrequency: 1800 },
-      { offset: 0.08, duration: 0.16, frequency: 260, endFrequency: 190, volume: 0.038, type: 'triangle', filterFrequency: 1400 },
+      { offset: 0, duration: 0.13, frequency: 430, endFrequency: 280, volume: 0.07, type: 'sawtooth', filterFrequency: 1800 },
+      { offset: 0.08, duration: 0.16, frequency: 260, endFrequency: 190, volume: 0.064, type: 'triangle', filterFrequency: 1400 },
     ])
   }, [playSequence])
 
   const playSkip = useCallback(() => {
     playSequence([
-      { offset: 0, duration: 0.12, frequency: 392, endFrequency: 329.63, volume: 0.032, type: 'triangle' },
-      { offset: 0.1, duration: 0.14, frequency: 329.63, endFrequency: 261.63, volume: 0.029, type: 'sine' },
+      { offset: 0, duration: 0.12, frequency: 392, endFrequency: 329.63, volume: 0.055, type: 'triangle' },
+      { offset: 0.1, duration: 0.14, frequency: 329.63, endFrequency: 261.63, volume: 0.05, type: 'sine' },
     ])
   }, [playSequence])
 
   const playTimeout = useCallback(() => {
     playSequenceIfReady([
-      { offset: 0, duration: 0.14, frequency: 349.23, endFrequency: 261.63, volume: 0.035, type: 'triangle' },
-      { offset: 0.12, duration: 0.18, frequency: 261.63, endFrequency: 196, volume: 0.032, type: 'triangle' },
+      { offset: 0, duration: 0.14, frequency: 349.23, endFrequency: 261.63, volume: 0.06, type: 'triangle' },
+      { offset: 0.12, duration: 0.18, frequency: 261.63, endFrequency: 196, volume: 0.055, type: 'triangle' },
     ])
   }, [playSequenceIfReady])
 
