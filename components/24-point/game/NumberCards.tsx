@@ -1,5 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
+import PokerCard, { Suit } from './poker/PokerCard'
+
 interface NumberCardsProps {
   numbers: number[]
   usedNumbers: number[]
@@ -8,6 +11,8 @@ interface NumberCardsProps {
   compact?: boolean
 }
 
+const SUITS: Suit[] = ['spade', 'heart', 'club', 'diamond']
+
 export default function NumberCards({
   numbers,
   usedNumbers,
@@ -15,6 +20,22 @@ export default function NumberCards({
   disabled = false,
   compact = false,
 }: NumberCardsProps) {
+  // 分配花色：每回合4张牌恰好分配4种不同的花色
+  const cardSuits = useMemo(() => {
+    // 如果没有数字（比如还没开始），返回空
+    if (numbers.length === 0) return []
+    
+    // 洗牌算法打乱花色
+    const shuffledSuits = [...SUITS]
+    for (let i = shuffledSuits.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffledSuits[i], shuffledSuits[j]] = [shuffledSuits[j], shuffledSuits[i]]
+    }
+    
+    // 如果 numbers 有超过 4 个（理论上24点只有4个），循环使用
+    return numbers.map((_, i) => shuffledSuits[i % 4])
+  }, [numbers]) // 当 numbers 数组引用改变时（新回合），重新分配花色
+
   // 计算每个数字的剩余可用次数
   const getAvailableCount = (num: number, index: number) => {
     const sameNumIndices = numbers
@@ -26,30 +47,24 @@ export default function NumberCards({
   }
 
   return (
-    <div className={`flex justify-center ${compact ? 'gap-1.5 sm:gap-2 md:gap-3' : 'gap-2 sm:gap-4 md:gap-5'}`}>
+    <div className={`flex justify-center ${compact ? 'gap-2 sm:gap-3 md:gap-4' : 'gap-3 sm:gap-5 md:gap-6'}`}>
       {numbers.map((num, index) => {
         const available = getAvailableCount(num, index)
+        const suit = cardSuits[index] || 'spade'
+        
         return (
-          <button
-            key={index}
-            onClick={() => !disabled && available && onNumberClick(num)}
-            disabled={disabled || !available}
-            className={`
-              ${compact
-                ? 'w-12 h-12 text-lg md:w-14 md:h-14 md:text-xl rounded-xl'
-                : 'w-[60px] h-[60px] text-2xl sm:w-[72px] sm:h-[72px] sm:text-3xl md:w-20 md:h-20 md:text-4xl rounded-2xl'}
-              font-bold select-none cursor-pointer
-              transition-all duration-200 ease-out
-              flex-shrink-0
-              ${
-                available && !disabled
-                  ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-[0_6px_0_0_rgba(67,56,202,1)] hover:brightness-110 active:translate-y-1.5 active:shadow-[0_0px_0_0_rgba(67,56,202,1)]'
-                  : 'bg-slate-100 text-slate-300 shadow-[0_4px_0_0_rgba(226,232,240,1)] cursor-not-allowed translate-y-0.5'
-              }
-            `}
+          <div 
+            key={index} 
+            className={`transition-all duration-300 ${!available ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
           >
-            {num}
-          </button>
+            <PokerCard
+              number={num}
+              suit={suit}
+              onClick={() => !disabled && available && onNumberClick(num)}
+              disabled={disabled || !available}
+              compact={compact}
+            />
+          </div>
         )
       })}
     </div>

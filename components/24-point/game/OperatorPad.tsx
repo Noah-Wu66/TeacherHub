@@ -13,12 +13,12 @@ interface OperatorPadProps {
 }
 
 const operators = [
-  { value: '+', label: '+' },
-  { value: '-', label: '−' },
-  { value: '*', label: '×' },
-  { value: '/', label: '÷' },
-  { value: '(', label: '(' },
-  { value: ')', label: ')' },
+  { value: '+', label: '+', color: 'bg-red-600 border-red-800 text-white shadow-red-900/50' },
+  { value: '-', label: '−', color: 'bg-blue-600 border-blue-800 text-white shadow-blue-900/50' },
+  { value: '*', label: '×', color: 'bg-emerald-600 border-emerald-800 text-white shadow-emerald-900/50' },
+  { value: '/', label: '÷', color: 'bg-slate-800 border-black text-white shadow-black/50' },
+  { value: '(', label: '(', color: 'bg-purple-600 border-purple-800 text-white shadow-purple-900/50' },
+  { value: ')', label: ')', color: 'bg-purple-600 border-purple-800 text-white shadow-purple-900/50' },
 ]
 
 export default function OperatorPad({
@@ -33,46 +33,50 @@ export default function OperatorPad({
   showHint = true,
 }: OperatorPadProps) {
   const btnBase = compact
-    ? 'min-h-[44px] rounded-lg text-sm md:text-base font-semibold'
-    : 'min-h-[44px] sm:min-h-[52px] md:min-h-[56px] rounded-xl text-base sm:text-lg md:text-xl font-bold'
+    ? 'min-h-[40px] rounded-lg text-sm md:text-base font-semibold'
+    : 'min-h-[44px] sm:min-h-[48px] md:min-h-[52px] rounded-xl text-sm sm:text-base font-bold'
 
   return (
-    <div className={`space-y-1.5 ${compact ? '' : 'sm:space-y-2 md:space-y-2.5'}`}>
-      {/* 运算符行 — 移动端3列2行，平板及以上6列 */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 md:gap-2.5">
+    <div className={`space-y-4 ${compact ? 'sm:space-y-5 md:space-y-6' : 'sm:space-y-5 md:space-y-6'}`}>
+      
+      {/* 运算符行 - 筹码风格 */}
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
         {operators.map((op) => (
           <button
             key={op.value}
             onClick={() => onOperator(op.value)}
             disabled={disabled}
             className={`
-              ${btnBase}
-              bg-white border border-gray-200 text-indigo-600
-              hover:bg-indigo-50 hover:border-indigo-200
-              active:bg-indigo-100
-              disabled:opacity-40 disabled:cursor-not-allowed
-              transition-all duration-150 select-none cursor-pointer
-              shadow-sm hover:shadow
+              relative flex items-center justify-center flex-shrink-0
+              ${compact ? 'w-12 h-12 text-xl' : 'w-14 h-14 sm:w-16 sm:h-16 md:w-[72px] md:h-[72px] text-2xl sm:text-3xl'}
+              rounded-full font-black select-none cursor-pointer
+              border-[4px] border-double ${op.color}
+              shadow-[0_4px_0_0_rgba(0,0,0,0.4),0_6px_10px_rgba(0,0,0,0.3)]
+              hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_0_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.3)]
+              disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_rgba(0,0,0,0.4),0_6px_10px_rgba(0,0,0,0.3)]
+              transition-all duration-150
             `}
           >
-            {op.label}
+            {/* 筹码内圈虚线 */}
+            <div className="absolute inset-[3px] sm:inset-1 rounded-full border border-dashed border-white/50 pointer-events-none" />
+            <span className="relative z-10 drop-shadow-md">{op.label}</span>
           </button>
         ))}
       </div>
 
       {/* 功能按钮行 */}
-      <div className={`grid ${showHint ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'} gap-1.5 sm:gap-2 md:gap-2.5`}>
+      <div className={`grid ${showHint ? 'grid-cols-4' : 'grid-cols-3'} gap-2 sm:gap-3`}>
         <button
           onClick={onBackspace}
           disabled={disabled}
-          className={`${btnBase} bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer`}
+          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
         >
           ← 退格
         </button>
         <button
           onClick={onClear}
           disabled={disabled}
-          className={`${btnBase} bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer`}
+          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
         >
           清除
         </button>
@@ -80,7 +84,7 @@ export default function OperatorPad({
           <button
             onClick={onHint}
             disabled={disabled}
-            className={`${btnBase} bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 active:bg-amber-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer`}
+            className={`${btnBase} bg-amber-600/80 text-white border border-amber-500/50 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
           >
             提示
           </button>
@@ -88,28 +92,29 @@ export default function OperatorPad({
         <button
           onClick={onSkip}
           disabled={disabled}
-          className={`${btnBase} bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer`}
+          className={`${btnBase} bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
         >
           跳过
         </button>
       </div>
 
-      {/* 提交按钮 */}
+      {/* 提交按钮 - 赌桌质感 */}
       <button
         onClick={onSubmit}
         disabled={disabled}
         className={`
-          w-full ${compact ? 'min-h-[44px] rounded-lg text-base' : 'min-h-[48px] sm:min-h-[52px] md:min-h-[56px] rounded-xl text-lg'}
-          font-bold select-none cursor-pointer
-          bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-          shadow-md shadow-indigo-200/50
-          hover:shadow-lg hover:shadow-indigo-300/50
-          active:shadow-sm active:scale-[0.99]
-          disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
+          w-full ${compact ? 'min-h-[48px] rounded-lg text-lg' : 'min-h-[52px] sm:min-h-[60px] rounded-xl text-xl sm:text-2xl'}
+          font-black tracking-widest select-none cursor-pointer uppercase
+          bg-gradient-to-b from-amber-400 to-amber-600 text-amber-950
+          border-2 border-amber-300
+          shadow-[0_0_15px_rgba(251,191,36,0.4),inset_0_2px_4px_rgba(255,255,255,0.6)]
+          hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.6),inset_0_2px_4px_rgba(255,255,255,0.6)]
+          active:scale-[0.98] active:shadow-[0_0_10px_rgba(251,191,36,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)]
+          disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 disabled:filter-grayscale
           transition-all duration-200
         `}
       >
-        = 验证
+        VERIFY
       </button>
     </div>
   )

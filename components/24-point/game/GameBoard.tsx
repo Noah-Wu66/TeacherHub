@@ -1,6 +1,5 @@
 'use client'
 
-import Card from '@/components/24-point/ui/Card'
 import Timer from '@/components/24-point/ui/Timer'
 import NumberCards from './NumberCards'
 import ExpressionInput from './ExpressionInput'
@@ -63,9 +62,9 @@ export default function GameBoard({
   showHint = true,
 }: GameBoardProps) {
   return (
-    <Card glass className={`space-y-2 sm:space-y-3 md:space-y-4 ${compact ? 'p-2.5 sm:p-4' : 'p-3 sm:p-5 md:p-6'} ${className}`}>
+    <div className={`space-y-3 sm:space-y-4 md:space-y-5 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl ${compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6 md:p-8'} ${className}`}>
       {/* 顶部：分数 + 计时器 */}
-      <div className="space-y-1.5 sm:space-y-2">
+      <div className="space-y-2 sm:space-y-3">
         <ScoreBoard
           playerName={playerName}
           playerScore={playerScore}
@@ -77,16 +76,19 @@ export default function GameBoard({
         <Timer timeLeft={timeLeft} />
       </div>
 
-      {/* 数字卡片 */}
-      <NumberCards
-        numbers={numbers}
-        usedNumbers={usedNumbers}
-        onNumberClick={onNumberClick}
-        disabled={!isPlaying || feedback !== null}
-        compact={compact}
-      />
+      {/* 数字卡片发牌区 */}
+      <div className="relative pt-2 pb-4 sm:pb-6">
+        <div className="absolute inset-0 border-2 border-dashed border-white/10 rounded-2xl pointer-events-none" />
+        <NumberCards
+          numbers={numbers}
+          usedNumbers={usedNumbers}
+          onNumberClick={onNumberClick}
+          disabled={!isPlaying || feedback !== null}
+          compact={compact}
+        />
+      </div>
 
-      {/* 表达式输入 */}
+      {/* 表达式出牌区 */}
       <ExpressionInput
         expression={expression}
         isActive={isPlaying}
@@ -96,23 +98,25 @@ export default function GameBoard({
 
       {/* 提示 */}
       {showHint && hint && (
-        <div className="text-center text-xs sm:text-sm md:text-base text-amber-600 bg-amber-50 rounded-xl px-3 py-1.5 border border-amber-100">
+        <div className="text-center text-xs sm:text-sm md:text-base font-medium text-amber-200 bg-amber-900/40 rounded-xl px-4 py-2 border border-amber-500/30">
           参考答案：{hint}
         </div>
       )}
 
-      {/* 操作面板 */}
-      <OperatorPad
-        onOperator={onOperator}
-        onBackspace={onBackspace}
-        onClear={onClear}
-        onSubmit={onSubmit}
-        onHint={onHint}
-        onSkip={onSkip}
-        disabled={!isPlaying || feedback !== null}
-        compact={compact}
-        showHint={showHint}
-      />
-    </Card>
+      {/* 筹码操作面板 */}
+      <div className="pt-2">
+        <OperatorPad
+          onOperator={onOperator}
+          onBackspace={onBackspace}
+          onClear={onClear}
+          onSubmit={onSubmit}
+          onHint={onHint}
+          onSkip={onSkip}
+          disabled={!isPlaying || feedback !== null}
+          compact={compact}
+          showHint={showHint}
+        />
+      </div>
+    </div>
   )
 }
