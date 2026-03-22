@@ -99,9 +99,9 @@ export default function Home() {
               `}
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              {/* 卡片内置流光溢彩 */}
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${mode.gradient} opacity-20 blur-[50px] group-hover:opacity-40 transition-opacity duration-300`} />
-              <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${mode.gradient} opacity-10 blur-[40px] group-hover:opacity-30 transition-opacity duration-300`} />
+              {/* 卡片内置流光溢彩：改为圆形以消除锐利直边 */}
+              <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br ${mode.gradient} opacity-20 blur-[50px] group-hover:opacity-40 transition-opacity duration-300`} />
+              <div className={`absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-tr ${mode.gradient} opacity-10 blur-[40px] group-hover:opacity-30 transition-opacity duration-300`} />
               
               <div className="relative z-10 flex flex-col items-center text-center">
                 {/* 悬浮图标 */}
