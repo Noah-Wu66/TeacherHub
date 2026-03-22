@@ -19,9 +19,9 @@ export default function ExpressionInput({
   return (
     <div
       className={`
-        ${compact ? 'min-h-[56px] px-3 py-2 rounded-xl' : 'min-h-[72px] sm:min-h-[80px] px-4 sm:px-5 py-3 rounded-2xl'}
+        ${compact ? 'min-h-[48px] px-2 py-1.5 rounded-xl' : 'min-h-[56px] sm:min-h-[72px] md:min-h-[80px] px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-2xl'}
         w-full flex items-center justify-center
-        overflow-x-auto overflow-y-hidden whitespace-nowrap
+        overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide
         transition-all duration-300 select-none
         ${
           feedback === 'success'
@@ -38,7 +38,7 @@ export default function ExpressionInput({
       }}
     >
       {tokens.length > 0 ? (
-        <div className="flex items-center space-x-1 sm:space-x-1.5">
+        <div className="flex items-center space-x-0.5 sm:space-x-1 md:space-x-1.5">
           {tokens.map((token, index) => {
             if (/\d+/.test(token)) {
               // 渲染卡牌
@@ -54,7 +54,7 @@ export default function ExpressionInput({
                   key={index} 
                   className={`
                     inline-flex items-center justify-center bg-white text-slate-900 font-bold rounded shadow-md border border-slate-200
-                    ${compact ? 'w-8 h-10 text-sm' : 'w-10 h-12 sm:w-12 sm:h-14 text-base sm:text-lg'}
+                    ${compact ? 'w-6 h-8 text-xs' : 'w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14 text-sm sm:text-base md:text-lg'}
                   `}
                 >
                   {display}
@@ -75,7 +75,7 @@ export default function ExpressionInput({
                   key={index} 
                   className={`
                     inline-flex items-center justify-center rounded-full text-white font-black shadow-md border-2 border-double
-                    ${compact ? 'w-7 h-7 text-xs mx-0.5' : 'w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base mx-1'}
+                    ${compact ? 'w-5 h-5 text-[10px] mx-0.5' : 'w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-xs sm:text-sm md:text-base mx-0.5 sm:mx-1'}
                     ${color}
                   `}
                 >
@@ -86,8 +86,8 @@ export default function ExpressionInput({
           })}
         </div>
       ) : (
-        <span className="text-white/30 text-sm sm:text-base font-medium tracking-widest uppercase">
-          {isActive ? 'PLACE YOUR CARDS' : 'WAITING FOR ROUND'}
+        <span className={`text-white/30 font-medium tracking-widest uppercase ${compact ? 'text-xs' : 'text-xs sm:text-sm md:text-base'}`}>
+          {isActive ? 'PLACE CARDS' : 'WAITING'}
         </span>
       )}
     </div>

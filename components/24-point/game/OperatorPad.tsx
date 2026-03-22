@@ -33,14 +33,14 @@ export default function OperatorPad({
   showHint = true,
 }: OperatorPadProps) {
   const btnBase = compact
-    ? 'min-h-[40px] rounded-lg text-sm md:text-base font-semibold'
+    ? 'min-h-[36px] rounded-lg text-xs font-semibold'
     : 'min-h-[44px] sm:min-h-[48px] md:min-h-[52px] rounded-xl text-sm sm:text-base font-bold'
 
   return (
-    <div className={`space-y-4 ${compact ? 'sm:space-y-5 md:space-y-6' : 'sm:space-y-5 md:space-y-6'}`}>
+    <div className={`space-y-3 ${compact ? 'sm:space-y-4 md:space-y-5' : 'sm:space-y-5 md:space-y-6'}`}>
       
       {/* 运算符行 - 筹码风格 */}
-      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 md:gap-5">
         {operators.map((op) => (
           <button
             key={op.value}
@@ -48,9 +48,9 @@ export default function OperatorPad({
             disabled={disabled}
             className={`
               relative flex items-center justify-center flex-shrink-0
-              ${compact ? 'w-12 h-12 text-xl' : 'w-14 h-14 sm:w-16 sm:h-16 md:w-[72px] md:h-[72px] text-2xl sm:text-3xl'}
+              ${compact ? 'w-10 h-10 text-lg' : 'w-12 h-12 sm:w-16 sm:h-16 md:w-[72px] md:h-[72px] text-xl sm:text-3xl'}
               rounded-full font-black select-none cursor-pointer
-              border-[4px] border-double ${op.color}
+              border-[3px] sm:border-[4px] border-double ${op.color}
               shadow-[0_4px_0_0_rgba(0,0,0,0.4),0_6px_10px_rgba(0,0,0,0.3)]
               hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_0_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.3)]
               disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0_rgba(0,0,0,0.4),0_6px_10px_rgba(0,0,0,0.3)]
@@ -58,25 +58,25 @@ export default function OperatorPad({
             `}
           >
             {/* 筹码内圈虚线 */}
-            <div className="absolute inset-[3px] sm:inset-1 rounded-full border border-dashed border-white/50 pointer-events-none" />
+            <div className="absolute inset-[2px] sm:inset-[3px] md:inset-1 rounded-full border border-dashed border-white/50 pointer-events-none" />
             <span className="relative z-10 drop-shadow-md">{op.label}</span>
           </button>
         ))}
       </div>
 
       {/* 功能按钮行 */}
-      <div className={`grid ${showHint ? 'grid-cols-4' : 'grid-cols-3'} gap-2 sm:gap-3`}>
+      <div className={`grid ${showHint ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 sm:gap-2 md:gap-3`}>
         <button
           onClick={onBackspace}
           disabled={disabled}
-          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
+          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner px-1`}
         >
-          ← 退格
+          {compact ? '退格' : '← 退格'}
         </button>
         <button
           onClick={onClear}
           disabled={disabled}
-          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
+          className={`${btnBase} bg-slate-800/80 text-white border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner px-1`}
         >
           清除
         </button>
@@ -84,7 +84,7 @@ export default function OperatorPad({
           <button
             onClick={onHint}
             disabled={disabled}
-            className={`${btnBase} bg-amber-600/80 text-white border border-amber-500/50 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
+            className={`${btnBase} bg-amber-600/80 text-white border border-amber-500/50 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner px-1`}
           >
             提示
           </button>
@@ -92,7 +92,7 @@ export default function OperatorPad({
         <button
           onClick={onSkip}
           disabled={disabled}
-          className={`${btnBase} bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner`}
+          className={`${btnBase} bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:bg-slate-700 active:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 select-none cursor-pointer backdrop-blur-sm shadow-inner px-1`}
         >
           跳过
         </button>
@@ -103,7 +103,7 @@ export default function OperatorPad({
         onClick={onSubmit}
         disabled={disabled}
         className={`
-          w-full ${compact ? 'min-h-[48px] rounded-lg text-lg' : 'min-h-[52px] sm:min-h-[60px] rounded-xl text-xl sm:text-2xl'}
+          w-full ${compact ? 'min-h-[44px] rounded-lg text-base' : 'min-h-[52px] sm:min-h-[60px] rounded-xl text-xl sm:text-2xl'}
           font-black tracking-widest select-none cursor-pointer uppercase
           bg-gradient-to-b from-amber-400 to-amber-600 text-amber-950
           border-2 border-amber-300

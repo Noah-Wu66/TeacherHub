@@ -58,8 +58,8 @@ export default function PokerCard({
         flex flex-col items-center justify-center select-none
         transition-all duration-300 ease-out flex-shrink-0
         ${compact 
-          ? 'w-14 h-20 md:w-16 md:h-24 rounded-lg' 
-          : 'w-[72px] h-[104px] sm:w-[88px] sm:h-[128px] md:w-24 md:h-[140px] rounded-xl'}
+          ? 'w-12 h-16 sm:w-14 sm:h-20 md:w-16 md:h-24 rounded-lg' 
+          : 'w-16 h-24 sm:w-[80px] sm:h-[116px] md:w-24 md:h-[140px] rounded-xl'}
         ${disabled 
           ? 'opacity-50 cursor-not-allowed scale-95 shadow-none' 
           : 'cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(0,0,0,0.15)] shadow-[0_4px_10px_rgba(0,0,0,0.08)]'}
@@ -73,20 +73,20 @@ export default function PokerCard({
       }}
     >
       {/* Top Left */}
-      <div className={`absolute top-1 left-1.5 sm:top-2 sm:left-2 flex flex-col items-center ${color} ${compact ? 'scale-75 origin-top-left' : ''}`}>
-        <span className="text-sm sm:text-base md:text-lg font-bold leading-none">{displayNum}</span>
-        <span className="text-xs sm:text-sm md:text-base leading-none">{symbol}</span>
+      <div className={`absolute top-0.5 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 flex flex-col items-center ${color} ${compact ? 'scale-75 origin-top-left' : 'scale-90 sm:scale-100 origin-top-left'}`}>
+        <span className="text-xs sm:text-sm md:text-lg font-bold leading-none">{displayNum}</span>
+        <span className="text-[10px] sm:text-xs md:text-base leading-none">{symbol}</span>
       </div>
 
       {/* Center Symbol */}
-      <div className={`text-3xl sm:text-4xl md:text-5xl ${color} opacity-80 pointer-events-none`}>
+      <div className={`text-2xl sm:text-3xl md:text-5xl ${color} opacity-80 pointer-events-none`}>
         {symbol}
       </div>
 
       {/* Bottom Right (inverted) */}
-      <div className={`absolute bottom-1 right-1.5 sm:bottom-2 sm:right-2 flex flex-col items-center rotate-180 ${color} ${compact ? 'scale-75 origin-bottom-right' : ''}`}>
-        <span className="text-sm sm:text-base md:text-lg font-bold leading-none">{displayNum}</span>
-        <span className="text-xs sm:text-sm md:text-base leading-none">{symbol}</span>
+      <div className={`absolute bottom-0.5 right-1 sm:bottom-1.5 sm:right-1.5 md:bottom-2 md:right-2 flex flex-col items-center rotate-180 ${color} ${compact ? 'scale-75 origin-bottom-right' : 'scale-90 sm:scale-100 origin-bottom-right'}`}>
+        <span className="text-xs sm:text-sm md:text-lg font-bold leading-none">{displayNum}</span>
+        <span className="text-[10px] sm:text-xs md:text-base leading-none">{symbol}</span>
       </div>
     </button>
   )
