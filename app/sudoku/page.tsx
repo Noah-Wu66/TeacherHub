@@ -1,30 +1,35 @@
 'use client'
 
 import Link from 'next/link'
-import Card from '@/components/24-point/ui/Card'
 import { useAccessControl } from '@/components/platform/auth/useAccessControl'
 
 const modes = [
   {
     href: '/sudoku/solo',
-    title: '单人闯关',
-    description: '按关卡逐步挑战 4x4、6x6、9x9 数独',
-    gradient: 'from-sky-500 to-cyan-500',
-    icon: '1',
+    title: '独自修行',
+    description: '循序渐进，挑战四宫至九宫数独',
+    color: 'text-stone-800',
+    borderColor: 'border-stone-800',
+    bgColor: 'bg-[#e8dcc8]',
+    icon: '一',
   },
   {
     href: '/sudoku/coach',
-    title: '教学陪练',
-    description: '分层提示你先看哪里、能填什么、最后该填几',
-    gradient: 'from-amber-500 to-orange-500',
+    title: '名师指点',
+    description: '分步提示，传授破解数独之法',
+    color: 'text-amber-900',
+    borderColor: 'border-amber-900',
+    bgColor: 'bg-[#e8dcc8]',
     icon: '教',
   },
   {
     href: '/sudoku/multiplayer',
-    title: '双人竞速',
-    description: '创建在线房间，和同学做同一题比谁先完成',
-    gradient: 'from-violet-500 to-fuchsia-500',
-    icon: 'VS',
+    title: '双人对弈',
+    description: '设局约战，与同窗共解同一残局',
+    color: 'text-rose-900',
+    borderColor: 'border-rose-900',
+    bgColor: 'bg-[#e8dcc8]',
+    icon: '弈',
   },
 ]
 
@@ -35,92 +40,81 @@ export default function SudokuHomePage() {
   })
 
   if (access.loading) return null
-  if (!access.allowed) return <div className="min-h-dvh" />
+  if (!access.allowed) return <div className="min-h-dvh bg-[#f4ece1]" />
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-8 sm:py-12 relative z-10 w-full">
-      {/* 标题区域：浅色拟物玻璃发光 */}
+    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-8 sm:py-12 bg-[#f4ece1] font-serif relative z-10 w-full bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]">
+      {/* 标题区域：古典印章与水墨风格 */}
       <div className="text-center mb-10 sm:mb-14 animate-slide-up flex flex-col items-center">
-        <p className="text-sm font-black tracking-[0.5em] text-sky-500/80 uppercase mb-4 drop-shadow-sm">Sudoku Challenge</p>
-        <div className="inline-block relative">
-          <h1 className="text-5xl sm:text-7xl font-black text-slate-800 mb-2 tracking-tight drop-shadow-sm">
-            数独<span className="text-transparent bg-clip-text bg-gradient-to-br from-sky-500 to-cyan-500">挑战</span>
-          </h1>
-          <div className="absolute -inset-1 blur-2xl opacity-40 bg-sky-200 rounded-full mix-blend-multiply pointer-events-none -z-10" />
+        <div className="mb-6 w-12 h-12 flex items-center justify-center border-2 border-red-800 rounded-sm bg-red-800/5 rotate-3">
+          <span className="text-red-800 font-bold text-xl tracking-widest" style={{ writingMode: 'vertical-rl' }}>数独</span>
         </div>
         
-        {/* 滑动弹幕式提示语 (浅色适配) */}
-        <div className="mt-6 overflow-hidden max-w-sm sm:max-w-md w-full relative h-10 flex items-center justify-center rounded-full bg-white/60 border border-white/80 shadow-[0_2px_8px_rgba(14,165,233,0.1)] backdrop-blur-md">
-           <p className="text-slate-600 text-sm sm:text-base whitespace-nowrap px-4 font-mono font-bold drop-shadow-sm text-center">
-             一边闯关，一边学会发现数独中的关键信息
+        <h1 className="text-5xl sm:text-7xl font-bold text-stone-800 mb-4 tracking-[0.2em] relative">
+          九宫<span className="text-red-800">幻方</span>
+        </h1>
+        
+        {/* 滑动弹幕式提示语 (古风适配) */}
+        <div className="mt-6 overflow-hidden max-w-sm sm:max-w-md w-full relative h-10 flex items-center justify-center border-y border-stone-400">
+           <p className="text-stone-600 text-sm sm:text-base whitespace-nowrap px-4 font-bold tracking-widest text-center">
+             纵横交错寻真理，九宫格内定乾坤
            </p>
         </div>
       </div>
 
-      <div className="w-full max-w-lg md:max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+      <div className="w-full max-w-lg md:max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
         {modes.map((mode, index) => (
           <Link key={mode.href} href={mode.href} className="block w-full outline-none">
             <div
               className={`
-                group relative h-full rounded-3xl p-6 sm:p-8
-                bg-white/70 backdrop-blur-xl
-                border-2 border-white shadow-[0_8px_32px_rgba(14,165,233,0.15)]
-                hover:bg-white/95 hover:border-sky-100
-                hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(14,165,233,0.25)]
-                active:translate-y-0 active:scale-95
+                group relative h-full p-6 sm:p-8
+                ${mode.bgColor}
+                border-2 ${mode.borderColor}
+                hover:bg-[#d8cbb5]
+                hover:-translate-y-1 hover:shadow-xl
                 transition-all duration-300 ease-out
                 animate-slide-up overflow-hidden
+                flex flex-col items-center text-center
               `}
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              {/* 卡片内置流光彩晕：采用纯 CSS 渐变光晕消除 blur 边缘裁切问题 */}
-              <div 
-                className="absolute inset-0 opacity-[0.85] group-hover:opacity-100 transition-opacity duration-500 pointer-events-none mix-blend-multiply"
-                style={{
-                  background: index === 0 
-                    ? 'radial-gradient(circle at 100% 0%, rgba(6,182,212,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(14,165,233,0.08) 0%, transparent 60%)' 
-                    : index === 1 
-                    ? 'radial-gradient(circle at 100% 0%, rgba(249,115,22,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(245,158,11,0.08) 0%, transparent 60%)'
-                    : 'radial-gradient(circle at 100% 0%, rgba(217,70,239,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(139,92,246,0.08) 0%, transparent 60%)'
-                }}
-              />
+              {/* 四角装饰 */}
+              <div className={`absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 ${mode.borderColor}`} />
+              <div className={`absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2 ${mode.borderColor}`} />
+              <div className={`absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2 ${mode.borderColor}`} />
+              <div className={`absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2 ${mode.borderColor}`} />
               
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <div className={`
-                  w-20 h-20 sm:w-24 sm:h-24 rounded-3xl mb-6
-                  bg-gradient-to-br ${mode.gradient}
-                  shadow-[0_8px_20px_rgba(14,165,233,0.3)]
-                  flex items-center justify-center text-white
-                  text-3xl sm:text-4xl font-black
-                  group-hover:scale-110 group-hover:-rotate-3
-                  transition-transform duration-500 ease-out
-                `}>
-                  {mode.icon}
-                </div>
-                
-                <h2 className="text-2xl font-black text-slate-800 mb-2 group-hover:text-sky-600 transition-colors">
-                  {mode.title}
-                </h2>
-                <p className="text-sm sm:text-base text-slate-500 font-medium group-hover:text-slate-600 mt-1 transition-colors">
-                  {mode.description}
-                </p>
-                
-                <div className="mt-8 mb-2 flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 group-hover:bg-sky-50 group-hover:text-sky-600 text-slate-400 transition-all duration-300 border border-slate-100 group-hover:border-sky-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+              <div className={`
+                w-16 h-16 sm:w-20 sm:h-20 rounded-full mb-6
+                border-2 ${mode.borderColor}
+                flex items-center justify-center
+                text-3xl sm:text-4xl font-bold ${mode.color}
+                group-hover:scale-110
+                transition-transform duration-500 ease-out
+                bg-white/30
+              `}>
+                {mode.icon}
               </div>
+              
+              <h2 className={`text-2xl font-bold ${mode.color} mb-3 tracking-widest`}>
+                {mode.title}
+              </h2>
+              <div className={`w-8 h-[2px] ${mode.bgColor} border-t ${mode.borderColor} mb-3`} />
+              <p className="text-sm sm:text-base text-stone-600 font-medium leading-relaxed">
+                {mode.description}
+              </p>
             </div>
           </Link>
         ))}
       </div>
       
       {/* 底部装饰 */}
-      <div className="mt-16 sm:mt-24 text-center pb-8">
-        <p className="text-sky-900/30 text-xs font-bold uppercase tracking-[0.3em] font-mono">
-          Logic · Grid · Challenge
+      <div className="mt-16 sm:mt-24 text-center pb-8 flex items-center justify-center space-x-4">
+        <div className="w-12 h-px bg-stone-400" />
+        <p className="text-stone-500 text-sm font-bold tracking-[0.3em]">
+          修心 · 明理 · 启智
         </p>
+        <div className="w-12 h-px bg-stone-400" />
       </div>
     </div>
   )

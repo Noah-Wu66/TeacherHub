@@ -84,9 +84,11 @@ export default function PokerCard({
       </div>
 
       {/* Bottom Right (inverted) */}
-      <div className={`absolute bottom-0.5 right-1 sm:bottom-1.5 sm:right-1.5 md:bottom-2 md:right-2 flex flex-col items-center rotate-180 ${color} ${compact ? 'scale-75 origin-bottom-right' : 'scale-90 sm:scale-100 origin-bottom-right'}`}>
-        <span className="text-xs sm:text-sm md:text-lg font-bold leading-none">{displayNum}</span>
-        <span className="text-[10px] sm:text-xs md:text-base leading-none">{symbol}</span>
+      <div className={`absolute bottom-0.5 right-1 sm:bottom-1.5 sm:right-1.5 md:bottom-2 md:right-2 flex flex-col items-center ${color} ${compact ? 'scale-75 origin-bottom-right' : 'scale-90 sm:scale-100 origin-bottom-right'}`}>
+        <div className="flex flex-col items-center rotate-180">
+          <span className="text-xs sm:text-sm md:text-lg font-bold leading-none">{displayNum}</span>
+          <span className="text-[10px] sm:text-xs md:text-base leading-none">{symbol}</span>
+        </div>
       </div>
     </button>
   )

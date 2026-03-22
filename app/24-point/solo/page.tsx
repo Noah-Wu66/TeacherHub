@@ -40,14 +40,14 @@ export default function SoloPage() {
       <div className="w-full max-w-lg md:max-w-xl flex items-center justify-between mb-3 sm:mb-6">
         <Link
           href="/24-point"
-          className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 active:text-gray-700 transition-colors min-h-[44px] min-w-[44px] px-1"
+          className="flex items-center gap-1 text-sm text-emerald-100/60 hover:text-white active:text-emerald-50 transition-colors min-h-[44px] min-w-[44px] px-1"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           返回
         </Link>
-        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-700">单人练习</h1>
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-white drop-shadow-sm">单人练习</h1>
         <div className="w-[44px]" />
       </div>
 
@@ -56,14 +56,14 @@ export default function SoloPage() {
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-lg md:max-w-xl">
           <div className="text-center mb-6 animate-slide-up">
             <div className="text-6xl mb-4 animate-float">🎯</div>
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">准备好了吗？</h2>
-            <p className="text-gray-400">每轮 {timePerRound} 秒，共 {totalRounds} 轮</p>
+            <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-sm">准备好了吗？</h2>
+            <p className="text-emerald-100/80">每轮 {timePerRound} 秒，共 {totalRounds} 轮</p>
           </div>
 
           {/* 设置区域 */}
           <div className="w-full space-y-4 mb-6 animate-slide-up">
             <div className="space-y-2">
-              <label className="text-sm text-gray-500">比赛轮数</label>
+              <label className="text-sm text-emerald-100/60 font-medium mb-1 block">比赛轮数</label>
               <div className="flex gap-2 flex-wrap">
                 {ROUND_OPTIONS.map((n) => (
                   <button
@@ -71,8 +71,8 @@ export default function SoloPage() {
                     onClick={() => setTotalRounds(n)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
                       totalRounds === n
-                        ? 'bg-indigo-500 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                        : 'bg-white/10 text-white/80 hover:bg-white/20'
                     }`}
                   >
                     {n}轮
@@ -81,7 +81,7 @@ export default function SoloPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-gray-500">每轮时间</label>
+              <label className="text-sm text-emerald-100/60 font-medium mb-1 block">每轮时间</label>
               <div className="flex gap-2 flex-wrap">
                 {TIME_OPTIONS.map((t) => (
                   <button
@@ -89,8 +89,8 @@ export default function SoloPage() {
                     onClick={() => setTimePerRound(t)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer min-h-[36px] ${
                       timePerRound === t
-                        ? 'bg-indigo-500 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                        : 'bg-white/10 text-white/80 hover:bg-white/20'
                     }`}
                   >
                     {t}秒

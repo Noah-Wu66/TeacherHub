@@ -78,14 +78,14 @@ export default function MultiplayerPage() {
       <div className="w-full max-w-lg md:max-w-xl flex items-center justify-between mb-3 sm:mb-6">
         <Link
           href="/24-point"
-          className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 active:text-gray-700 transition-colors min-h-[44px] min-w-[44px] px-1"
+          className="flex items-center gap-1 text-sm text-emerald-100/60 hover:text-white active:text-emerald-50 transition-colors min-h-[44px] min-w-[44px] px-1"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           返回
         </Link>
-        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-700">多人联机</h1>
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-white drop-shadow-sm">多人联机</h1>
         <div className="w-[44px]" />
       </div>
 
@@ -117,10 +117,10 @@ export default function MultiplayerPage() {
         {/* 房间列表 */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-500">可加入的房间</h2>
+            <h2 className="text-sm font-semibold text-emerald-100/80">可加入的房间</h2>
             <button
               onClick={loadRooms}
-              className="text-sm text-indigo-400 hover:text-indigo-500 active:text-indigo-600 transition-colors cursor-pointer min-h-[44px] px-2 flex items-center"
+              className="text-sm text-indigo-300 hover:text-indigo-200 active:text-indigo-100 transition-colors cursor-pointer min-h-[44px] px-2 flex items-center"
             >
               刷新
             </button>
