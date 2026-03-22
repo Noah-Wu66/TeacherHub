@@ -62,46 +62,54 @@ export default function Home() {
         onSubmit={setNickname}
       />
 
-      {/* 标题区域：科幻发光字体与立体阴影 */}
+      {/* 标题区域：科幻高级玻璃发光阴影 */}
       <div className="text-center mb-10 sm:mb-14 animate-slide-up flex flex-col items-center">
         <div className="inline-block relative">
-          <h1 className="text-5xl sm:text-7xl font-black text-white mb-2 tracking-tight drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">
-            24<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">点</span>挑战
+          <h1 className="text-5xl sm:text-7xl font-black text-slate-800 mb-2 tracking-tight drop-shadow-sm">
+            24<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">点</span>挑战
           </h1>
-          <div className="absolute -inset-1 blur-2xl opacity-30 bg-indigo-500 rounded-full mix-blend-screen pointer-events-none -z-10" />
+          <div className="absolute -inset-1 blur-2xl opacity-40 bg-indigo-200 rounded-full mix-blend-multiply pointer-events-none -z-10" />
         </div>
-        <p className="text-indigo-200/80 text-lg sm:text-xl font-medium tracking-wide drop-shadow-sm mt-2 font-mono">
+        <p className="text-indigo-900/60 text-lg sm:text-xl font-medium tracking-wide mt-2 font-mono">
           用 4 个数字，算出 24
         </p>
         {hasNickname && (
-          <div className="mt-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-            <p className="text-slate-300 text-sm font-medium">
-              欢迎回来，<span className="text-indigo-300 font-bold ml-1">{nickname}</span>
+          <div className="mt-4 px-5 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-[0_2px_8px_rgba(99,102,241,0.1)] backdrop-blur-md">
+            <p className="text-slate-600 text-sm font-medium">
+              欢迎回来，<span className="text-indigo-600 font-bold ml-1">{nickname}</span>
             </p>
           </div>
         )}
       </div>
 
-      {/* 沉浸式模式选择：3D玻璃机能风 */}
+      {/* 沉浸式模式选择：浅色3D玻璃机能风 */}
       <div className="w-full max-w-lg md:max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mt-4">
         {modes.map((mode, index) => (
           <Link key={mode.href} href={mode.href} className="block w-full outline-none">
             <div
               className={`
                 group relative h-full rounded-3xl p-6 sm:p-8
-                bg-white/5 backdrop-blur-xl
-                border border-white/10 shadow-[0_8px_32px_rgb(0,0,0,0.3)]
-                hover:bg-white/10 hover:border-white/20
-                hover:-translate-y-2 hover:shadow-[0_15px_40px_rgb(0,0,0,0.5)]
+                bg-white/70 backdrop-blur-xl
+                border-2 border-white shadow-[0_8px_32px_rgba(99,102,241,0.15)]
+                hover:bg-white/95 hover:border-indigo-100
+                hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)]
                 active:translate-y-0 active:scale-95
                 transition-all duration-300 ease-out
                 animate-slide-up overflow-hidden
               `}
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              {/* 卡片内置流光溢彩：改为圆形以消除锐利直边 */}
-              <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br ${mode.gradient} opacity-20 blur-[50px] group-hover:opacity-40 transition-opacity duration-300`} />
-              <div className={`absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-tr ${mode.gradient} opacity-10 blur-[40px] group-hover:opacity-30 transition-opacity duration-300`} />
+              {/* 卡片内置流光溢彩（浅色模式叠加） */}
+              <div 
+                className="absolute inset-0 opacity-[0.85] group-hover:opacity-100 transition-opacity duration-500 pointer-events-none mix-blend-multiply"
+                style={{
+                  background: index === 0 
+                    ? 'radial-gradient(circle at 100% 0%, rgba(99,102,241,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(59,130,246,0.08) 0%, transparent 60%)' 
+                    : index === 1 
+                    ? 'radial-gradient(circle at 100% 0%, rgba(236,72,153,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(168,85,247,0.08) 0%, transparent 60%)'
+                    : 'radial-gradient(circle at 100% 0%, rgba(20,184,166,0.1) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(16,185,129,0.08) 0%, transparent 60%)'
+                }}
+              />
               
               <div className="relative z-10 flex flex-col items-center text-center">
                 {/* 悬浮图标 */}
@@ -138,7 +146,7 @@ export default function Home() {
 
       {/* 底部装饰 */}
       <div className="mt-16 sm:mt-24 text-center">
-        <p className="text-slate-500/50 text-xs font-bold uppercase tracking-[0.3em] font-mono">
+        <p className="text-indigo-900/30 text-xs font-bold uppercase tracking-[0.3em] font-mono">
           Mathematics · Speed · Logic
         </p>
       </div>
