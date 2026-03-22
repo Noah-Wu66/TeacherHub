@@ -14,13 +14,13 @@ const modes = [
     icon: '一',
   },
   {
-    href: '/sudoku/coach',
-    title: '教学陪练',
-    description: '分步提示，传授破解数独之法',
+    href: '/sudoku/vs-ai',
+    title: '人机对战',
+    description: '挑战智能对手，比拼解题速度',
     color: 'text-amber-900',
     borderColor: 'border-amber-900',
     bgColor: 'bg-[#e8dcc8]',
-    icon: '教',
+    icon: '机',
   },
   {
     href: '/sudoku/multiplayer',
