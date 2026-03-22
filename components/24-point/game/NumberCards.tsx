@@ -43,8 +43,8 @@ export default function NumberCards({
               flex-shrink-0
               ${
                 available && !disabled
-                  ? 'bg-gradient-to-br from-indigo-400 to-indigo-500 text-white shadow-lg shadow-indigo-200/60 hover:shadow-xl hover:shadow-indigo-300/60 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md active:bg-indigo-600'
-                  : 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
+                  ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-[0_6px_0_0_rgba(67,56,202,1)] hover:brightness-110 active:translate-y-1.5 active:shadow-[0_0px_0_0_rgba(67,56,202,1)]'
+                  : 'bg-slate-100 text-slate-300 shadow-[0_4px_0_0_rgba(226,232,240,1)] cursor-not-allowed translate-y-0.5'
               }
             `}
           >

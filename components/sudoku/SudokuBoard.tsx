@@ -82,10 +82,10 @@ export default function SudokuBoard({
                   transition-colors duration-150
                   ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                   ${fixed ? 'bg-slate-100 text-slate-700 font-bold' : 'bg-white text-sky-700'}
-                  ${sameLine ? 'bg-sky-50' : ''}
-                  ${selected ? '!bg-sky-100 ring-2 ring-inset ring-sky-400 z-10' : ''}
-                  ${hinted ? '!bg-amber-50' : ''}
-                  ${mistake ? '!bg-rose-100 text-rose-600 animate-sudoku-pop' : ''}
+                  ${sameLine ? 'bg-sky-50 shadow-[inset_0_0_15px_rgba(56,189,248,0.15)] ring-1 ring-inset ring-sky-200 z-0' : ''}
+                  ${selected ? '!bg-sky-100 shadow-[0_0_15px_rgba(56,189,248,0.4)] ring-2 ring-inset ring-sky-400 z-10 scale-105 rounded-md animate-pop' : ''}
+                  ${hinted ? '!bg-amber-100 ring-2 ring-inset ring-amber-400 z-10 animate-pulse-fast' : ''}
+                  ${mistake ? '!bg-rose-100 text-rose-600 animate-shake ring-2 ring-inset ring-rose-400 z-10' : ''}
                 `}
                 style={getCellBorderStyle(row, col, puzzle)}
               >

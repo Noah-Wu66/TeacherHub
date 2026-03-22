@@ -23,10 +23,10 @@ export default function Card({
   return (
     <div
       className={`
-        rounded-2xl
+        rounded-3xl
         ${glass
-          ? 'bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/[0.03]'
-          : 'bg-white border border-gray-100 shadow-lg shadow-black/[0.04]'}
+          ? 'bg-white/70 backdrop-blur-xl border-2 border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.08)]'
+          : 'bg-white border-2 border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)]'}
         ${paddings[padding]}
         ${className}
       `}

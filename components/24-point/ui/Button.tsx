@@ -9,11 +9,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-md shadow-indigo-200 active:shadow-sm active:bg-indigo-700',
-  secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm active:bg-gray-100',
+  primary: 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-[0_4px_0_0_rgba(67,56,202,1)] active:shadow-[0_0px_0_0_rgba(67,56,202,1)] active:translate-y-1',
+  secondary: 'bg-white hover:bg-gray-50 text-gray-700 border-2 border-slate-200 shadow-[0_4px_0_0_rgba(226,232,240,1)] active:shadow-[0_0px_0_0_rgba(226,232,240,1)] active:translate-y-1',
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 active:bg-gray-200',
-  danger: 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-200 active:bg-rose-700',
-  success: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-200 active:bg-emerald-700',
+  danger: 'bg-rose-500 hover:bg-rose-400 text-white shadow-[0_4px_0_0_rgba(190,18,60,1)] active:shadow-[0_0px_0_0_rgba(190,18,60,1)] active:translate-y-1',
+  success: 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_4px_0_0_rgba(4,120,87,1)] active:shadow-[0_0px_0_0_rgba(4,120,87,1)] active:translate-y-1',
 }
 
 const sizes = {
@@ -33,10 +33,9 @@ export default function Button({
   return (
     <button
       className={`
-        inline-flex items-center justify-center font-semibold
-        transition-all duration-200 ease-out
-        active:scale-[0.97]
-        disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+        inline-flex items-center justify-center font-bold tracking-wide
+        transition-all duration-150 ease-out
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_0]
         select-none cursor-pointer
         ${variants[variant]}
         ${sizes[size]}

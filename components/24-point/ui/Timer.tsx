@@ -35,7 +35,7 @@ export default function Timer({ timeLeft, total = 60 }: TimerProps) {
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className={`font-mono font-bold text-lg md:text-xl tabular-nums ${color} ${isCritical ? 'animate-pulse' : ''}`}>
+      <span className={`font-mono font-bold text-lg md:text-xl tabular-nums ${color} transition-all duration-300 ${isCritical ? 'animate-pulse-fast drop-shadow-[0_0_8px_rgba(244,63,94,0.6)] scale-110' : ''}`}>
         {timeLeft}s
       </span>
     </div>

@@ -25,10 +25,10 @@ export default function ExpressionInput({
         select-none
         ${
           feedback === 'success'
-            ? 'bg-emerald-50 border-2 border-emerald-300 text-emerald-700 shadow-inner shadow-emerald-100'
+            ? 'bg-emerald-500 border-2 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pop'
             : feedback === 'error'
-              ? 'bg-rose-50 border-2 border-rose-300 text-rose-700 animate-shake'
-              : 'bg-gray-50/80 border-2 border-gray-100 text-gray-800'
+              ? 'bg-rose-50 border-2 border-rose-400 text-rose-700 animate-shake shadow-[inset_0_0_10px_rgba(244,63,94,0.2)]'
+              : 'bg-slate-100/80 border-2 border-slate-200 text-slate-800 shadow-inner'
         }
       `}
     >
