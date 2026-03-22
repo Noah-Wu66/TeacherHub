@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { generateNumbers, canUseNumber, checkAnswer, extractNumbers } from '@/lib/24-point/gameLogic'
 import { solveFirst24, hasSolution } from '@/lib/24-point/solver'
+import { useGameAudio } from '@/hooks/24-point/useGameAudio'
 
 interface UseGameOptions {
   totalRounds?: number
@@ -27,6 +28,18 @@ export function useGame(options: UseGameOptions = {}) {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const {
+    playStart,
+    playNumber,
+    playOperator,
+    playBackspace,
+    playClear,
+    playHint,
+    playSuccess,
+    playError,
+    playSkip,
+    playTimeout,
+  } = useGameAudio(isPlaying)
 
   // 清理定时器
   const clearTimers = useCallback(() => {
@@ -77,6 +90,7 @@ export function useGame(options: UseGameOptions = {}) {
   // 时间到了自动结束这轮
   useEffect(() => {
     if (timeLeft === 0 && isPlaying) {
+      playTimeout()
       onRoundEnd?.(round, false)
       if (round >= totalRounds) {
         setIsPlaying(false)
@@ -87,43 +101,47 @@ export function useGame(options: UseGameOptions = {}) {
         startNewRound()
       }
     }
-  }, [timeLeft, isPlaying, round, totalRounds, score, onRoundEnd, onGameEnd, startNewRound])
+  }, [timeLeft, isPlaying, round, totalRounds, score, onRoundEnd, onGameEnd, startNewRound, playTimeout])
 
   // 开始游戏
   const startGame = useCallback(() => {
+    playStart()
     clearTimers()
     setScore(0)
     setRound(1)
     setIsPlaying(true)
     setIsFinished(false)
     startNewRound()
-  }, [clearTimers, startNewRound])
+  }, [playStart, clearTimers, startNewRound])
 
   // 点击数字卡片
   const handleNumberClick = useCallback(
     (num: number) => {
       if (!isPlaying || feedback) return
       if (canUseNumber(num, usedNumbers, numbers)) {
+        playNumber()
         setExpression((prev) => prev + num)
         setUsedNumbers((prev) => [...prev, num])
       }
     },
-    [isPlaying, feedback, usedNumbers, numbers],
+    [playNumber, isPlaying, feedback, usedNumbers, numbers],
   )
 
   // 输入运算符
   const handleOperator = useCallback(
     (op: string) => {
       if (!isPlaying || feedback) return
+      playOperator()
       setExpression((prev) => prev + op)
     },
-    [isPlaying, feedback],
+    [playOperator, isPlaying, feedback],
   )
 
   // 退格
   const handleBackspace = useCallback(() => {
     if (!isPlaying || feedback || !expression) return
 
+    playBackspace()
     const lastChar = expression[expression.length - 1]
     setExpression((prev) => prev.slice(0, -1))
 
@@ -140,14 +158,15 @@ export function useGame(options: UseGameOptions = {}) {
       const newExpr = expression.slice(0, -1)
       setUsedNumbers(extractNumbers(newExpr))
     }
-  }, [isPlaying, feedback, expression])
+  }, [playBackspace, isPlaying, feedback, expression])
 
   // 清除
   const handleClear = useCallback(() => {
     if (!isPlaying || feedback) return
+    playClear()
     setExpression('')
     setUsedNumbers([])
-  }, [isPlaying, feedback])
+  }, [playClear, isPlaying, feedback])
 
   // 提交答案
   const handleSubmit = useCallback((): boolean => {
@@ -156,6 +175,7 @@ export function useGame(options: UseGameOptions = {}) {
     const result = checkAnswer(expression, usedNumbers, numbers)
 
     if (result.isCorrect) {
+      playSuccess()
       setFeedback('success')
       const newScore = score + 1
       setScore(newScore)
@@ -176,17 +196,19 @@ export function useGame(options: UseGameOptions = {}) {
 
       return true
     } else {
+      playError()
       setFeedback('error')
       feedbackTimerRef.current = setTimeout(() => {
         setFeedback(null)
       }, 800)
       return false
     }
-  }, [isPlaying, feedback, expression, usedNumbers, numbers, score, round, totalRounds, onRoundEnd, onGameEnd, clearTimers, startNewRound])
+  }, [playSuccess, playError, isPlaying, feedback, expression, usedNumbers, numbers, score, round, totalRounds, onRoundEnd, onGameEnd, clearTimers, startNewRound])
 
   // 跳过
   const handleSkip = useCallback(() => {
     if (!isPlaying || feedback) return
+    playSkip()
     onRoundEnd?.(round, false)
 
     if (round >= totalRounds) {
@@ -198,14 +220,15 @@ export function useGame(options: UseGameOptions = {}) {
       setRound((r) => r + 1)
       startNewRound()
     }
-  }, [isPlaying, feedback, round, totalRounds, score, onRoundEnd, onGameEnd, clearTimers, startNewRound])
+  }, [playSkip, isPlaying, feedback, round, totalRounds, score, onRoundEnd, onGameEnd, clearTimers, startNewRound])
 
   // 提示
   const handleHint = useCallback(() => {
     if (!isPlaying) return
+    playHint()
     const solution = solveFirst24(numbers)
     setHint(solution)
-  }, [isPlaying, numbers])
+  }, [playHint, isPlaying, numbers])
 
   // 用外部传入的数字开始一轮（联机用）
   const startRoundWithNumbers = useCallback((nums: number[]) => {
